@@ -51,6 +51,8 @@ def detect_platforms(dir):
 		platforms.append('android')
 	if os.path.exists(os.path.join(dir,'mobileweb')):
 		platforms.append('mobileweb')
+	if os.path.exists(os.path.join(dir,'blackberry')):
+		platforms.append('blackberry')
 	return platforms
 	
 def check_valid_project(dir,cwd):
@@ -178,6 +180,39 @@ def create_mobileweb_module(project_dir, osname, args):
 		return os.path.join(project_dir, name)
 	else:
 		die("Aborting")
+		
+# Stub method for blackberry project creation
+# TODO: Configure for blackberry
+def create_blackberry_project(project_dir, osname, args):
+	script = os.path.join(template_dir, 'project.py')
+	name = get_required(args, 'name')
+	validate_project_name(name)
+	appid = get_required(args, 'id')
+	android_sdk = get_android_sdk(args) # TODO: Need to figure out do we need it in project.py for blackberry
+	args = [script, name, appid, project_dir, osname, android_sdk]
+	retcode = fork(args, True)
+	if retcode == 0:
+		print "Created %s application project" % osname
+		return os.path.join(project_dir, name)
+	else:
+		die("Aborting")
+
+# Stub method for blackberry method creation
+# TODO: Configure for blackberry
+def create_blackberry_module(project_dir, osname, args):
+	script = os.path.join(template_dir, 'module', 'module.py')
+	name = get_required(args, 'name')
+	validate_project_name(name)
+	appid = get_required(args, 'id')
+	android_sdk = get_android_sdk(args) # TODO: Need to figure out do we need it in module.py for blackberry
+	args = [script, '--name', name, '--id', appid, '--directory', project_dir, '--platform', osname, '--sdk', android_sdk]
+	
+	retcode = fork(args, False)
+	if retcode == 0:
+		print "Created %s module project" % osname
+		return os.path.join(project_dir, name)
+	else:
+		die("Aborting")
 
 def create_mobile_project(osname, project_dir, args):
 	if is_ios(osname):
@@ -186,6 +221,8 @@ def create_mobile_project(osname, project_dir, args):
 		return create_android_project(project_dir, osname, args)
 	elif osname == 'mobileweb':
 		return create_mobileweb_project(project_dir, osname, args)
+	elif osname == 'blackberry':
+		return create_blackberry_project(project_dir, osname, args)
 	else:
 		die("Unknown platform: %s" % osname)
 
@@ -196,6 +233,8 @@ def create_module_project(osname, project_dir, args):
 		return create_android_module(project_dir, osname, args)
 	elif osname == 'mobileweb':
 		return create_mobileweb_module(project_dir, osname, args)
+	elif osname == 'blackberry':
+		return create_blackberry_module(project_dir, osname, args)
 	else:
 		die("Unknown platform: %s" % osname)
 
@@ -277,9 +316,11 @@ def run_project_args(args,script,project_dir,platform):
 		android_sdk = get_android_sdk(args)
 		return [script, "run", project_dir, android_sdk]
 
+	# TODO: Figure out do we need additional steps for blackberry. See builder.py script
 	return [script, "run", project_dir]
 
 def run_module_args(args,script,project_dir,platform):
+	#TODO: To figure out do we need additional changes here for blackberry. See builder.py script
 	return [script,"run",platform,project_dir]
 		
 def dyn_run(args,project_cb,module_cb):
@@ -356,6 +397,7 @@ def package(args):
 def emulator_args(args, script, project_dir, platform):
 	if platform == 'android':
 		return [script, 'run-emulator', platform, project_dir]
+	# TODO: Add blackberry simulator code here. builder.py script should be modified to make this changes work
 
 def emulator(args):
 	dyn_run(args, emulator_args, emulator_args)
@@ -365,6 +407,7 @@ def docgen_args(args, script, project_dir, platform):
 		default_dest_dir = os.path.join(project_dir, 'build', 'docs')
 		dest_dir = get_optional(args, 'dest-dir', default_dest_dir)
 		return [script, 'docgen', platform, project_dir, dest_dir]
+	# TODO: Add blackberry docgen code here. docgen.py script should be modified to make this changes work
 
 def docgen(args):
 	dyn_run(args, docgen_args, docgen_args)
