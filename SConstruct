@@ -134,12 +134,16 @@ if build_type in ['full', 'mobileweb'] and not only_package:
 
 if build_type in ['full', 'blackberry'] and not only_package:
 	d = os.getcwd()
-	os.chdir('blackberry')
 	try:
+		os.chdir('blackberry')
 		if clean: build_type = "clean"
 		# nothing to do... yet
 		print 'Building for BlackBerry'
 		# Add blackberry build steps here
+	except OSError as (errno, strerror):
+		# Temporary except clause while the blackberry folder doesn't
+		# yet exist in the github repo, so the script won't just exit
+		print "OS error ({0}): {1} [{2}]".format(errno, strerror, blackberry)
 	finally:
 		os.chdir(d)
 
