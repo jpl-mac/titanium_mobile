@@ -93,6 +93,9 @@ def get_required_dir(config, key, env=None):
 def get_android_sdk(config):
 	return get_required_dir(config, 'android', env='ANDROID_SDK')
 
+def get_blackberry_sdk(config):
+	return get_required_dir(config, 'blackberry', env='QNX_TARGET')
+
 def is_ios(osname):
 	if osname == 'iphone' or osname == 'ipad' or osname == 'ios':
 		return True
@@ -169,27 +172,17 @@ def create_mobileweb_project(project_dir, osname, args):
 		die("Aborting")
 
 def create_mobileweb_module(project_dir, osname, args):
-	script = os.path.join(template_dir, 'module', 'module.py')
-	name = get_required(args, 'name')
-	validate_project_name(name)
-	appid = get_required(args, 'id')
-	args = [script, '--name', name, '--id', appid, '--directory', project_dir, '--platform', osname]
-	retcode = fork(args, False)
-	if retcode == 0:
-		print "Created %s module project" % osname
-		return os.path.join(project_dir, name)
-	else:
-		die("Aborting")
-		
+	die("Mobile Web modules are not supported yet")
+	
 # Stub method for blackberry project creation
-# TODO: Configure for blackberry
+# TODO Mac:Configure for blackberry
 def create_blackberry_project(project_dir, osname, args):
 	script = os.path.join(template_dir, 'project.py')
 	name = get_required(args, 'name')
 	validate_project_name(name)
-	appid = get_required(args, 'id')
-	android_sdk = get_android_sdk(args) # TODO: Need to figure out do we need it in project.py for blackberry
-	args = [script, name, appid, project_dir, osname, android_sdk]
+	appid = get_required(args, 'id') # TODO Mac:Need to figure out how do we need it in project.py for blackberry. It is different from android id
+	blackberry_sdk = get_blackberry_sdk(args) 
+	args = [script, name, appid, project_dir, osname, blackberry_sdk]
 	retcode = fork(args, True)
 	if retcode == 0:
 		print "Created %s application project" % osname
@@ -198,14 +191,14 @@ def create_blackberry_project(project_dir, osname, args):
 		die("Aborting")
 
 # Stub method for blackberry method creation
-# TODO: Configure for blackberry
+# TODO Mac:Configure for blackberry
 def create_blackberry_module(project_dir, osname, args):
 	script = os.path.join(template_dir, 'module', 'module.py')
 	name = get_required(args, 'name')
 	validate_project_name(name)
-	appid = get_required(args, 'id')
-	android_sdk = get_android_sdk(args) # TODO: Need to figure out do we need it in module.py for blackberry
-	args = [script, '--name', name, '--id', appid, '--directory', project_dir, '--platform', osname, '--sdk', android_sdk]
+	appid = get_required(args, 'id') # TODO Mac:Need to figure out how do we need it in project.py for blackberry. It is different from android id
+	blackberry_sdk = get_blackberry_sdk(args) 
+	args = [script, '--name', name, '--id', appid, '--directory', project_dir, '--platform', osname, '--sdk', blackberry_sdk]
 	
 	retcode = fork(args, False)
 	if retcode == 0:
@@ -315,12 +308,17 @@ def run_project_args(args,script,project_dir,platform):
 	if platform == "android":
 		android_sdk = get_android_sdk(args)
 		return [script, "run", project_dir, android_sdk]
+	elif platform == "blackberry":
+		blackberry_sdk = get_blackberry_sdk(args)
+		return [script, "run", project_dir, blackberry_sdk]
 
-	# TODO: Figure out do we need additional steps for blackberry. See builder.py script
 	return [script, "run", project_dir]
 
 def run_module_args(args,script,project_dir,platform):
-	#TODO: To figure out do we need additional changes here for blackberry. See builder.py script
+	print "Investigation"
+	print "run_project_args: " % args % "script:" % script % "project dir: " %project_dir
+
+	#TODO Mac:To figure out do we need additional changes here for blackberry. See builder.py script
 	return [script,"run",platform,project_dir]
 		
 def dyn_run(args,project_cb,module_cb):
@@ -397,7 +395,8 @@ def package(args):
 def emulator_args(args, script, project_dir, platform):
 	if platform == 'android':
 		return [script, 'run-emulator', platform, project_dir]
-	# TODO: Add blackberry simulator code here. builder.py script should be modified to make this changes work
+	elif platform == 'blackberry':
+		return [script, 'run-simulator', platform, project_dir]
 
 def emulator(args):
 	dyn_run(args, emulator_args, emulator_args)
@@ -407,7 +406,10 @@ def docgen_args(args, script, project_dir, platform):
 		default_dest_dir = os.path.join(project_dir, 'build', 'docs')
 		dest_dir = get_optional(args, 'dest-dir', default_dest_dir)
 		return [script, 'docgen', platform, project_dir, dest_dir]
-	# TODO: Add blackberry docgen code here. docgen.py script should be modified to make this changes work
+	if platform == 'blackberry':
+		default_dest_dir = os.path.join(project_dir, 'build', 'docs')
+		dest_dir = get_optional(args, 'dest-dir', default_dest_dir)
+		return [script, 'docgen', platform, project_dir, dest_dir]
 
 def docgen(args):
 	dyn_run(args, docgen_args, docgen_args)
