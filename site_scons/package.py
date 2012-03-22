@@ -308,6 +308,34 @@ def zip_mobileweb(zf,basepath,version):
 			else:
 				zf.write(from_, to_)
 
+def zip_blackberry(zf,basepath,version):
+	# TODO Mac: adjust zipping logic for the mobile_sdk as we add to it, using zip_mobileweb as starting point
+	print 'zip_blackberry', zf, basepath, version
+	subs = {
+		"__VERSION__":version,
+		"__TIMESTAMP__":ts,
+		"__GITHASH__": githash
+	}
+	dir = os.path.join(top_dir, 'blackberry')
+
+	for root, dirs, files in os.walk(dir):
+		for name in ignoreDirs:
+			if name in dirs:
+				dirs.remove(name)
+		for file in files:
+			e = os.path.splitext(file)
+			if len(e)==2 and e[1] in ignoreExtensions: continue
+			from_ = os.path.join(root, file)
+			to_ = from_.replace(dir, os.path.join(basepath,'blackberry'), 1)
+			if file == 'package.json':
+				c = open(from_).read()
+				for key in subs:
+					c = c.replace(key, subs[key])
+				zf.writestr(to_, c)
+			else:
+				zf.write(from_, to_)
+
+
 def create_platform_zip(platform,dist_dir,osname,version,version_tag):
 	if not os.path.exists(dist_dir):
 		os.makedirs(dist_dir)
@@ -316,7 +344,7 @@ def create_platform_zip(platform,dist_dir,osname,version,version_tag):
 	zf = zipfile.ZipFile(sdkzip, 'w', zipfile.ZIP_DEFLATED)
 	return (zf,basepath)
 
-def zip_mobilesdk(dist_dir, osname, version, module_apiversion, android, iphone, ipad, mobileweb, version_tag, build_jsca):
+def zip_mobilesdk(dist_dir, osname, version, module_apiversion, android, iphone, ipad, mobileweb, blackberry, version_tag, build_jsca):
 	zf, basepath = create_platform_zip('mobilesdk', dist_dir, osname, version, version_tag)
 
 	version_txt = """version=%s
@@ -336,29 +364,30 @@ githash=%s
 	if android: zip_android(zf,basepath)
 	if (iphone or ipad) and osname == "osx": zip_iphone_ipad(zf,basepath,'iphone',version,version_tag)
 	if mobileweb: zip_mobileweb(zf,basepath,version)
+	if blackberry: zip_blackberry(zf,basepath,version)
 	if osname == 'win32':
 		zip_dir(zf, win32_dir, basepath)
 	
 	zf.close()
 				
-def zip_it(dist_dir, osname, version, module_apiversion, android,iphone, ipad, mobileweb, version_tag, build_jsca):
-	zip_mobilesdk(dist_dir, osname, version, module_apiversion, android, iphone, ipad, mobileweb, version_tag, build_jsca)
+def zip_it(dist_dir, osname, version, module_apiversion, android,iphone, ipad, mobileweb, blackberry, version_tag, build_jsca):
+	zip_mobilesdk(dist_dir, osname, version, module_apiversion, android, iphone, ipad, mobileweb, blackberry, version_tag, build_jsca)
 
 class Packager(object):
 	def __init__(self, build_jsca=1):
 		self.build_jsca = build_jsca
 		self.os_names = { "Windows":"win32", "Linux":"linux", "Darwin":"osx" }
 	 
-	def build(self, dist_dir, version, module_apiversion, android=True, iphone=True, ipad=True, mobileweb=True, version_tag=None):
+	def build(self, dist_dir, version, module_apiversion, android=True, iphone=True, ipad=True, mobileweb=True, blackberry=True, version_tag=None):
 		if version_tag == None:
 			version_tag = version
-		zip_it(dist_dir, self.os_names[platform.system()], version, module_apiversion, android, iphone, ipad, mobileweb, version_tag, self.build_jsca)
+		zip_it(dist_dir, self.os_names[platform.system()], version, module_apiversion, android, iphone, ipad, mobileweb, blackberry, version_tag, self.build_jsca)
 
-	def build_all_platforms(self, dist_dir, version, module_apiversion, android=True, iphone=True, ipad=True, mobileweb=True, version_tag=None):
+	def build_all_platforms(self, dist_dir, version, module_apiversion, android=True, iphone=True, ipad=True, mobileweb=True, blackberry=True, version_tag=None):
 		if version_tag == None:
 			version_tag = version
 		for os in self.os_names.values():
-			zip_it(dist_dir, os, version, module_apiversion, android, iphone, ipad, mobileweb, version_tag, self.build_jsca)
+			zip_it(dist_dir, os, version, module_apiversion, android, iphone, ipad, mobileweb, blackberry, version_tag, self.build_jsca)
 		
 if __name__ == '__main__':
 	Packager().build(os.path.abspath('../dist'), "1.1.0")
