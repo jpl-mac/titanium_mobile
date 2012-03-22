@@ -47,14 +47,6 @@ print "Building MobileSDK version %s, githash %s" % (version, githash)
 # hard to include python after an external SConscript
 #
 
-build_dirs = []
-
-if not ARGUMENTS.get('iphone',0):
-	build_dirs.append('android/titanium')
-
-if platform.system() == "Darwin" and not ARGUMENTS.get('android',0):
-	build_dirs.append('iphone')
-
 flags = ''
 
 only_package = False
@@ -69,23 +61,21 @@ if clean and os.path.exists('iphone/iphone/build'):
 	shutil.rmtree('iphone/iphone/build')
 
 build_type = 'full'
-build_dirs = ['iphone', 'android', 'mobileweb']
 force_iphone = False
 if ARGUMENTS.get('iphone',0):
 	build_type='iphone'
-	build_dirs=['iphone']
 
 if ARGUMENTS.get('android',0):
 	build_type='android'
-	build_dirs=['android']
 
 if ARGUMENTS.get('ipad',0):
 	build_type='ipad'
-	build_dirs=['ipad']
 
 if ARGUMENTS.get('mobileweb',0):
 	build_type='mobileweb'
-	build_dirs=['mobileweb']
+
+if ARGUMENTS.get('blackberry',0):
+	build_type='blackberry'
 
 if ARGUMENTS.get('force_iphone',0):
 	force_iphone = True
@@ -142,6 +132,21 @@ if build_type in ['full', 'mobileweb'] and not only_package:
 	finally:
 		os.chdir(d)
 
+if build_type in ['full', 'blackberry'] and not only_package:
+	d = os.getcwd()
+	try:
+		os.chdir('blackberry')
+		if clean: build_type = "clean"
+		# nothing to do... yet
+		print 'Building for BlackBerry'
+		# Add blackberry build steps here
+	except OSError as (errno, strerror):
+		# Temporary except clause while the blackberry folder doesn't
+		# yet exist in the github repo, so the script won't just exit
+		print "OS error ({0}): {1} [{2}]".format(errno, strerror, blackberry)
+	finally:
+		os.chdir(d)
+
 def install_mobilesdk(version_tag):
 	if (platform.system() == "Darwin"):
 		os_names = { "Windows":"win32", "Linux":"linux", "Darwin":"osx" }
@@ -156,6 +161,7 @@ def package_sdk(target, source, env):
 	iphone = build_type in ['full', 'iphone']
 	ipad = build_type in ['full', 'ipad']
 	mobileweb = build_type in ['full', 'mobileweb']
+	blackberry = build_type in ['full', 'blackberry']	# TODO: use in Packager
 	package_all = ARGUMENTS.get('package_all', 0)
 	version_tag = ARGUMENTS.get('version_tag', version)
 	build_jsca = int(ARGUMENTS.get('build_jsca', 1))
