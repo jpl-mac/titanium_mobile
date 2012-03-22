@@ -93,7 +93,7 @@ def get_required_dir(config, key, env=None):
 def get_android_sdk(config):
 	return get_required_dir(config, 'android', env='ANDROID_SDK')
 
-def get_blackberry_sdk(config):
+def get_blackberry_ndk(config):
 	return get_required_dir(config, 'blackberry', env='QNX_TARGET')
 
 def is_ios(osname):
@@ -181,8 +181,8 @@ def create_blackberry_project(project_dir, osname, args):
 	name = get_required(args, 'name')
 	validate_project_name(name)
 	appid = get_required(args, 'id') # TODO Mac:Need to figure out how do we need it in project.py for blackberry. It is different from android id
-	blackberry_sdk = get_blackberry_sdk(args) 
-	args = [script, name, appid, project_dir, osname, blackberry_sdk]
+	blackberry_ndk = get_blackberry_ndk(args) 
+	args = [script, name, appid, project_dir, osname, blackberry_ndk]
 	retcode = fork(args, True)
 	if retcode == 0:
 		print "Created %s application project" % osname
@@ -197,8 +197,8 @@ def create_blackberry_module(project_dir, osname, args):
 	name = get_required(args, 'name')
 	validate_project_name(name)
 	appid = get_required(args, 'id') # TODO Mac:Need to figure out how do we need it in project.py for blackberry. It is different from android id
-	blackberry_sdk = get_blackberry_sdk(args) 
-	args = [script, '--name', name, '--id', appid, '--directory', project_dir, '--platform', osname, '--sdk', blackberry_sdk]
+	blackberry_ndk = get_blackberry_ndk(args) 
+	args = [script, '--name', name, '--id', appid, '--directory', project_dir, '--platform', osname, '--sdk', blackberry_ndk]
 	
 	retcode = fork(args, False)
 	if retcode == 0:
@@ -309,8 +309,8 @@ def run_project_args(args,script,project_dir,platform):
 		android_sdk = get_android_sdk(args)
 		return [script, "run", project_dir, android_sdk]
 	elif platform == "blackberry":
-		blackberry_sdk = get_blackberry_sdk(args)
-		return [script, "run", project_dir, blackberry_sdk]
+		blackberry_ndk = get_blackberry_ndk(args)
+		return [script, "run", project_dir, blackberry_ndk]
 
 	return [script, "run", project_dir]
 
@@ -403,10 +403,6 @@ def emulator(args):
 
 def docgen_args(args, script, project_dir, platform):
 	if platform == 'android':
-		default_dest_dir = os.path.join(project_dir, 'build', 'docs')
-		dest_dir = get_optional(args, 'dest-dir', default_dest_dir)
-		return [script, 'docgen', platform, project_dir, dest_dir]
-	if platform == 'blackberry':
 		default_dest_dir = os.path.join(project_dir, 'build', 'docs')
 		dest_dir = get_optional(args, 'dest-dir', default_dest_dir)
 		return [script, 'docgen', platform, project_dir, dest_dir]
