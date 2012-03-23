@@ -9,11 +9,10 @@ this_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.abspath(os.path.join(this_dir, "..")))
 from common import dict_has_non_empty_member
 
-# Contains TiLogger:
-android_support_dir = os.path.abspath(os.path.join(this_dir, "..", "..", "support", "android"))
-sys.path.append(android_support_dir)
+# TiLogger is in support/common
+common_support_dir = os.path.abspath(os.path.join(this_dir, "..", "..", "support", "common"))
+sys.path.append(common_support_dir)
 from tilogger import *
-
 
 # We piggy-back on some of the functionality from the html generator, because
 # this json format includes a property named "filename" which is corresponds to

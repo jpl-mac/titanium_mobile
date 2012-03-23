@@ -9,10 +9,14 @@
 # General builder script for staging, packaging, deploying,
 # and debugging Titanium Mobile applications on Blackberry
 #
-import os, sys, traceback, argparse
+import os, sys, argparse
+
+template_dir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
+top_support_dir = os.path.dirname(template_dir) 
+sys.path.append(top_support_dir)
+sys.path.append(os.path.join(top_support_dir, 'common'))
 
 from tilogger import *
-from compiler.ast import Sub
 
 class Builder(object):
 
@@ -45,7 +49,6 @@ class Builder(object):
 		savePath = os.path.join(self.project_dir, 'Simulator-Debug', self.name)
 		os.system("blackberry-nativepackager -package %s bar-descriptor.xml -e %s %s icon.png" % (barPath, savePath, self.name))
 		os.system("blackberry-deploy -installApp -launchApp -device 192.168.127.128 -package %s" % barPath)
-#		sys.exit(0)
 	
 	def build(self):
 		# TODO Mac: Add corresponding parameters (ip, icon, bar_descriptor, etc...) to script in order to support:
@@ -55,7 +58,6 @@ class Builder(object):
 		# For now used only for simulator
 		print 'Building'
 		os.system("mkbuild %s" % self.project_dir)
-#		sys.exit(0)
 
 def info(msg):
 	log.info(msg)
@@ -99,7 +101,7 @@ def run_project(args):
 if __name__ == "__main__":
 
 	# Setup script usage 
-	parser = argparse.ArgumentParser(prog='builder')
+	parser = argparse.ArgumentParser()
 	subparsers = parser.add_subparsers(help='commands')
 	
 	# Added parsers for each available command
@@ -108,21 +110,20 @@ if __name__ == "__main__":
 	
 	# Setup arguments parser for 'builder build' command
 	parser_build.set_defaults(func=build_project)
-	parser_build.add_argument('type', help='simulator/device')
+	parser_build.add_argument('type', help='simulator | device')
 	parser_build.add_argument('project_path', help='project directory path')
 	parser_build.add_argument('ndk_path', help='blackberry ndk path')
 	
 	# Setup arguments parser for 'builder run' command	
 	parser_run.set_defaults(func=run_project)
-	parser_run.add_argument('type', help='simulator/device')
-	parser_run.add_argument('project_path', help='blackberry ndk path')
-	parser_run.add_argument('ndk_path', help='project directory path')
+	parser_run.add_argument('type', help='simulator | device')
+	parser_run.add_argument('project_path', help='project directory path')
+	parser_run.add_argument('ndk_path', help='blackberry ndk path')
 
 	# Parse input and call apropriate function
 	args = parser.parse_args()
 	args.func(args)
 
-	# TODO: Move tilogger to 'common' directory to not duplicate. Could require additional changes in other files.
-	#	log = TiLogger(os.path.join(os.path.abspath(os.path.expanduser(dequote(project_dir))), 'build.log'))
+	log = TiLogger(os.path.join(os.path.abspath(os.path.expanduser(args.project_path)), 'build.log'))
 	debug(" ".join(sys.argv))
-	#	log.debug(" ".join(sys.argv))
+	log.debug(" ".join(sys.argv))

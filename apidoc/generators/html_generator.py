@@ -16,11 +16,9 @@ import markdown
 from mako.template import Template
 from mako.lookup import TemplateLookup
 
-# TiLogger is in support/android
-android_support_dir = os.path.abspath(os.path.join(this_dir, "..", "..", "support", "android"))
-sys.path.append(android_support_dir)
+# TiLogger is in support/common
 from tilogger import *
-log = None
+log = TiLogger(None)
 
 try:
 	from pygments import highlight
