@@ -310,7 +310,6 @@ def zip_mobileweb(zf,basepath,version):
 
 def zip_blackberry(zf,basepath,version):
 	# TODO Mac: adjust zipping logic for the mobile_sdk as we add to it, using zip_mobileweb as starting point
-	print 'zip_blackberry', zf, basepath, version
 	subs = {
 		"__VERSION__":version,
 		"__TIMESTAMP__":ts,
