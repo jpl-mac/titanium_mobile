@@ -54,7 +54,8 @@ def main():
 		#from blackberryndk import BlackberryNDK
 		blackberry_ndk = args.blackberry_ndk and args.blackberry_ndk.decode("utf-8")
 		try:
-			pass
+			# TODO Mac: temporary check until we add proper ndk folder validation
+			if blackberry_ndk is None: raise Exception("blackberry_ndk needs to be specified to create project for the blackberry platform")
 			#BlackberryNDK(blackberry_ndk)
 		except Exception, e:
 			print >>sys.stderr, e
@@ -110,11 +111,8 @@ def main():
 		run([sys.executable, mobileweb_gen, name, appid, directory])
 
 	if blackberry:
-		blackberry_resources = os.path.join(resources_dir,'blackberry')
-		if not os.path.exists(blackberry_resources): os.makedirs(blackberry_resources)
-		# TODO Mac: create the blackberry.py script
-		#blackberry_gen = os.path.join(template_dir,'blackberry','blackberry.py')
-		#run([sys.executable, blackberry_gen, name, appid, directory, blackberry_ndk])
+		blackberry_gen = os.path.join(template_dir,'blackberry','blackberry.py')
+		run([sys.executable, blackberry_gen, name, appid, directory, blackberry_ndk])
 
 	# copy LICENSE and README
 	for file in ['LICENSE','README']:
