@@ -77,25 +77,25 @@ def error(msg):
 def build_project(args):
 	# TODO Mac: Remove. For testing only
 	print args.type
-	print args.ndk_path
-	print args.project_path
+	print args.path
+	print args.dir
 	
 	# TODO Mac: Should be available from tiapp.xml
 	# Used hardcoded HelloWorldDisplay for now
 	project_name = 'HelloWorldDisplay'
-	builder = Builder(project_name, args.project_path, args.ndk_path)
+	builder = Builder(project_name, args.dir, args.path)
 	builder.build()
 	
 def run_project(args):
 	# TODO Mac: Remove. For testing only
 	print args.type
-	print args.ndk_path
-	print args.project_path
+	print args.path
+	print args.dir
 	
 	# TODO Mac: Should be available from tiapp.xml
 	# Used hardcoded HelloWorldDisplay for now
 	project_name = 'HelloWorldDisplay'
-	builder = Builder(project_name, args.project_path, args.ndk_path)
+	builder = Builder(project_name, args.dir, args.path)
 	builder.run()
 	
 if __name__ == "__main__":
@@ -110,20 +110,20 @@ if __name__ == "__main__":
 	
 	# Setup arguments parser for 'builder build' command
 	parser_build.set_defaults(func=build_project)
-	parser_build.add_argument('type', help='simulator | device')
-	parser_build.add_argument('project_path', help='project directory path')
-	parser_build.add_argument('ndk_path', help='blackberry ndk path')
+	parser_build.add_argument('-t', '--type', help='simulator | device', required=True)
+	parser_build.add_argument('-d', '--dir' , help='project directory path', required=True)
+	parser_build.add_argument('-p', '--path', help='blackberry ndk path', required=True)
 	
 	# Setup arguments parser for 'builder run' command	
 	parser_run.set_defaults(func=run_project)
-	parser_run.add_argument('type', help='simulator | device')
-	parser_run.add_argument('project_path', help='project directory path')
-	parser_run.add_argument('ndk_path', help='blackberry ndk path')
+	parser_run.add_argument('-t', '--type', help='simulator | device', required=True)
+	parser_run.add_argument('-d', '--dir' , help='project directory path', required=True)
+	parser_run.add_argument('-p', '--path', help='blackberry ndk path', required=True)
 
 	# Parse input and call apropriate function
 	args = parser.parse_args()
 	args.func(args)
 
-	log = TiLogger(os.path.join(os.path.abspath(os.path.expanduser(args.project_path)), 'build.log'))
+	log = TiLogger(os.path.join(os.path.abspath(os.path.expanduser(args.dir)), 'build.log'))
 	debug(" ".join(sys.argv))
 	log.debug(" ".join(sys.argv))
