@@ -18,7 +18,7 @@ from mako.lookup import TemplateLookup
 
 # TiLogger is in support/common
 from tilogger import *
-log = TiLogger(None)
+log = None
 
 try:
 	from pygments import highlight

@@ -101,7 +101,7 @@ def run_project(args):
 if __name__ == "__main__":
 
 	# Setup script usage 
-	parser = argparse.ArgumentParser(usage='<commands> [options] -t TYPE -d PROJECT_PATH -p NDK_PATH')
+	parser = argparse.ArgumentParser(usage='<command> [options] -t TYPE -d PROJECT_PATH -p NDK_PATH')
 	
 	parser.add_argument('command', choices=['build', 'run'], help='commands')
 	parser.add_argument('-t', '--type', choices=['simulator', 'device'], help='simulator | device', required=True)
@@ -118,5 +118,3 @@ if __name__ == "__main__":
 		build_project(args)
 	elif (args.command == 'run'):
 		run_project(args)
-	else:
-		log.error("Unknown command".join(sys.argv))

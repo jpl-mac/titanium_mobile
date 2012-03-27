@@ -20,7 +20,7 @@ from markdown import markdown
 
 # TiLogger is in support/common
 from tilogger import *
-log = TiLogger(None)
+log = None
 all_annotated_apis = None
 
 try:
