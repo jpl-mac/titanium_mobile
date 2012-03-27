@@ -13,7 +13,6 @@ import os, sys, argparse
 
 template_dir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
 top_support_dir = os.path.dirname(template_dir) 
-sys.path.append(top_support_dir)
 sys.path.append(os.path.join(top_support_dir, 'common'))
 
 from tilogger import *
