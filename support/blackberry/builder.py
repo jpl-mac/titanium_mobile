@@ -35,8 +35,8 @@ class Builder(object):
 		# TODO Mac: Reconfigure function upon blackberry needs
 		# TODO Mac: V8 runtime should be added and possibly a lot of other stuff
 		
-		print 'Building & Running'
 		self.build()
+		print 'Running'
 		
 		# Change current directory to do a relative operations 
 		os.chdir(self.project_dir)
@@ -77,53 +77,46 @@ def error(msg):
 def build_project(args):
 	# TODO Mac: Remove. For testing only
 	print args.type
-	print args.path
-	print args.dir
+	print args.ndk_path
+	print args.project_path
 	
 	# TODO Mac: Should be available from tiapp.xml
 	# Used hardcoded HelloWorldDisplay for now
 	project_name = 'HelloWorldDisplay'
-	builder = Builder(project_name, args.dir, args.path)
+	builder = Builder(project_name, args.project_path, args.ndk_path)
 	builder.build()
 	
 def run_project(args):
 	# TODO Mac: Remove. For testing only
 	print args.type
-	print args.path
-	print args.dir
+	print args.ndk_path
+	print args.project_path
 	
 	# TODO Mac: Should be available from tiapp.xml
 	# Used hardcoded HelloWorldDisplay for now
 	project_name = 'HelloWorldDisplay'
-	builder = Builder(project_name, args.dir, args.path)
+	builder = Builder(project_name, args.project_path, args.ndk_path)
 	builder.run()
 	
 if __name__ == "__main__":
 
 	# Setup script usage 
-	parser = argparse.ArgumentParser()
-	subparsers = parser.add_subparsers(help='commands')
+	parser = argparse.ArgumentParser(usage='<commands> [options] -t TYPE -d PROJECT_PATH -p NDK_PATH')
 	
-	# Added parsers for each available command
-	parser_build = subparsers.add_parser('build', help='build the project')
-	parser_run = subparsers.add_parser('run', help='run the project on device or simulator')
+	parser.add_argument('command', choices=['build', 'run'], help='commands')
+	parser.add_argument('-t', '--type', choices=['simulator', 'device'], help='simulator | device', required=True)
+	parser.add_argument('-d', '--project_path', help='project directory path', required=True)
+	parser.add_argument('-p', '--ndk_path', help='blackberry ndk path', required=True)
 	
-	# Setup arguments parser for 'builder build' command
-	parser_build.set_defaults(func=build_project)
-	parser_build.add_argument('-t', '--type', help='simulator | device', required=True)
-	parser_build.add_argument('-d', '--dir' , help='project directory path', required=True)
-	parser_build.add_argument('-p', '--path', help='blackberry ndk path', required=True)
-	
-	# Setup arguments parser for 'builder run' command	
-	parser_run.set_defaults(func=run_project)
-	parser_run.add_argument('-t', '--type', help='simulator | device', required=True)
-	parser_run.add_argument('-d', '--dir' , help='project directory path', required=True)
-	parser_run.add_argument('-p', '--path', help='blackberry ndk path', required=True)
-
 	# Parse input and call apropriate function
 	args = parser.parse_args()
-	args.func(args)
 
-	log = TiLogger(os.path.join(os.path.abspath(os.path.expanduser(args.dir)), 'build.log'))
-	debug(" ".join(sys.argv))
+	log = TiLogger(os.path.join(os.path.abspath(os.path.expanduser(args.project_path)), 'build.log'))
 	log.debug(" ".join(sys.argv))
+	
+	if (args.command == 'build'):
+		build_project(args)
+	elif (args.command == 'run'):
+		run_project(args)
+	else:
+		log.error("Unknown command".join(sys.argv))
