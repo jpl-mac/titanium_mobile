@@ -18,6 +18,7 @@ common_support_dir = os.path.abspath(os.path.join(this_dir, "..", "..", "support
 sys.path.append(common_support_dir)
 from markdown import markdown
 
+# TiLogger is in support/common
 from tilogger import *
 log = None
 all_annotated_apis = None

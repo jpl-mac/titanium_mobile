@@ -16,7 +16,6 @@ from compiler import Compiler
 from os.path import join, splitext, split, exists
 from shutil import copyfile
 from xml.dom.minidom import parseString
-from tilogger import *
 from datetime import datetime, timedelta
 
 template_dir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
@@ -25,6 +24,7 @@ sys.path.append(top_support_dir)
 sys.path.append(os.path.join(top_support_dir, 'common'))
 sys.path.append(os.path.join(top_support_dir, 'module'))
 
+from tilogger import *
 import simplejson
 from mako.template import Template
 from tiapp import *
