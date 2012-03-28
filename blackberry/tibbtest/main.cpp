@@ -9,6 +9,6 @@
 
 int cascades_user_main(int argc, char **argv)
 {
-    int ret = tibb_run("", argc, argv);
+    int ret = tibb_run("Titanium.API.debug(Titanium.version);", argc, argv);
     return ret;
 }
