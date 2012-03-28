@@ -30,7 +30,7 @@ elif ARGUMENTS.get('PRODUCT_VERSION', 0):
 # in order to get it into build.properties
 gitCmd = "git"
 if platform.system() == "Windows":
-	gitCmd += ".cmd"
+	gitCmd += ".exe"
 
 p = subprocess.Popen([gitCmd, "rev-parse", "HEAD"], stderr=subprocess.PIPE, stdout=subprocess.PIPE)
 out, err = p.communicate()
@@ -143,7 +143,7 @@ if build_type in ['full', 'blackberry'] and not only_package:
 	except OSError as (errno, strerror):
 		# Temporary except clause while the blackberry folder doesn't
 		# yet exist in the github repo, so the script won't just exit
-		print "OS error ({0}): {1} [{2}]".format(errno, strerror, blackberry)
+		print "OS error ({0}): {1} [{2}]".format(errno, strerror, 'blackberry')
 	finally:
 		os.chdir(d)
 
@@ -161,16 +161,16 @@ def package_sdk(target, source, env):
 	iphone = build_type in ['full', 'iphone']
 	ipad = build_type in ['full', 'ipad']
 	mobileweb = build_type in ['full', 'mobileweb']
-	blackberry = build_type in ['full', 'blackberry']	# TODO: use in Packager
+	blackberry = build_type in ['full', 'blackberry']
 	package_all = ARGUMENTS.get('package_all', 0)
 	version_tag = ARGUMENTS.get('version_tag', version)
 	build_jsca = int(ARGUMENTS.get('build_jsca', 1))
 	print "Packaging MobileSDK (%s)..." % version_tag
 	packager = package.Packager(build_jsca=build_jsca)
 	if package_all:
-		packager.build_all_platforms(os.path.abspath('dist'), version, module_apiversion, android, iphone, ipad, mobileweb, version_tag)
+		packager.build_all_platforms(os.path.abspath('dist'), version, module_apiversion, android, iphone, ipad, mobileweb, blackberry, version_tag)
 	else:
-		packager.build(os.path.abspath('dist'), version, module_apiversion, android, iphone, ipad, mobileweb, version_tag)
+		packager.build(os.path.abspath('dist'), version, module_apiversion, android, iphone, ipad, mobileweb, blackberry, version_tag)
 	if install and not clean:
 		install_mobilesdk(version_tag)
 
