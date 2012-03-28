@@ -30,7 +30,7 @@ elif ARGUMENTS.get('PRODUCT_VERSION', 0):
 # in order to get it into build.properties
 gitCmd = "git"
 if platform.system() == "Windows":
-	gitCmd += ".cmd"
+	gitCmd += ".exe"
 
 p = subprocess.Popen([gitCmd, "rev-parse", "HEAD"], stderr=subprocess.PIPE, stdout=subprocess.PIPE)
 out, err = p.communicate()
