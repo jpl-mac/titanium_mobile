@@ -15,7 +15,7 @@ def main():
 	parser.add_argument('directory', help='location')
 	parser.add_argument('platforms', help='deployment targets space separated {iphone | android | mobileweb | blackberry}', nargs='+')
 	# Added to show up in the usage string as we need to special handle it
-	parser.add_argument('android_sdk', help='android SDK home (if android in platforms)', nargs='?')
+	parser.add_argument(metavar='android_sdk', help='android SDK home (if android in platforms)', nargs='?', dest='notUsed')
 	# Included for future support as it is not currently used by Ti Studio
 	parser.add_argument('--android_sdk', help='android SDK home (if android in platforms)')
 	parser.add_argument('--blackberry_ndk', help='blackberry NDK home')
