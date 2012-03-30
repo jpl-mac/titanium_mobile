@@ -13,22 +13,23 @@ import os, sys, argparse
 
 template_dir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
 top_support_dir = os.path.dirname(template_dir) 
+sys.path.append(top_support_dir)
 sys.path.append(os.path.join(top_support_dir, 'common'))
 
 from tilogger import *
+from tiapp import *
 
 class Builder(object):
 
 	def __init__(self, name, project_dir, ndk):
-		# TODO Mac: Should be under build/blackberry from titanium side.
-		# Should be converted to os.path.join(project_dir,'build','blackberry')
+		self.top_dir = project_dir
+		# TODO Mac: Should replaced with os.path.join(project_dir,'build','blackberry')
 		self.project_dir = project_dir
 		# TODO Mac: This ndk path need to run environment setup if necessary 
 		self.ndk = ndk 
-		self.name = name
-		# TODO Mac: Need to figure out when we need to rebuild and when not. 
-		# From initial investigation it could be done based on tiapp.xml.
-		self.force_rebuild = False
+		self.project_tiappxml = os.path.join(self.top_dir,'tiapp.xml')
+		self.tiappxml = TiAppXML(self.project_tiappxml)
+		self.name = self.tiappxml.properties['name']
 		
 	def run(self):
 		# TODO Mac: Reconfigure function upon blackberry needs
@@ -38,7 +39,7 @@ class Builder(object):
 		print 'Running'
 		
 		# Change current directory to do a relative operations 
-		os.chdir(self.project_dir)
+		os.chdir("%s" % self.project_dir)
 		# TODO Mac: Add corresponding parameters (ip, icon, bar_descriptor, etc...) to script in order to support:
 		# blackberry-nativepackager script. Could be created a wrapper script package.py
 		# blackberry-deploy script. Could be created a wrapper script deploy.py
@@ -56,8 +57,8 @@ class Builder(object):
 		# For now used HelloWorldDisplay hardcoded project name, simulator ip address, etc...
 		# For now used only for simulator
 		print 'Building'
-		os.system("mkbuild %s" % self.project_dir)
-
+		os.system("mkbuild '%s'" % self.project_dir)
+		
 def info(msg):
 	log.info(msg)
 
@@ -79,9 +80,7 @@ def build_project(args):
 	print args.ndk_path
 	print args.project_path
 	
-	# TODO Mac: Should be available from tiapp.xml
-	# Used hardcoded HelloWorldDisplay for now
-	project_name = 'HelloWorldDisplay'
+	project_name = None
 	builder = Builder(project_name, args.project_path, args.ndk_path)
 	builder.build()
 	
@@ -91,9 +90,7 @@ def run_project(args):
 	print args.ndk_path
 	print args.project_path
 	
-	# TODO Mac: Should be available from tiapp.xml
-	# Used hardcoded HelloWorldDisplay for now
-	project_name = 'HelloWorldDisplay'
+	project_name = None
 	builder = Builder(project_name, args.project_path, args.ndk_path)
 	builder.run()
 	
