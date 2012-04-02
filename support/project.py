@@ -3,45 +3,62 @@
 #
 # Unified Titanium Mobile Project Script
 #
-import os, sys, subprocess, shutil, codecs
+import os, sys, subprocess, shutil, codecs, argparse
 
 def run(args):
 	return subprocess.Popen(args, stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()
 
-def main(args):
-	argc = len(args)
-	if argc < 5 or args[1]=='--help':
-		print "Usage: %s <name> <id> <directory> [iphone,android,mobileweb] [android_sdk]" % os.path.basename(args[0])
-		sys.exit(1)
+def main():
+	parser = argparse.ArgumentParser(description='Unified Titanium Mobile Project Script')
+	parser.add_argument('name', help='project name')
+	parser.add_argument('id', help='app id')
+	parser.add_argument('directory', help='location')
+	parser.add_argument('platforms', help='deployment targets space separated {iphone | android | mobileweb | blackberry}', nargs='+')
+	# Added to show up in the usage string as we need to special handle it
+	parser.add_argument(metavar='android_sdk', help='android SDK home (if android in platforms)', nargs='?', dest='notUsed')
+	# Included for future support as it is not currently used by Ti Studio
+	parser.add_argument('--android_sdk', help='android SDK home (if android in platforms)')
+	parser.add_argument('--blackberry_ndk', help='blackberry NDK home')
+	args = parser.parse_args()
 
-	name = args[1].decode("utf-8")
-	appid = args[2].decode("utf-8")
-	directory = os.path.abspath(os.path.expanduser(args[3].decode("utf-8")))
-	iphone = False
-	android = False
+	name = args.name.decode("utf-8")
+	appid = args.id.decode("utf-8")
+	directory = os.path.abspath(os.path.expanduser(args.directory.decode("utf-8")))
+	iphone = 'iphone' in args.platforms
+	android = 'android' in args.platforms
+	mobileweb = 'mobileweb' in args.platforms
+	blackberry = 'blackberry' in args.platforms
 	android_sdk = None
-	sdk = None
-	mobileweb = False
-
-	if args[4] == 'iphone' or (argc > 5 and args[5] == 'iphone') or (argc > 6 and args[6] == 'iphone'):
-		iphone = True
-	if args[4] == 'android' or (argc > 5 and args[5] == 'android') or (argc > 6 and args[6] == 'android'):
-		android = True
-	if args[4] == 'mobileweb' or (argc > 5 and args[5] == 'mobileweb') or (argc > 6 and args[6] == 'mobileweb'):
-		mobileweb = True
+	blackberry_ndk = None
 
 	if android:
-		sys.path.append(os.path.join(os.path.dirname(args[0]), "android"))
+		sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), "android"))
 		from androidsdk import AndroidSDK
-		android_sdk = args[argc-1].decode("utf-8")
+		# android_sdk is a special case as it's positional and optional
+		# and there can be any number of platforms listed before it, it
+		# is parsed alongside the platforms.
+		# Added --android_sdk for the future, but as current Studio
+		# doesn't use it we need to look at the last item of platforms
+		# if --android_sdk is not used.
+		android_sdk = args.android_sdk or args.platforms[-1]
+		android_sdk = android_sdk.decode("utf-8")
 		try:
-			sdk = AndroidSDK(android_sdk)
+			AndroidSDK(android_sdk)
 		except Exception, e:
 			print >>sys.stderr, e
 			sys.exit(1)
 
-	if not os.path.exists(directory):
-		os.makedirs(directory)
+	if blackberry:
+		# TODO Mac: create blackberry ndk script to verify blackberry ndk dir
+		#sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), "blackberry"))
+		#from blackberryndk import BlackberryNDK
+		blackberry_ndk = args.blackberry_ndk and args.blackberry_ndk.decode("utf-8")
+		try:
+			pass
+			#BlackberryNDK(blackberry_ndk)
+		except Exception, e:
+			print >>sys.stderr, e
+			sys.exit(1)
 
 	project_dir = os.path.join(directory,name)
 	
@@ -92,6 +109,13 @@ def main(args):
 		mobileweb_gen = os.path.join(template_dir,'mobileweb','mobileweb.py')
 		run([sys.executable, mobileweb_gen, name, appid, directory])
 
+	if blackberry:
+		blackberry_resources = os.path.join(resources_dir,'blackberry')
+		if not os.path.exists(blackberry_resources): os.makedirs(blackberry_resources)
+		# TODO Mac: create the blackberry.py script
+		#blackberry_gen = os.path.join(template_dir,'blackberry','blackberry.py')
+		#run([sys.executable, blackberry_gen, name, appid, directory, blackberry_ndk])
+
 	# copy LICENSE and README
 	for file in ['LICENSE','README']:
 		shutil.copy(os.path.join(all_dir,file),os.path.join(project_dir,file))
@@ -105,5 +129,5 @@ def main(args):
 		shutil.copy(os.path.join(all_dir,file),os.path.join(resources_dir,file))
 
 if __name__ == '__main__':
-	main(sys.argv)
+	main()
 
