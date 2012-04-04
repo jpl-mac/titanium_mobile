@@ -31,7 +31,7 @@ if platform.system() == "Windows":
 p = subprocess.Popen([gitCmd,"show","--abbrev-commit"],stderr=subprocess.PIPE, stdout=subprocess.PIPE)
 githash = p.communicate()[0][7:].split('\n')[0].strip()
 
-ignoreExtensions = ['.pbxuser','.perspectivev3','.pyc']
+ignoreExtensions = ['.pbxuser','.perspectivev3','.pyc','.swp']
 ignoreDirs = ['.DS_Store','.git','.gitignore','libTitanium.a','titanium.jar','build','bridge.txt', 'packaged']
 
 def ignore(file):
