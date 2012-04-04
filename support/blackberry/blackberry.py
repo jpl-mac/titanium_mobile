@@ -21,13 +21,15 @@ class Blackberry(object):
 		self.name = name
 		self.id = appid
 
-	def create(self, dir):
-
+	def create(self, dir): 
 		project_dir = os.path.join(dir, self.name)
-		blackberry_dir = os.path.join(project_dir, 'build', 'blackberry')
+
+		# Creates directory named as project name.
+		# mkbuild utility uses path's last component as project name. So, project directory should be named as project
+		blackberry_dir = os.path.join(project_dir, 'build', 'blackberry', self.name)
 
 		if not os.path.exists(blackberry_dir):
-			os.makedirs(blackberry_dir)
+			os.makedirs(blackberry_dir)		
 
 		# TODO Mac: figure out if we need to do something with version in this script
 		#version = os.path.basename(os.path.abspath(os.path.join(template_dir, '..')))
@@ -36,7 +38,23 @@ class Blackberry(object):
 		if os.path.exists(blackberry_project_resources):
 			shutil.rmtree(blackberry_project_resources)
 		shutil.copytree(os.path.join(template_dir,'resources'),blackberry_project_resources)
-
+		# TODO Mac: For now used temporarily created directory where exist files as:
+		# bar-descriptor.xml, project files and sources.
+		sourcePath = os.path.join(template_dir,'HelloWorldDisplay')
+		for files in os.listdir(sourcePath):
+			file = os.path.join(sourcePath, files)
+			try:
+				if (os.path.isdir(file)):
+					srcDir = os.path.join(blackberry_dir, files)
+					if (os.path.exists(srcDir)):
+						shutil.rmtree(srcDir)
+					shutil.copytree(file, srcDir)
+				else :
+					shutil.copy2(file, blackberry_dir)
+			except Exception, e:
+				print >> sys.stderr, e
+				sys.exit(1)
+		
 		# TODO Mac: not sure what this is trying to accomplish
 		# create the blackberry resources
 		#blackberry_resources_dir = os.path.join(blackberry_dir,'Resources')
