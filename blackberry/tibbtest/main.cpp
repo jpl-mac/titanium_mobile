@@ -9,6 +9,7 @@
 
 int cascades_user_main(int argc, char **argv)
 {
-    int ret = tibb_run("Titanium.UI.setBackgroundColor('#0F0');", argc, argv);
+    int ret = tibb_run("var win1=Titanium.UI.createWindow({backgroundColor:'#0ff'}); win1.open();", argc, argv);
+    //int ret = tibb_run("var win1={test:'hello'};", argc, argv);
     return ret;
 }
