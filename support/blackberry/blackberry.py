@@ -29,7 +29,7 @@ class Blackberry(object):
 		blackberry_dir = os.path.join(project_dir, 'build', 'blackberry', self.name)
 
 		if not os.path.exists(blackberry_dir):
-			os.makedirs(blackberry_dir)		
+			os.makedirs(blackberry_dir)
 
 		# TODO Mac: figure out if we need to do something with version in this script
 		#version = os.path.basename(os.path.abspath(os.path.join(template_dir, '..')))
@@ -41,6 +41,8 @@ class Blackberry(object):
 		# TODO Mac: For now used temporarily created directory where exist files as:
 		# bar-descriptor.xml, project files and sources.
 		sourcePath = os.path.join(template_dir,'HelloWorldDisplay')
+		print 'JP', blackberry_dir
+		print 'JP', sourcePath
 		for files in os.listdir(sourcePath):
 			file = os.path.join(sourcePath, files)
 			try:
