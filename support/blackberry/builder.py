@@ -18,13 +18,16 @@ sys.path.append(os.path.join(top_support_dir, 'common'))
 
 from tilogger import TiLogger
 from tiapp import TiAppXML
+from blackberryndk import BlackberryNDK
 
 class Builder(object):
+	_type2variant = {'simulator' : 'Simulator-Debug',
+	                 'device' : 'Device-Debug',
+	                 'deploy' : 'Device-Release'}
 
-	def __init__(self, project_dir, ndk):
+	def __init__(self, project_dir, type, ndk):
 		self.top_dir = project_dir.rstrip(os.sep)
-		# TODO Mac: This ndk path need to run environment setup if necessary
-		# see http://stackoverflow.com/questions/3503719/emulating-bash-source-in-python
+		self.variant = Builder._type2variant[type]
 		self.ndk = ndk 
 		project_tiappxml = os.path.join(self.top_dir, 'tiapp.xml')
 		tiappxml = TiAppXML(project_tiappxml)
@@ -32,7 +35,6 @@ class Builder(object):
 		self.buildDir = os.path.join(self.top_dir, 'build', 'blackberry', self.name)
 		
 	def run(self):
-		# TODO Mac: Reconfigure function upon blackberry needs
 		# TODO Mac: V8 runtime should be added and possibly a lot of other stuff
 		
 		self.build()
@@ -41,26 +43,19 @@ class Builder(object):
 		# Change current directory to do relative operations
 		os.chdir("%s" % self.buildDir)
 		# TODO Mac: Add corresponding parameters (ip, icon, bar_descriptor, etc...) to script in order to support:
-		# blackberry-nativepackager script. Could be created a wrapper script package.py
-		# blackberry-deploy script. Could be created a wrapper script deploy.py
-		# For now used HelloWorldDisplay hardcoded project name, simulator ip address, etc...
-		# For now used only for simulator
+		# For now use simulator ip address, etc...
+		# For now use only for simulator
 		# TODO Mac: log each command that is executed to the build.log file,
 		# output might be interesting as well
-		barPath = os.path.join(self.buildDir, 'Simulator-Debug', '%s.bar' % self.name)
-		savePath = os.path.join(self.buildDir, 'Simulator-Debug', self.name)
-		os.system("blackberry-nativepackager -package %s bar-descriptor.xml -e %s %s icon.png" % (barPath, savePath, self.name))
-		os.system("blackberry-deploy -installApp -launchApp -device 192.168.135.129 -package %s" % barPath)
+		# TODO Mac: See if we can reasonably launch the simulator from here and fetch the ip address
+		barPath = os.path.join(self.buildDir, self.variant, '%s.bar' % self.name)
+		savePath = os.path.join(self.buildDir, self.variant, self.name)
+		self.ndk.package(barPath, savePath, self.name)
+		self.ndk.deploy('192.168.135.129', barPath)
 	
 	def build(self):
-		# TODO Mac: Add corresponding parameters (ip, icon, bar_descriptor, etc...) to script in order to support:
-		# blackberry-nativepackager script. Could be created a wrapper script package.py
-		# blackberry-deploy script. Could be created a wrapper script deploy.py
-		# For now used HelloWorldDisplay hardcoded project name, simulator ip address, etc...
-		# For now used only for simulator
 		print 'Building'
-
-		os.system("mkbuild '%s' -variant Simulator-Debug" % self.buildDir)
+		self.ndk.build(self.buildDir, self.variant)
 		
 def info(msg):
 	log.info(msg)
@@ -83,9 +78,9 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser(usage='<command> -t TYPE -d PROJECT_PATH -p NDK_PATH')
 	
 	parser.add_argument('command', choices=['build', 'run'], help='commands')
-	parser.add_argument('-t', '--type', choices=['simulator', 'device'], help='simulator | device', required=True)
+	parser.add_argument('-t', '--type', choices=['simulator', 'device', 'deploy'], help='simulator | device | deploy', required=True)
 	parser.add_argument('-d', '--project_path', help='project directory path', required=True)
-	parser.add_argument('-p', '--ndk_path', help='blackberry ndk path', required=True)
+	parser.add_argument('-p', '--ndk_path', help='blackberry ndk path')
 	
 	# Parse input and call apropriate function
 	args = parser.parse_args()
@@ -93,13 +88,13 @@ if __name__ == "__main__":
 	log = TiLogger(os.path.join(os.path.abspath(os.path.expanduser(args.project_path)), 'build.log'))
 	log.debug(" ".join(sys.argv))
 	
-	# TODO Mac: Remove. For testing only
-	print args.type
-	print args.ndk_path
-	print args.project_path
-	# end Remove
+	try:
+		bbndk = BlackberryNDK(args.ndk_path and args.ndk_path.decode('utf-8'))
+	except Exception, e:
+		print >>sys.stderr, e
+		sys.exit(1)
 
-	builder = Builder(args.project_path, args.ndk_path)
+	builder = Builder(args.project_path.decode('utf-8'), args.type.decode('utf-8'), bbndk)
 
 	if (args.command == 'build'):
 		builder.build()
