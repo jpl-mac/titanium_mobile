@@ -6,7 +6,10 @@
 import os, sys, subprocess, shutil, codecs, argparse
 
 def run(args):
-	return subprocess.Popen(args, stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()
+	#return subprocess.Popen(args, stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()
+	proc = subprocess.Popen(args, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+	for line in proc.stdout: print 'JP', line # TORM
+	proc.communicate()
 
 def main():
 	parser = argparse.ArgumentParser(description='Unified Titanium Mobile Project Script')
@@ -49,14 +52,13 @@ def main():
 			sys.exit(1)
 
 	if blackberry:
-		# TODO Mac: create blackberry ndk script to verify blackberry ndk dir
-		#sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), "blackberry"))
-		#from blackberryndk import BlackberryNDK
+		sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), "blackberry"))
+		from blackberryndk import BlackberryNDK
 		blackberry_ndk = args.blackberry_ndk and args.blackberry_ndk.decode("utf-8")
 		try:
-			# TODO Mac: temporary check until we add proper ndk folder validation
-			if blackberry_ndk is None: raise Exception("blackberry_ndk needs to be specified to create project for the blackberry platform")
-			#BlackberryNDK(blackberry_ndk)
+			bbndk = BlackberryNDK(blackberry_ndk)
+			if blackberry_ndk is None:
+				blackberry_ndk = bbndk.getBlackberryNdk()
 		except Exception, e:
 			print >>sys.stderr, e
 			sys.exit(1)

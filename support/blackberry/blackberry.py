@@ -10,6 +10,7 @@
 #
 
 import os, sys, shutil
+from blackberryndk import BlackberryNDK
 
 template_dir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
 # TODO Mac: don't think we need this just yet
@@ -17,19 +18,20 @@ template_dir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filena
 
 class Blackberry(object):
 
-	def __init__(self, name, appid):
+	def __init__(self, name, appid, bbndk):
 		self.name = name
 		self.id = appid
+		self.ndk = bbndk
 
 	def create(self, dir): 
 		project_dir = os.path.join(dir, self.name)
 
 		# Creates directory named as project name.
 		# mkbuild utility uses path's last component as project name. So, project directory should be named as project
-		blackberry_dir = os.path.join(project_dir, 'build', 'blackberry', self.name)
+		build_dir = os.path.join(project_dir, 'build', 'blackberry', self.name)
 
-		if not os.path.exists(blackberry_dir):
-			os.makedirs(blackberry_dir)
+		if not os.path.exists(build_dir):
+			os.makedirs(build_dir)
 
 		# TODO Mac: figure out if we need to do something with version in this script
 		#version = os.path.basename(os.path.abspath(os.path.join(template_dir, '..')))
@@ -41,25 +43,27 @@ class Blackberry(object):
 		# TODO Mac: For now used temporarily created directory where exist files as:
 		# bar-descriptor.xml, project files and sources.
 		sourcePath = os.path.join(template_dir,'HelloWorldDisplay')
-		print 'JP', blackberry_dir
-		print 'JP', sourcePath
-		for files in os.listdir(sourcePath):
-			file = os.path.join(sourcePath, files)
+		for file in os.listdir(sourcePath):
+			path = os.path.join(sourcePath, file)
 			try:
-				if (os.path.isdir(file)):
-					srcDir = os.path.join(blackberry_dir, files)
-					if (os.path.exists(srcDir)):
-						shutil.rmtree(srcDir)
-					shutil.copytree(file, srcDir)
-				else :
-					shutil.copy2(file, blackberry_dir)
+				if os.path.isdir(path):
+					dstDir = os.path.join(build_dir, file)
+					if (os.path.exists(dstDir)):
+						shutil.rmtree(dstDir)
+					shutil.copytree(path, dstDir)
+				else:
+					shutil.copy2(path, build_dir)
 			except Exception, e:
 				print >> sys.stderr, e
 				sys.exit(1)
-		
+
+		# import project into workspace so it can be built with mkbuild
+		print build_dir
+		self.ndk.importProject(build_dir)
+
 		# TODO Mac: not sure what this is trying to accomplish
 		# create the blackberry resources
-		#blackberry_resources_dir = os.path.join(blackberry_dir,'Resources')
+		#blackberry_resources_dir = os.path.join(build_dir,'Resources')
 		#if not os.path.exists(blackberry_resources_dir):
 		#	os.makedirs(blackberry_resources_dir)
 
@@ -69,6 +73,11 @@ if __name__ == '__main__':
 		print "Usage: %s <name> <id> <directory> <blackberry_ndk>" % os.path.basename(sys.argv[0])
 		sys.exit(1)
 
-	bb = Blackberry(sys.argv[1], sys.argv[2])
-	# TODO Mac: do something with argv[4], the blackberry ndk folder
+	try:
+		bbndk = BlackberryNDK(sys.argv[4].decode("utf-8"))
+	except Exception, e:
+		print >>sys.stderr, e
+		sys.exit(1)
+
+	bb = Blackberry(sys.argv[1], sys.argv[2], bbndk)
 	bb.create(sys.argv[3])
