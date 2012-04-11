@@ -12,8 +12,8 @@ EXTRA_INCVPATH+=$(QNX_TARGET)/usr/include/freetype2 \
 	$(PROJECT_ROOT)/../tibb/include
 	
 # Extra library search path for target overrides and patches
-EXTRA_LIBVPATH+=$(QNX_TARGET)/../target-override/$(CPUVARDIR)/lib \
-	$(QNX_TARGET)/../target-override/$(CPUVARDIR)/usr/lib \
+EXTRA_LIBVPATH+=$(QNX_TARGET)/$(CPUVARDIR)/usr/lib \
+	$(QNX_TARGET)/$(CPUVARDIR)/usr/lib/qt4/lib \
 	$(PROJECT_ROOT)/../libv8/lib/$(CPU) \
 	$(PROJECT_ROOT)/../tibb/$(CPU)/a.le-v7-$(filter g,$(VARIANT_LIST)) \
 	$(PROJECT_ROOT)/../tibb/$(CPU)/a.le-v7
@@ -30,7 +30,7 @@ LDFLAGS+=-Wl,-z,relro -Wl,-z,now $(if $(filter g so shared,$(VARIANTS)),,-pie)
 LIBS+=tibb QtCascades_main v8 v8preparser
 
 # Extra .so required
-LDFLAGS+=-lQtCascades -lQtCore -lQtDeclarative -lQtGui -lQtMultimedia -lQtNetwork -lm
+LDFLAGS+=-lQtCascades -lQtCore -lQtDeclarative -lQtGui -lQtMultimedia -lQtNetwork -lm -lbb
 LDFLAGS+=-lQtOpenGL -lQtScript -lQtScriptTools -lQtSql -lQtSvg -lQtTest -lQtXml -lheimdall 
 
 include $(MKFILES_ROOT)/qmacros.mk
