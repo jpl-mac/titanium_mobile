@@ -5,7 +5,7 @@
 # WARNING: the paths to qde, project and project name must not contain any
 #          spaces for the tools to work correctly
 
-import os, sys, platform, shlex, subprocess
+import os, sys, platform, subprocess
 from argparse import ArgumentParser
 
 class Device:
@@ -80,7 +80,7 @@ class BlackberryNDK:
 		# TODO Mac: Validate the following on windows
 		if platform.system() == 'Windows':
 			envFile = os.path.join(self.blackberryNdk, 'bbndk-env.bat')
-			command = ['%s && env' % envFile]
+			command = [envFile, '&&', 'env']
 		else:
 			envFile = os.path.join(self.blackberryNdk, 'bbndk-env.sh')
 			command = ['bash', '-c', 'source %s && env' % envFile]
@@ -126,7 +126,9 @@ class BlackberryNDK:
 			return
 
 def __runUnitTests():
-	baseDir = os.path.abspath(os.path.dirname(os.path.dirname(sys.argv[0])))
+	# on windows the double dirname need to be done on 2 lines
+	baseDir = os.path.abspath(os.path.dirname(sys.argv[0]))
+	baseDir = os.path.dirname(baseDir)
 	sys.path.append(os.path.join(baseDir, 'common'))
 	from tiunittest import UnitTest
 	from tempfile import mkdtemp
@@ -136,7 +138,7 @@ def __runUnitTests():
 
 	with UnitTest('Test source environement..'):
 		ndk._sourceEnvironment()
-		for key in ['QNX_TARGET', 'QNX_HOST', 'QNX_CONFIGURATION', 'MAKEFLAGS', 'DYLD_LIBRARY_PATH', 'PATH']:
+		for key in ['QNX_TARGET', 'QNX_HOST', 'QNX_CONFIGURATION', 'MAKEFLAGS', 'PATH']:
 			assert key in os.environ
 
 	with UnitTest('Test find qde..'):
