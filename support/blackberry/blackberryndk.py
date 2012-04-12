@@ -49,7 +49,10 @@ class BlackberryNDK:
 
 	def _findNdk(self, supplied):
 		if supplied is not None:
-			return supplied
+			if os.path.exists(supplied):
+				return supplied
+			else:
+				return None
 
 		if platform.system() == 'Windows':
 			# TODO Mac: find out where the NDK installs on windows
@@ -113,17 +116,36 @@ class BlackberryNDK:
 			return qde
 		return None
 
+	def _run(self, command):
+		assert type(command) is list
+		try:
+			subprocess.check_output(command, stderr = subprocess.STDOUT)
+		except subprocess.CalledProcessError, cpe:
+			print >>sys.stderr, cpe, cpe.output
+			return
+		except OSError, e:
+			print >>sys.stderr, e
+			return
+
 	def importProject(self, project, workspace = None):
 		assert os.path.exists(project)
 		if workspace is None:
 			workspace = os.path.dirname(project)
 		command = [self.qde, '-nosplash', '-application', 'org.eclipse.cdt.managedbuilder.core.headlessbuild', '-consoleLog', '-data', workspace, '-import', project]
+		self._run(command)
 
-		try:
-			subprocess.check_output(command, stderr = subprocess.STDOUT)
-		except OSError, e:
-			print >>sys.stderr, e
-			return
+	def build(self, project, variant):
+		assert os.path.exists(project)
+		command = ['mkbuild', project, '-variant', variant]
+		self._run(command)
+
+	def package(self, package, savePath, projectName):
+		command = ['blackberry-nativepackager', '-package', package, 'bar-descriptor.xml', '-e', savePath, projectName, 'icon.png']
+		self._run(command)
+
+	def deploy(self, deviceIP, package):
+		command = ['blackberry-deploy', '-installApp', '-launchApp', '-device', deviceIP, '-package', package]
+		self._run(command)
 
 def __runUnitTests():
 	# on windows the double dirname need to be done on 2 lines
@@ -148,7 +170,8 @@ def __runUnitTests():
 	with UnitTest('Test import project with workspace..'):
 		workspace = mkdtemp()
 		projectSrc = os.path.join(ndk.blackberryNdk, 'target', 'qnx6', 'usr', 'share', 'samples', 'ndk', 'HelloWorldDisplay')
-		project = os.path.join(workspace, 'HelloWorldDisplay')
+		projectName = 'HelloWorldDisplayMakefile'
+		project = os.path.join(workspace, projectName)
 		shutil.copytree(projectSrc, project)
 		ndk.importProject(project, workspace)
 		passed = os.path.exists(os.path.join(workspace, '.metadata'))
@@ -158,13 +181,38 @@ def __runUnitTests():
 	with UnitTest('Test import project no workspace..'):
 		workspace = mkdtemp()
 		projectSrc = os.path.join(ndk.blackberryNdk, 'target', 'qnx6', 'usr', 'share', 'samples', 'ndk', 'HelloWorldDisplay')
-		project = os.path.join(workspace, 'HelloWorldDisplay')
+		project = os.path.join(workspace, projectName)
 		shutil.copytree(projectSrc, project)
 		ndk.importProject(project)
 		passed = os.path.exists(os.path.join(workspace, '.metadata'))
-		shutil.rmtree(workspace)
 		assert passed
 
+	with UnitTest('Test build project (Simulator)..'):
+		variant = 'Simulator-Debug'
+		ndk.build(project, variant)
+		assert os.path.exists(os.path.join(project, 'x86', 'o-g', projectName))
+
+	# TODO Mac: Complete the following unit tests
+	# These tests don't work at the moment, we need to figure out how to generate the bar file fisrt
+#	with UnitTest('Test package project..'):
+#		barPath = os.path.join(project, variant, '%s.bar' % projectName)
+#		savePath = os.path.join(project, variant, projectName)
+#		ndk.package(barPath, savePath, os.path.basename(project))
+#
+#	with UnitTest('Test deploy project to simulator (hard-coded ip)..'):
+#		ndk.deploy('192.168.135.129', )
+#
+	with UnitTest('Test build project (Device-Debug)..'):
+		variant = 'Device-Debug'
+		ndk.build(project, variant)
+		assert os.path.exists(os.path.join(project, 'arm', 'o.le-v7-g', projectName))
+
+	with UnitTest('Test build project (Device-Release)..'):
+		variant = 'Device-Release'
+		ndk.build(project, variant)
+		assert os.path.exists(os.path.join(project, 'arm', 'o.le-v7', projectName))
+
+	shutil.rmtree(workspace)
 
 	print '\nFinished Running Unit Tests'
 	UnitTest.printDetails()
