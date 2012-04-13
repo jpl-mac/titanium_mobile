@@ -83,7 +83,7 @@ class BlackberryNDK:
 		# TODO Mac: Validate the following on windows
 		if platform.system() == 'Windows':
 			envFile = os.path.join(self.blackberryNdk, 'bbndk-env.bat')
-			command = [envFile, '&&', 'env']
+			command = '%s ' % envFile + '&& env'
 		else:
 			envFile = os.path.join(self.blackberryNdk, 'bbndk-env.sh')
 			command = ['bash', '-c', 'source %s && env' % envFile]
@@ -99,19 +99,23 @@ class BlackberryNDK:
 			(key, _, value) = line.partition("=")
 			os.environ[key] = value.strip()
 		proc.communicate()
-		#pprint.pprint(dict(os.environ))
 
 	def _findQde(self):
 		cmd = 'qde'
+		try:
+			qnx_host = os.environ.get('QNX_HOST')
+		except KeyError:
+			print >>sys.stderr, e
+			return None
+
 		if platform.system() == 'Windows':
-			subdir = os.path.join('win32', 'x86', 'usr', 'qde', 'eclipse')	# TODO Mac: validate actual value
+			dir = os.path.join(qnx_host, 'usr', 'qde', 'eclipse')	# TODO Mac: validate actual value
 			cmd += '.exe'
 		elif platform.system() == 'Darwin':
-			subdir = os.path.join('macosx', 'x86', 'usr', 'qde', 'eclipse', 'qde.app', 'Contents', 'MacOS')
+			dir = os.path.join(qnx_host, 'usr', 'qde', 'eclipse', 'qde.app', 'Contents', 'MacOS')
 		elif platform.system() == 'Linux':
-			subdir = os.path.join('linux', 'x86', 'usr', 'bin')
-
-		qde = os.path.join(self.blackberryNdk, 'host', subdir, 'qde')
+			dir = os.path.join(qnx_host, 'usr', 'bin')
+		qde = os.path.join(dir, cmd)
 		if os.path.exists(qde):
 			return qde
 		return None
