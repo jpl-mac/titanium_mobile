@@ -28,8 +28,8 @@ class UnitTest:
 		if exc_type:
 			UnitTest._fail()
 			# Uncomment the following lines to debug failing unit tests
-			#for line in format_exception(exc_type, exc_val, exc_tb):
-			#	print '\t', line,
+			for line in format_exception(exc_type, exc_val, exc_tb):
+				print '\t', line,
 		else:
 			UnitTest._pass()
 		return True	# Return true so exceptions are dropped

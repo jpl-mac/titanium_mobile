@@ -38,8 +38,8 @@ class BlackberryNDK:
 		if self.blackberryNdk is None:
 			raise Exception('No Blackberry NDK directory found')
 		self.version = self._findVersion()
-		self.qde = self._findQde()
 		self._sourceEnvironment()
+		self.qde = self._findQde()
 
 	def getVersion(self):
 		return self.version
@@ -128,12 +128,19 @@ class BlackberryNDK:
 	def _run(self, command):
 		assert type(command) is list
 		try:
-			subprocess.check_output(command, stderr = subprocess.STDOUT)
+			#subprocess.check_output(command, stderr = subprocess.STDOUT)
+			proc = subprocess.Popen(command, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+			for line in proc.stdout: print line,
+			for line in proc.stderr: print line,
+			proc.wait()
+
 		except subprocess.CalledProcessError, cpe:
 			print >>sys.stderr, cpe, cpe.output
 			return
 		except OSError, e:
 			print >>sys.stderr, e
+			import traceback
+			traceback.print_exc()
 			return
 
 	def importProject(self, project, workspace = None):
@@ -191,6 +198,7 @@ def __runUnitTests():
 		workspace = mkdtemp()
 		projectSrc = os.path.join(ndk.blackberryNdk, 'target', 'qnx6', 'usr', 'share', 'samples', 'ndk', 'HelloWorldDisplay')
 		project = os.path.join(workspace, projectName)
+		print 'JP', project
 		shutil.copytree(projectSrc, project)
 		ndk.importProject(project)
 		passed = os.path.exists(os.path.join(workspace, '.metadata'))
@@ -221,7 +229,7 @@ def __runUnitTests():
 		ndk.build(project, variant)
 		assert os.path.exists(os.path.join(project, 'arm', 'o.le-v7', projectName))
 
-	shutil.rmtree(workspace)
+	#shutil.rmtree(workspace)
 
 	print '\nFinished Running Unit Tests'
 	UnitTest.printDetails()
