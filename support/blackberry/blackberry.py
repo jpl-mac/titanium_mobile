@@ -11,10 +11,11 @@
 
 import os, sys, shutil
 from blackberryndk import BlackberryNDK
+from argparse import ArgumentParser
 
 template_dir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
-# TODO Mac: don't think we need this just yet
-#sys.path.append(os.path.join(template_dir,'..'))
+top_support_dir = os.path.dirname(template_dir) 
+sys.path.append(os.path.join(top_support_dir, 'common'))
 
 class Blackberry(object):
 
@@ -31,7 +32,7 @@ class Blackberry(object):
 			'description':None,
 			'version':'1.0',
 			'author':'Appcelerator Titanium Mobile', # TODO MAC: Find out how validate the author
-			'category':'core.games'
+			'category':'core.games'					 # TODO MAC: Find out how validate the category
 		}
 		
 		# Configuration for the project file
@@ -78,10 +79,10 @@ class Blackberry(object):
 		templates = os.path.join(template_dir,'templates')
 		# copy bar-descriptor.xml
 		shutil.copy2(os.path.join(templates,'bar-descriptor.xml'), build_dir)
-		render(os.path.join(build_dir,'bar-descriptor.xml'), self.configDescriptor)
+		renderTemplate(os.path.join(build_dir,'bar-descriptor.xml'), self.configDescriptor)
 		# copy project file
 		shutil.copy2(os.path.join(templates,'project'), os.path.join(build_dir, '.project'))
-		render(os.path.join(build_dir,'.project'), self.configProject)		
+		renderTemplate(os.path.join(build_dir,'.project'), self.configProject)		
 
 		# import project into workspace so it can be built with mkbuild
 		self.ndk.importProject(build_dir)
@@ -92,12 +93,9 @@ class Blackberry(object):
 		#if not os.path.exists(blackberry_resources_dir):
 		#	os.makedirs(blackberry_resources_dir)
 
-def render(template, config):
-	baseDir = os.path.abspath(os.path.dirname(sys.argv[0]))
-	baseDir = os.path.dirname(baseDir)
-	sys.path.append(os.path.join(baseDir, 'common'))
+def renderTemplate(template, config):
 	from mako.template import Template
-	tmpl = load_template(template)
+	tmpl = loadTemplate(template)
 	f = None
 	try:
 		f = open(template, "w")
@@ -106,59 +104,60 @@ def render(template, config):
 		print >>sys.stderr, e
 		sys.exit(1)
 	finally:
-		if f!=None: f.close
+		if f != None: 
+			f.close
 
-def load_template(template):
+def loadTemplate(template):
 	from mako.template import Template
 	return Template(filename=template, output_encoding='utf-8', encoding_errors='replace')
 
-def __runTemplatingDescriptorTest():
-	baseDir = os.path.abspath(os.path.dirname(sys.argv[0]))
-	baseDir = os.path.dirname(baseDir)
-	sys.path.append(os.path.join(baseDir, 'common'))
+def __runTemplatingDescriptorTest(configDesc):
 	from mako.template import Template
 	barFile = os.path.join(template_dir, 'templates', 'bar-descriptor.xml')
-	tmpl = load_template(barFile)
-	print tmpl.render(config = bb.configDescriptor)
+	tmpl = loadTemplate(barFile)
+	assert tmpl.render(config = configDesc)
 	
-def __runTemplatingProjectTest():
-	baseDir = os.path.abspath(os.path.dirname(sys.argv[0]))
-	baseDir = os.path.dirname(baseDir)
-	sys.path.append(os.path.join(baseDir, 'common'))
+def __runTemplatingProjectTest(configProj):
 	from mako.template import Template
 	projectFile = os.path.join(template_dir, 'templates', 'project')
-	tmpl = load_template(projectFile)
-	print tmpl.render(config = bb.configProject)
+	tmpl = loadTemplate(projectFile)
+	assert tmpl.render(config = configProj)
+	
+def __runUnitTests():
+	from tiunittest import UnitTest
+	
+	bbndk = BlackberryNDK(None)
+	bb = Blackberry('TemplateTest', 'com.macadamian.template', bbndk)
+	
+	with UnitTest('Test template replacing on bar-descriptor.xml file..'):
+		__runTemplatingDescriptorTest(bb.configDescriptor)
+		
+	with UnitTest('Test template replacing on .project file..'):
+		__runTemplatingProjectTest(bb.configProject)
+	
+	print '\nFinished Running Unit Tests'
+	UnitTest.printDetails()
+
 
 if __name__ == '__main__':
-	# Running unit test for -t parameter
-	if len(sys.argv) == 2 and sys.argv[1]=='-t':
-		baseDir = os.path.abspath(os.path.dirname(sys.argv[0]))
-		baseDir = os.path.dirname(baseDir)
-		sys.path.append(os.path.join(baseDir, 'common'))
-		from tiunittest import UnitTest
-		
-		bbndk = BlackberryNDK('c:\\bbndk-2.0.0')
-		bb = Blackberry('TemplateTest', 'com.macadamian.template', bbndk)
-		
-		with UnitTest('Test template replacing on bar-descriptor.xml file..'):
-			__runTemplatingDescriptorTest()
-			
-		with UnitTest('Test template replacing on .project file..'):
-			__runTemplatingProjectTest()
-		
-		sys.exit(1)
-		
-	# This script is only meant to be invoked from project.py
-	if len(sys.argv) != 5 or sys.argv[1]=='--help':
-		print "Usage: %s <name> <id> <directory> <blackberry_ndk>" % os.path.basename(sys.argv[0])
-		sys.exit(1)
+	
+	# Setup script usage
+	parser = ArgumentParser(description = 'Creates blackberry project')
+	parser.add_argument('name', help = 'Blackberry project name', nargs='?')
+	parser.add_argument('id', help = 'Blackberry project id', nargs='?')
+	parser.add_argument('dir', help = 'Blackberry project directory', nargs='?')
+	parser.add_argument('ndk', help = 'Blackberry NDK path', nargs='?')
+	parser.add_argument('-t', '--test', help = 'run unit tests', action = 'store_true')
+	args = parser.parse_args()
 
+	if args.test:
+		__runUnitTests()
+		sys.exit(0)
+	
 	try:
-		bbndk = BlackberryNDK(sys.argv[4].decode("utf-8"))
+		bbndk = BlackberryNDK(args.ndk)
+		bb = Blackberry(args.name, args.id, bbndk)
+		bb.create(args.dir)
 	except Exception, e:
 		print >>sys.stderr, e
 		sys.exit(1)
-
-	bb = Blackberry(sys.argv[1].decode("utf-8"), sys.argv[2].decode("utf-8"), bbndk)
-	bb.create(sys.argv[3].decode("utf-8"))
