@@ -38,8 +38,8 @@ class BlackberryNDK:
 		if self.blackberryNdk is None:
 			raise Exception('No Blackberry NDK directory found')
 		self.version = self._findVersion()
-		self.qde = self._findQde()
 		self._sourceEnvironment()
+		self.qde = self._findQde()
 
 	def getVersion(self):
 		return self.version
@@ -83,7 +83,7 @@ class BlackberryNDK:
 		# TODO Mac: Validate the following on windows
 		if platform.system() == 'Windows':
 			envFile = os.path.join(self.blackberryNdk, 'bbndk-env.bat')
-			command = [envFile, '&&', 'env']
+			command = '%s ' % envFile + '&& env'
 		else:
 			envFile = os.path.join(self.blackberryNdk, 'bbndk-env.sh')
 			command = ['bash', '-c', 'source %s && env' % envFile]
@@ -103,15 +103,17 @@ class BlackberryNDK:
 
 	def _findQde(self):
 		cmd = 'qde'
+		qnxHost = os.environ.get('QNX_HOST')
+		if qnxHost == None:
+			return None
 		if platform.system() == 'Windows':
-			subdir = os.path.join('win32', 'x86', 'usr', 'qde', 'eclipse')	# TODO Mac: validate actual value
+			dir = os.path.join(qnxHost, 'usr', 'qde', 'eclipse')
 			cmd += '.exe'
 		elif platform.system() == 'Darwin':
-			subdir = os.path.join('macosx', 'x86', 'usr', 'qde', 'eclipse', 'qde.app', 'Contents', 'MacOS')
+			dir = os.path.join(qnxHost, 'usr', 'qde', 'eclipse', 'qde.app', 'Contents', 'MacOS')
 		elif platform.system() == 'Linux':
-			subdir = os.path.join('linux', 'x86', 'usr', 'bin')
-
-		qde = os.path.join(self.blackberryNdk, 'host', subdir, 'qde')
+			dir = os.path.join(qnxHost, 'usr', 'bin')
+		qde = os.path.join(dir, cmd)
 		if os.path.exists(qde):
 			return qde
 		return None
