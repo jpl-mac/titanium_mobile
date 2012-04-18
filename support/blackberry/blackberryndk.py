@@ -167,7 +167,13 @@ def __runUnitTests():
 	baseDir = os.path.dirname(baseDir)
 	sys.path.append(os.path.join(baseDir, 'common'))
 	from tiunittest import UnitTest
-	from tempfile import mkdtemp
+	import tempfile
+	# get rid of spaces in the temp directory so the build doesn't fail
+	if tempfile.gettempdir().find(' ') != -1:
+		tempfile.tempdir = os.getcwd()
+		os.environ['TEMP'] = tempfile.tempdir
+		os.environ['TMP'] = tempfile.tempdir
+		os.environ['TMPDIR'] = tempfile.tempdir
 	import shutil
 
 	print '\nRunning Unit Tests...\n'
@@ -182,7 +188,7 @@ def __runUnitTests():
 		assert os.path.exists(qde)
 
 	with UnitTest('Test import project with workspace..'):
-		workspace = mkdtemp()
+		workspace = tempfile.mkdtemp()
 		projectSrc = os.path.join(ndk.blackberryNdk, 'target', 'qnx6', 'usr', 'share', 'samples', 'ndk', 'HelloWorldDisplay')
 		projectName = 'HelloWorldDisplayMakefile'
 		project = os.path.join(workspace, projectName)
@@ -193,7 +199,7 @@ def __runUnitTests():
 		assert passed
 
 	with UnitTest('Test import project no workspace..'):
-		workspace = mkdtemp()
+		workspace = tempfile.mkdtemp()
 		projectSrc = os.path.join(ndk.blackberryNdk, 'target', 'qnx6', 'usr', 'share', 'samples', 'ndk', 'HelloWorldDisplay')
 		project = os.path.join(workspace, projectName)
 		shutil.copytree(projectSrc, project)
