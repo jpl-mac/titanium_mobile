@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <profiles version="1">
-<profile kind="CodeFormatterProfile" name="TiBB2" version="1">
+<profile kind="CodeFormatterProfile" name="TiBB_github" version="1">
 <setting id="org.eclipse.cdt.core.formatter.insert_space_before_opening_paren_in_method_declaration" value="do not insert"/>
 <setting id="org.eclipse.cdt.core.formatter.insert_space_after_opening_paren_in_for" value="do not insert"/>
 <setting id="org.eclipse.cdt.core.formatter.insert_new_line_in_empty_block" value="insert"/>
@@ -56,7 +56,7 @@
 <setting id="org.eclipse.cdt.core.formatter.insert_space_before_colon_in_base_clause" value="insert"/>
 <setting id="org.eclipse.cdt.core.formatter.indent_breaks_compare_to_cases" value="true"/>
 <setting id="org.eclipse.cdt.core.formatter.insert_space_before_unary_operator" value="do not insert"/>
-<setting id="org.eclipse.cdt.core.formatter.join_wrapped_lines" value="true"/>
+<setting id="org.eclipse.cdt.core.formatter.join_wrapped_lines" value="false"/>
 <setting id="org.eclipse.cdt.core.formatter.insert_space_before_comma_in_declarator_list" value="do not insert"/>
 <setting id="org.eclipse.cdt.core.formatter.alignment_for_arguments_in_method_invocation" value="18"/>
 <setting id="org.eclipse.cdt.core.formatter.insert_space_before_opening_paren_in_while" value="insert"/>
