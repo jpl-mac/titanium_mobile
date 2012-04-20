@@ -118,12 +118,8 @@ def __runTemplatingDescriptorTest(configDesc):
 		tmpl.render(config = configDesc)
 		return True
 	except:
-		from mako.exceptions import RichTraceback
-		traceback = RichTraceback()
-		for (filename, lineno, function, line) in traceback.traceback:
-			print "File %s, line %s, in %s" % (filename, lineno, function)
-			print line, "\n"
-		print "%s: %s" % (str(traceback.error.__class__.__name__), traceback.error)
+		# Uncomment the following function for debugging
+		# __unitTestTraceback()
 		return False
 	
 def __runTemplatingProjectTest(configProj):
@@ -133,13 +129,19 @@ def __runTemplatingProjectTest(configProj):
 		tmpl.render(config = configProj)
 		return True
 	except:
-		from mako.exceptions import RichTraceback
-		traceback = RichTraceback()
-		for (filename, lineno, function, line) in traceback.traceback:
-			print "File %s, line %s, in %s" % (filename, lineno, function)
-			print line, "\n"
-		print "%s: %s" % (str(traceback.error.__class__.__name__), traceback.error)
+		# Uncomment the following function for debugging
+		# __unitTestTraceback()
 		return False
+
+def __unitTestTraceback():
+	from mako.exceptions import RichTraceback
+	traceback = RichTraceback()
+	print "\n\n-------------START TRACEBACK-------------\n"
+	for (filename, lineno, function, line) in traceback.traceback:
+		print "File %s, line %s, in %s" % (filename, lineno, function)
+		print line
+	print "%s: %s" % (str(traceback.error.__class__.__name__), traceback.error)
+	print "\n\n-------------END TRACEBACK---------------\n"
 	
 def __runUnitTests():
 	from tiunittest import UnitTest
@@ -165,11 +167,11 @@ if __name__ == '__main__':
 	# This script is only meant to be invoked from project.py
 	# Setup script usage
 	parser = ArgumentParser(description = 'Creates blackberry project')
-	parser.add_argument('name', help = 'Blackberry project name', nargs='?')
-	parser.add_argument('id', help = 'Blackberry project id', nargs='?')
-	parser.add_argument('dir', help = 'Blackberry project directory', nargs='?')
-	parser.add_argument('ndk', help = 'Blackberry NDK path', nargs='?')
-	parser.add_argument('-t', '--test', help = 'run unit tests', metavar='ndk_location', nargs='?', const=True)
+	parser.add_argument('name', help = 'Blackberry project name', nargs = '?')
+	parser.add_argument('id', help = 'Blackberry project id', nargs = '?')
+	parser.add_argument('dir', help = 'Blackberry project directory', nargs = '?')
+	parser.add_argument('ndk', help = 'Blackberry NDK path', nargs = '?')
+	parser.add_argument('-t', '--test', help = 'run unit tests', metavar = 'ndk_location', nargs = '?', const = True)
 	args = parser.parse_args()
 
 	if args.test:
@@ -182,8 +184,8 @@ if __name__ == '__main__':
 	
 	try:
 		bbndk = BlackberryNDK(args.ndk.decode("utf-8"))
-		bb = Blackberry(args.name, args.id, bbndk)
-		bb.create(args.dir)
+		bb = Blackberry(args.name.decode("utf-8"), args.id.decode("utf-8"), bbndk)
+		bb.create(args.dir.decode("utf-8"))
 	except Exception, e:
 		print >>sys.stderr, e
 		sys.exit(1)
