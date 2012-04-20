@@ -168,12 +168,16 @@ def __runUnitTests():
 	sys.path.append(os.path.join(baseDir, 'common'))
 	from tiunittest import UnitTest
 	import tempfile
-	# get rid of spaces in the temp directory so the build doesn't fail
+	# if there are spaces in the temp directory, try to use the working directory instead
 	if tempfile.gettempdir().find(' ') != -1:
-		tempfile.tempdir = os.getcwd()
-		os.environ['TEMP'] = tempfile.tempdir
-		os.environ['TMP'] = tempfile.tempdir
-		os.environ['TMPDIR'] = tempfile.tempdir
+		if os.getcwd().find(' '):
+			print 'Please run the unit tests from a directory with no spaces'
+			sys.exit(1)
+		else:
+			tempfile.tempdir = os.getcwd()
+			os.environ['TEMP'] = tempfile.tempdir
+			os.environ['TMP'] = tempfile.tempdir
+			os.environ['TMPDIR'] = tempfile.tempdir
 	import shutil
 
 	print '\nRunning Unit Tests...\n'
