@@ -85,11 +85,17 @@ if __name__ == "__main__":
 	# Parse input and call apropriate function
 	args = parser.parse_args()
 
-	log = TiLogger(os.path.join(os.path.abspath(os.path.expanduser(args.project_path)), 'build.log'))
-	log.debug(" ".join(sys.argv))
-	
+	logFile = os.path.join(os.path.abspath(os.path.expanduser(args.project_path)), 'build.log')
 	try:
-		bbndk = BlackberryNDK(args.ndk_path and args.ndk_path.decode('utf-8'))
+		logFileHandle = open(logFile, 'w')
+	except:
+		print "[ERROR] error initializing (writing to) log file %s: %s" % (logFile, sys.exc_info()[0])
+		logFileHandle = sys.stdout
+	log = TiLogger(None, output_stream = logFileHandle)
+
+	log.debug(" ".join(sys.argv))
+	try:
+		bbndk = BlackberryNDK(args.ndk_path and args.ndk_path.decode('utf-8'), stdout = logFileHandle)
 	except Exception, e:
 		print >>sys.stderr, e
 		sys.exit(1)

@@ -33,7 +33,8 @@ class Device:
 #		return self.offline
 
 class BlackberryNDK:
-	def __init__(self, blackberryNdk):
+	def __init__(self, blackberryNdk, stdout = None):
+		self.stdout = stdout
 		self.blackberryNdk = self._findNdk(blackberryNdk)
 		if self.blackberryNdk is None:
 			raise Exception('No Blackberry NDK directory found')
@@ -121,7 +122,14 @@ class BlackberryNDK:
 	def _run(self, command):
 		assert type(command) is list
 		try:
-			subprocess.check_output(command, stderr = subprocess.STDOUT)
+			if self.stdout == None:
+				if platform.system() == 'Windows':
+					stdout = open('NUL', 'w')
+				else:
+					stdout = open('/dev/null', 'w')
+			else:
+				stdout = self.stdout
+			subprocess.check_call(command, stdout = stdout, stderr = subprocess.STDOUT)
 		except subprocess.CalledProcessError, cpe:
 			print >>sys.stderr, cpe, cpe.output
 			return
@@ -228,6 +236,8 @@ if __name__ == "__main__":
 
 	try:
 		ndk = BlackberryNDK(args.ndk_path)
+		# for debugging, use the following:
+		#ndk = BlackberryNDK(args.ndk_path, stdout = sys.stdout)
 		print "BLACKBERRY_NDK=%s" % ndk.getBlackberryNdk()
 		print "BLACKBERRY_NDK_VERSION=%s" % ndk.getVersion()
 	except Exception, e:
