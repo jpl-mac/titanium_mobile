@@ -83,7 +83,7 @@ class BlackberryNDK:
 		# TODO Mac: Validate the following on windows
 		if platform.system() == 'Windows':
 			envFile = os.path.join(self.blackberryNdk, 'bbndk-env.bat')
-			command = '%s ' % envFile + '&& env'
+			command = '%s ' % envFile + '&& set'
 		else:
 			envFile = os.path.join(self.blackberryNdk, 'bbndk-env.sh')
 			command = ['bash', '-c', 'source %s && env' % envFile]
@@ -138,15 +138,27 @@ class BlackberryNDK:
 
 	def build(self, project, variant):
 		assert os.path.exists(project)
-		command = ['mkbuild', project, '-variant', variant]
+		if platform.system() == 'Windows':
+			mkbuild = 'mkbuild.bat'
+		else:
+			mkbuild = 'mkbuild'
+		command = [mkbuild, project, '-variant', variant]
 		self._run(command)
 
 	def package(self, package, savePath, projectName):
-		command = ['blackberry-nativepackager', '-package', package, 'bar-descriptor.xml', '-e', savePath, projectName, 'icon.png']
+		if platform.system() == 'Windows':
+			packager = 'blackberry-nativepackager.bat'
+		else:
+			packager = 'blackberry-nativepackager'
+		command = [packager, '-package', package, 'bar-descriptor.xml', '-e', savePath, projectName, 'icon.png']
 		self._run(command)
 
 	def deploy(self, deviceIP, package):
-		command = ['blackberry-deploy', '-installApp', '-launchApp', '-device', deviceIP, '-package', package]
+		if platform.system() == 'Windows':
+			deploy = 'blackberry-deploy.bat'
+		else:
+			deploy = 'blackberry-deploy'
+		command = [deploy, '-installApp', '-launchApp', '-device', deviceIP, '-package', package]
 		self._run(command)
 
 def __runUnitTests():
@@ -155,7 +167,17 @@ def __runUnitTests():
 	baseDir = os.path.dirname(baseDir)
 	sys.path.append(os.path.join(baseDir, 'common'))
 	from tiunittest import UnitTest
-	from tempfile import mkdtemp
+	import tempfile
+	# if there are spaces in the temp directory, try to use the working directory instead
+	if tempfile.gettempdir().find(' ') != -1:
+		if os.getcwd().find(' '):
+			print 'Please run the unit tests from a directory with no spaces'
+			sys.exit(1)
+		else:
+			tempfile.tempdir = os.getcwd()
+			os.environ['TEMP'] = tempfile.tempdir
+			os.environ['TMP'] = tempfile.tempdir
+			os.environ['TMPDIR'] = tempfile.tempdir
 	import shutil
 
 	print '\nRunning Unit Tests...\n'
@@ -170,7 +192,7 @@ def __runUnitTests():
 		assert os.path.exists(qde)
 
 	with UnitTest('Test import project with workspace..'):
-		workspace = mkdtemp()
+		workspace = tempfile.mkdtemp()
 		projectSrc = os.path.join(ndk.blackberryNdk, 'target', 'qnx6', 'usr', 'share', 'samples', 'ndk', 'HelloWorldDisplay')
 		projectName = 'HelloWorldDisplayMakefile'
 		project = os.path.join(workspace, projectName)
@@ -181,7 +203,7 @@ def __runUnitTests():
 		assert passed
 
 	with UnitTest('Test import project no workspace..'):
-		workspace = mkdtemp()
+		workspace = tempfile.mkdtemp()
 		projectSrc = os.path.join(ndk.blackberryNdk, 'target', 'qnx6', 'usr', 'share', 'samples', 'ndk', 'HelloWorldDisplay')
 		project = os.path.join(workspace, projectName)
 		shutil.copytree(projectSrc, project)
