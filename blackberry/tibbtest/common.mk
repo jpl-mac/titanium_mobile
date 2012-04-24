@@ -15,8 +15,7 @@ EXTRA_INCVPATH+=$(QNX_TARGET)/usr/include/freetype2 \
 EXTRA_LIBVPATH+=$(QNX_TARGET)/$(CPUVARDIR)/usr/lib \
 	$(QNX_TARGET)/$(CPUVARDIR)/usr/lib/qt4/lib \
 	$(PROJECT_ROOT)/../libv8/lib/$(CPU) \
-	$(PROJECT_ROOT)/../tibb/$(CPU)/a.le-v7-$(filter g,$(VARIANT_LIST)) \
-	$(PROJECT_ROOT)/../tibb/$(CPU)/a.le-v7
+	$(PROJECT_ROOT)/../tibb/$(CPU)/a$(if $(filter arm,$(CPULIST)),.le-v7,)$(if $(filter g,$(VARIANTS)),-g,)
 
 # Compiler options for enhanced security and recording the compiler options in release builds
 CCFLAGS+=-fstack-protector-all -D_FORTIFY_SOURCE=2 \
