@@ -48,7 +48,7 @@
     
     <!--  The category where the application appears. Either core.games or core.media. -->
     <asset path="icon.png">icon.png</asset>
-    <asset path="C:/Users/dcampbell/Projects/Titanium Studio Workspace/helloworld1/Resources/app.js">assets/app.js</asset>
+    <asset path="app.js">assets/app.js</asset>
     <configuration id="com.qnx.qcc.toolChain.1839462390" name="Default">
        <platformArchitecture>armle-v7</platformArchitecture>
        <asset path="arm/o.le-v7-g/tibbtest" entry="true" type="Qnx/Elf">tibbtest</asset>
