@@ -10,7 +10,8 @@ var win1 = Titanium.UI.createWindow({
 
 var label1 = Ti.UI.createLabel({
 	textAlign : 'center',
-	text:'Hello, world!'
+	text:'Hello, world!',
+	color:'green'
 });
 
 label1.text='Test';
@@ -27,7 +28,8 @@ mybutton.addEventListener
 	'click',
 	function(e)
 	{
-		e.source.label='Pushed!';
+		//e.source.label='Pushed!';
+		e.source.visible=false;
 	}
 );
 
