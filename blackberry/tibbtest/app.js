@@ -36,37 +36,10 @@ win1.add(mybutton);
 var slider1=Ti.UI.createSlider
 (
 	{
-		value: 50,
 		top: 0,
 		min: 0,
-		max: 100
-	}
-);
-
-win1.add(slider1);
-
-var progress1=Ti.UI.createProgressBar({
-	value:0
-});
-
-win1.add(progress1);
-
-
-/*
-label1.text = Titanium.buildDate;
-
-win1.add(label1);
-*/
-
-
-/*
-var slider1=Ti.UI.createSlider
-(
-	{
-		value: 50,
-		top: 0,
-		min: 0,
-		max: 100
+		max: 100,
+		value: 50
 	}
 );
 
@@ -75,12 +48,21 @@ slider1.addEventListener
 	'change',
 	function(e)
 	{
-		Ti.API.debug('value changed\n');
+		progress1.value=e.value;
+		label1.text='Slider value: '+e.value;
 	}
 );
-*/
 
-//win1.add(slider1);
+
+win1.add(slider1);
+
+var progress1=Ti.UI.createProgressBar({
+	value:0,
+	min: 0,
+	max: 100
+});
+
+win1.add(progress1);
 
 // open window
 win1.open();
