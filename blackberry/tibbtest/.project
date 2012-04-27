@@ -3,6 +3,7 @@
 	<name>tibbtest</name>
 	<comment></comment>
 	<projects>
+		<project>tibb</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -35,7 +35,8 @@
     <!-- <copyright></copyright> -->
 
     <!--  Name of author which is used for signing. Must match the developer name of your development certificate. -->
-    <author>Example Inc.</author>
+    <author>dcampbell</author>
+    <authorId>gYAAgC55Fxgkt4Je_sUDXD_Ulvo</authorId>
     
     <!--  Unique author ID assigned by signing authority. Required if using debug tokens. -->
     <!-- <authorId>ABC1234YjsnUk235h</authorId> -->
@@ -46,23 +47,8 @@
     </initialWindow>
     
     <!--  The category where the application appears. Either core.games or core.media. -->
-    <category>core.games</category>
     <asset path="icon.png">icon.png</asset>
-    <asset path="${QNX_TARGET}\..\target-override\armle-v7\usr\lib\libbb.so" type="Qnx/Elf">lib/libbb.so.0</asset>
-    <asset path="${QNX_TARGET}\..\target-override\armle-v7\usr\lib\libheimdall.so" type="Qnx/Elf">lib/libheimdall.so</asset>
-    <asset path="${QNX_TARGET}\..\target-override\armle-v7\usr\lib\libQtCascades.so" type="Qnx/Elf">lib/libQtCascades.so</asset>
-    <asset path="${QNX_TARGET}\..\target-override\armle-v7\usr\lib\libQtCore.so" type="Qnx/Elf">lib/libQtCore.so.4</asset>
-    <asset path="${QNX_TARGET}\..\target-override\armle-v7\usr\lib\libQtDeclarative.so" type="Qnx/Elf">lib/libQtDeclarative.so.4</asset>
-    <asset path="${QNX_TARGET}\..\target-override\armle-v7\usr\lib\libQtGui.so" type="Qnx/Elf">lib/libQtGui.so.4</asset>
-    <asset path="${QNX_TARGET}\..\target-override\armle-v7\usr\lib\libQtMultimedia.so" type="Qnx/Elf">lib/libQtMultimedia.so.4</asset>
-    <asset path="${QNX_TARGET}\..\target-override\armle-v7\usr\lib\libQtNetwork.so" type="Qnx/Elf">lib/libQtNetwork.so.4</asset>
-    <asset path="${QNX_TARGET}\..\target-override\armle-v7\usr\lib\libQtOpenGL.so" type="Qnx/Elf">lib/libQtOpenGL.so.4</asset>
-    <asset path="${QNX_TARGET}\..\target-override\armle-v7\usr\lib\libQtScript.so" type="Qnx/Elf">lib/libQtScript.so.4</asset>
-    <asset path="${QNX_TARGET}\..\target-override\armle-v7\usr\lib\libQtScriptTools.so" type="Qnx/Elf">lib/libQtScriptTools.so.4</asset>
-    <asset path="${QNX_TARGET}\..\target-override\armle-v7\usr\lib\libQtSql.so" type="Qnx/Elf">lib/libQtSql.so.4</asset>
-    <asset path="${QNX_TARGET}\..\target-override\armle-v7\usr\lib\libQtSvg.so" type="Qnx/Elf">lib/libQtSvg.so.4</asset>
-    <asset path="${QNX_TARGET}\..\target-override\armle-v7\usr\lib\libQtTest.so" type="Qnx/Elf">lib/libQtTest.so.4</asset>
-    <asset path="${QNX_TARGET}\..\target-override\armle-v7\usr\lib\libQtXml.so" type="Qnx/Elf">lib/libQtXml.so.4</asset>
+    <asset path="app.js">assets/app.js</asset>
     <configuration id="com.qnx.qcc.toolChain.1839462390" name="Default">
        <platformArchitecture>armle-v7</platformArchitecture>
        <asset path="arm/o.le-v7-g/tibbtest" entry="true" type="Qnx/Elf">tibbtest</asset>
@@ -103,6 +89,6 @@
     <!--  <action>read_device_identifying_information</action> -->
 
     <!-- Ensure that shared libraries in the package are found at run-time. -->
-    <env var="LD_LIBRARY_PATH" value="app/native/lib"/>
+    <env var="LD_LIBRARY_PATH" value="app/native/lib:/usr/lib/qt4/lib"/>
     
 </qnx>

@@ -5,10 +5,12 @@
  * Please see the LICENSE included with this distribution for details.
  */
 
-#include "tibb.h"
-#include "TitaniumRuntime.h"
+#include "TiEvent.h"
 
-int tibb_run(const char* javaScript, int argc, char** argv)
+TiEvent::TiEvent()
 {
-    return TitaniumRuntime::run(javaScript, argc, argv);
+}
+
+TiEvent::~TiEvent()
+{
 }
