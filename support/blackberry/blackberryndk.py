@@ -100,7 +100,7 @@ class BlackberryNDK:
 			(key, _, value) = line.partition("=")
 			os.environ[key] = value.strip()
 		proc.communicate()
-		self.log and self.log.info('os.environ:\n' + pprint.pformat(dict(os.environ)))
+		self.log and self.log.debug('os.environ:\n' + pprint.pformat(dict(os.environ)))
 
 	def _findQde(self):
 		cmd = 'qde'
