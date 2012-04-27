@@ -5,7 +5,7 @@
 # WARNING: the paths to qde, project and project name must not contain any
 #          spaces for the tools to work correctly
 
-import os, sys, platform, subprocess
+import os, sys, platform, subprocess, pprint
 from argparse import ArgumentParser
 
 class Device:
@@ -33,7 +33,8 @@ class Device:
 #		return self.offline
 
 class BlackberryNDK:
-	def __init__(self, blackberryNdk):
+	def __init__(self, blackberryNdk, log = None):
+		self.log = log
 		self.blackberryNdk = self._findNdk(blackberryNdk)
 		if self.blackberryNdk is None:
 			raise Exception('No Blackberry NDK directory found')
@@ -99,7 +100,7 @@ class BlackberryNDK:
 			(key, _, value) = line.partition("=")
 			os.environ[key] = value.strip()
 		proc.communicate()
-		#pprint.pprint(dict(os.environ))
+		self.log and self.log.debug('os.environ:\n' + pprint.pformat(dict(os.environ)))
 
 	def _findQde(self):
 		cmd = 'qde'
@@ -121,7 +122,18 @@ class BlackberryNDK:
 	def _run(self, command):
 		assert type(command) is list
 		try:
-			subprocess.check_output(command, stderr = subprocess.STDOUT)
+			if self.log == None:
+				if platform.system() == 'Windows':
+					logfile = 'NUL'
+				else:
+					logfile = '/dev/null'
+			else:
+				logfile = self.log.getLogfile()
+				self.log.info('Command: ' + ' '.join(command))
+			with open(logfile, 'a') as f:
+				# Need this write() or else subprocess will overwrite for some reason
+				f.write('\n')
+				subprocess.check_call(command, stdout = f, stderr = f)
 		except subprocess.CalledProcessError, cpe:
 			print >>sys.stderr, cpe, cpe.output
 			return

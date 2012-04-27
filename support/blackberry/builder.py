@@ -38,7 +38,7 @@ class Builder(object):
 		# TODO Mac: V8 runtime should be added and possibly a lot of other stuff
 		
 		self.build()
-		print 'Running'
+		info('Running')
 		
 		# Change current directory to do relative operations
 		os.chdir("%s" % self.buildDir)
@@ -54,7 +54,7 @@ class Builder(object):
 		self.ndk.deploy('192.168.135.129', barPath)
 	
 	def build(self):
-		print 'Building'
+		info('Building')
 		self.ndk.build(self.buildDir, self.variant)
 		
 def info(msg):
@@ -85,11 +85,10 @@ if __name__ == "__main__":
 	# Parse input and call apropriate function
 	args = parser.parse_args()
 
-	log = TiLogger(os.path.join(os.path.abspath(os.path.expanduser(args.project_path)), 'build.log'))
+	log = TiLogger(os.path.join(os.path.abspath(os.path.expanduser(args.project_path)), 'build_blackberry.log'))
 	log.debug(" ".join(sys.argv))
-	
 	try:
-		bbndk = BlackberryNDK(args.ndk_path and args.ndk_path.decode('utf-8'))
+		bbndk = BlackberryNDK(args.ndk_path and args.ndk_path.decode('utf-8'), log = log)
 	except Exception, e:
 		print >>sys.stderr, e
 		sys.exit(1)
