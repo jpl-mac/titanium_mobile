@@ -21,13 +21,17 @@ from tiapp import TiAppXML
 from blackberryndk import BlackberryNDK
 
 class Builder(object):
-	_type2variant = {'simulator' : 'Simulator-Debug',
-	                 'device' : 'Device-Debug',
-	                 'deploy' : 'Device-Release'}
+	_type2variant = {'simulator' : 'o-g',
+	                 'device' : 'o.le-v7-g',
+	                 'deploy' : 'o.le-v7'}
+	_type2cpu = {'simulator' : 'x86',
+	             'device' : 'arm',
+	             'deploy' : 'arm'}
 
 	def __init__(self, project_dir, type, ndk):
 		self.top_dir = project_dir.rstrip(os.sep)
 		self.variant = Builder._type2variant[type]
+		self.cpu = Builder._type2cpu[type]
 		self.ndk = ndk 
 		project_tiappxml = os.path.join(self.top_dir, 'tiapp.xml')
 		tiappxml = TiAppXML(project_tiappxml)
@@ -48,10 +52,10 @@ class Builder(object):
 		# TODO Mac: log each command that is executed to the build.log file,
 		# output might be interesting as well
 		# TODO Mac: See if we can reasonably launch the simulator from here and fetch the ip address
-		barPath = os.path.join(self.buildDir, self.variant, '%s.bar' % self.name)
-		savePath = os.path.join(self.buildDir, self.variant, self.name)
+		barPath = os.path.join(self.buildDir, self.cpu, self.variant, '%s.bar' % self.name)
+		savePath = os.path.join(self.buildDir, self.cpu, self.variant, self.name)
 		self.ndk.package(barPath, savePath, self.name)
-		self.ndk.deploy('192.168.135.129', barPath)
+		self.ndk.deploy('192.168.226.132', barPath)
 	
 	def build(self):
 		info('Building')
@@ -88,7 +92,7 @@ if __name__ == "__main__":
 	log = TiLogger(os.path.join(os.path.abspath(os.path.expanduser(args.project_path)), 'build_blackberry.log'))
 	log.debug(" ".join(sys.argv))
 	try:
-		bbndk = BlackberryNDK(args.ndk_path and args.ndk_path.decode('utf-8'), log = log)
+		bbndk = BlackberryNDK(args.ndk_path and args.ndk_path.decode('utf-8'), Builder._type2cpu[args.type.decode('utf-8')], log = log)
 	except Exception, e:
 		print >>sys.stderr, e
 		sys.exit(1)

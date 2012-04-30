@@ -45,7 +45,6 @@ class Blackberry(object):
 		
 	def create(self, dir): 
 		project_dir = os.path.join(dir, self.name)
-
 		# Creates directory named as project name.
 		# mkbuild utility uses path's last component as project name. So, project directory should be named as project
 		build_dir = os.path.join(project_dir, 'build', 'blackberry', self.name)
@@ -62,7 +61,7 @@ class Blackberry(object):
 		shutil.copytree(os.path.join(template_dir,'resources'),blackberry_project_resources)
 		
 		# TODO Mac: For now used temporarily created directory where exist source files
-		sourcePath = os.path.join(template_dir,'HelloWorldDisplay')
+		sourcePath = os.path.join(template_dir,'tibbtest')
 		for file in os.listdir(sourcePath):
 			path = os.path.join(sourcePath, file)
 			try:
@@ -76,7 +75,7 @@ class Blackberry(object):
 			except Exception, e:
 				print >> sys.stderr, e
 				sys.exit(1)
-				
+
 		# add replaced templates: bar-descriptor.xml, .project files
 		templates = os.path.join(template_dir,'templates')
 		# copy bar-descriptor.xml
@@ -84,8 +83,10 @@ class Blackberry(object):
 		_renderTemplate(os.path.join(build_dir,'bar-descriptor.xml'), self.configDescriptor)
 		# copy project file
 		shutil.copy2(os.path.join(templates,'project'), os.path.join(build_dir, '.project'))
-		_renderTemplate(os.path.join(build_dir,'.project'), self.configProject)		
-
+		_renderTemplate(os.path.join(build_dir,'.project'), self.configProject)
+		# Copy the app.js to assets
+		shutil.copy2(os.path.join(project_dir, 'Resources', 'app.js'), os.path.join(build_dir, 'assets'))
+		
 		# import project into workspace so it can be built with mkbuild
 		self.ndk.importProject(build_dir)
 

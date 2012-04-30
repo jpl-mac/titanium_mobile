@@ -33,8 +33,9 @@ class Device:
 #		return self.offline
 
 class BlackberryNDK:
-	def __init__(self, blackberryNdk, log = None):
+	def __init__(self, blackberryNdk, cpu = 'x86', log = None):
 		self.log = log
+		self.cpu = cpu
 		self.blackberryNdk = self._findNdk(blackberryNdk)
 		if self.blackberryNdk is None:
 			raise Exception('No Blackberry NDK directory found')
@@ -57,9 +58,9 @@ class BlackberryNDK:
 
 		if platform.system() == 'Windows':
 			# TODO Mac: find out where the NDK installs on windows
-			default_dirs = ['C:\\bbndk-2.0.0']
+			default_dirs = ['C:\\bbndk-10.0.03']
 		else:
-			default_dirs = ['/Developer/SDKs/bbndk-2.0.0', '/opt/bbndk-2.0.0', '~/bbndk-2.0.0', '~/opt/bbndk-2.0.0']
+			default_dirs = ['/Developer/SDKs/bbndk-10.0.03', '/opt/bbndk-10.0.03', '~/bbndk-10.0.03', '~/opt/bbndk-10.0.03']
 
 		for default_dir in default_dirs:
 			if os.path.exists(default_dir):
@@ -150,19 +151,21 @@ class BlackberryNDK:
 
 	def build(self, project, variant):
 		assert os.path.exists(project)
-		if platform.system() == 'Windows':
-			mkbuild = 'mkbuild.bat'
-		else:
-			mkbuild = 'mkbuild'
-		command = [mkbuild, project, '-variant', variant]
+		template_dir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
+		os.environ['CPULIST'] = self.cpu		
+		os.environ['BB_ROOT'] = template_dir
+		oldPath = os.getcwd()
+		os.chdir(project)
+		command = ['make']
 		self._run(command)
-
+		os.chdir(oldPath)
+		
 	def package(self, package, savePath, projectName):
 		if platform.system() == 'Windows':
 			packager = 'blackberry-nativepackager.bat'
 		else:
 			packager = 'blackberry-nativepackager'
-		command = [packager, '-package', package, 'bar-descriptor.xml', '-e', savePath, projectName, 'icon.png']
+		command = [packager, '-package', package, 'bar-descriptor.xml', '-e', savePath, projectName, 'icon.png', 'assets']
 		self._run(command)
 
 	def deploy(self, deviceIP, package):
