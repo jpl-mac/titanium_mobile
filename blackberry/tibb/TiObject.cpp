@@ -8,7 +8,7 @@
 #include "TiObject.h"
 #include <malloc.h>
 
-#define HIDDEN_TI_OBJECT_PROPERTY			"ti_"
+#define HIDDEN_TI_OBJECT_PROPERTY           "ti_"
 #define HIDDEN_TEMP_OBJECT_PROPERTY         "globalTemplate_"
 
 TiObject::TiObject()
@@ -18,9 +18,9 @@ TiObject::TiObject()
 }
 
 TiObject::TiObject(const char* objectName)
-        :
-          isInitialized_(false),
-          parentObject_(NULL)
+    :
+    isInitialized_(false),
+    parentObject_(NULL)
 {
     name_ = objectName;
 }
@@ -109,8 +109,8 @@ Handle<ObjectTemplate> TiObject::getObjectTemplateFromJsObject(Handle<Value> val
     Handle < Context > context = obj->CreationContext();
     Handle < External > globalTemplateExternal = Handle < External
             > ::Cast(
-                     context->Global()->GetHiddenValue(
-                                                       String::New(HIDDEN_TEMP_OBJECT_PROPERTY)));
+                context->Global()->GetHiddenValue(
+                    String::New(HIDDEN_TEMP_OBJECT_PROPERTY)));
     Handle < ObjectTemplate > temp = *((Handle<ObjectTemplate>*) globalTemplateExternal->Value());
     return handleScope.Close(temp);
 }
@@ -256,7 +256,7 @@ Handle<Value> TiObject::propGetter_(Local<String> prop, const AccessorInfo& info
     }
     Handle < ObjectTemplate > global = getObjectTemplateFromJsObject(info.Holder());
     String::Utf8Value propName(prop);
-    const char* propString = (const char*) (*propName);
+    const char* propString = (const char*)(*propName);
     TiObject* propObject = obj->onLookupMember(propString);
     if (propObject == NULL)
     {
@@ -293,7 +293,7 @@ Handle<Value> TiObject::propSetter_(Local<String> prop, Local<Value> value, cons
         return value;
     }
     String::Utf8Value propName(prop);
-    const char* propString = (const char*) (*propName);
+    const char* propString = (const char*)(*propName);
     TiObject* destObj = obj->onLookupMember(propString);
     TiObject* srcObj = getTiObjectFromJsObject(value);
     if (srcObj == NULL)
