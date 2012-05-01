@@ -29,7 +29,7 @@ mybutton.addEventListener
 	function(e)
 	{
 		//e.source.label='Pushed!';
-		e.source.visible=false;
+		e.source.setVisible(false);
 	}
 );
 
