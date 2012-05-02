@@ -27,8 +27,7 @@ class Builder(object):
 
 	def __init__(self, project_dir, type, ndk):
 		self.top_dir = project_dir.rstrip(os.sep)
-		self.variant = Builder._type2variantCpu[type][0]
-		self.cpu = Builder._type2variantCpu[type][1]
+		(self.variant, self.cpu) = Builder._type2variantCpu[type]
 		self.ndk = ndk 
 		project_tiappxml = os.path.join(self.top_dir, 'tiapp.xml')
 		tiappxml = TiAppXML(project_tiappxml)
@@ -56,7 +55,7 @@ class Builder(object):
 	
 	def build(self):
 		info('Building')
-		self.ndk.build(self.buildDir, self.variant)
+		self.ndk.build(self.buildDir, self.cpu)
 		
 def info(msg):
 	log.info(msg)
@@ -89,7 +88,7 @@ if __name__ == "__main__":
 	log = TiLogger(os.path.join(os.path.abspath(os.path.expanduser(args.project_path)), 'build_blackberry.log'))
 	log.debug(" ".join(sys.argv))
 	try:
-		bbndk = BlackberryNDK(args.ndk_path and args.ndk_path.decode('utf-8'), Builder._type2variantCpu[args.type.decode('utf-8')][1], log = log)
+		bbndk = BlackberryNDK(args.ndk_path and args.ndk_path.decode('utf-8'), log = log)
 	except Exception, e:
 		print >>sys.stderr, e
 		sys.exit(1)

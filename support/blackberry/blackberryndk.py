@@ -33,9 +33,8 @@ class Device:
 #		return self.offline
 
 class BlackberryNDK:
-	def __init__(self, blackberryNdk, cpu = 'x86', log = None):
+	def __init__(self, blackberryNdk, log = None):
 		self.log = log
-		self.cpu = cpu
 		self.blackberryNdk = self._findNdk(blackberryNdk)
 		if self.blackberryNdk is None:
 			raise Exception('No Blackberry NDK directory found')
@@ -149,10 +148,10 @@ class BlackberryNDK:
 		command = [self.qde, '-nosplash', '-application', 'org.eclipse.cdt.managedbuilder.core.headlessbuild', '-consoleLog', '-data', workspace, '-import', project]
 		self._run(command)
 
-	def build(self, project, variant):
+	def build(self, project, cpu):
 		assert os.path.exists(project)
 		templateDir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
-		os.environ['CPULIST'] = self.cpu		
+		os.environ['CPULIST'] = cpu
 		os.environ['BB_ROOT'] = templateDir
 		oldPath = os.getcwd()
 		os.chdir(project)
