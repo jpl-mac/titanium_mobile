@@ -60,7 +60,7 @@ class Blackberry(object):
 			shutil.rmtree(blackberry_project_resources)
 		shutil.copytree(os.path.join(template_dir,'resources'),blackberry_project_resources)
 		
-		# TODO Mac: For now used temporarily created directory where exist source files
+		# TODO Mac: Using tibbtest project as default. Could be renamed to something more precise in the future.
 		sourcePath = os.path.join(template_dir,'tibbtest')
 		for file in os.listdir(sourcePath):
 			path = os.path.join(sourcePath, file)
@@ -84,8 +84,6 @@ class Blackberry(object):
 		# copy project file
 		shutil.copy2(os.path.join(templates,'project'), os.path.join(build_dir, '.project'))
 		_renderTemplate(os.path.join(build_dir,'.project'), self.configProject)
-		# Copy the app.js to assets
-		shutil.copy2(os.path.join(project_dir, 'Resources', 'app.js'), os.path.join(build_dir, 'assets'))
 		
 		# import project into workspace so it can be built with mkbuild
 		self.ndk.importProject(build_dir)

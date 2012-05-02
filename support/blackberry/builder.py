@@ -21,17 +21,14 @@ from tiapp import TiAppXML
 from blackberryndk import BlackberryNDK
 
 class Builder(object):
-	_type2variant = {'simulator' : 'o-g',
-	                 'device' : 'o.le-v7-g',
-	                 'deploy' : 'o.le-v7'}
-	_type2cpu = {'simulator' : 'x86',
-	             'device' : 'arm',
-	             'deploy' : 'arm'}
+	_type2variantCpu = {'simulator' : ('o-g', 'x86'),
+	                 'device' : ('o.le-v7-g', 'arm'),
+	                 'deploy' : ('o.le-v7', 'arm')}
 
 	def __init__(self, project_dir, type, ndk):
 		self.top_dir = project_dir.rstrip(os.sep)
-		self.variant = Builder._type2variant[type]
-		self.cpu = Builder._type2cpu[type]
+		self.variant = Builder._type2variantCpu[type][0]
+		self.cpu = Builder._type2variantCpu[type][1]
 		self.ndk = ndk 
 		project_tiappxml = os.path.join(self.top_dir, 'tiapp.xml')
 		tiappxml = TiAppXML(project_tiappxml)
@@ -92,7 +89,7 @@ if __name__ == "__main__":
 	log = TiLogger(os.path.join(os.path.abspath(os.path.expanduser(args.project_path)), 'build_blackberry.log'))
 	log.debug(" ".join(sys.argv))
 	try:
-		bbndk = BlackberryNDK(args.ndk_path and args.ndk_path.decode('utf-8'), Builder._type2cpu[args.type.decode('utf-8')], log = log)
+		bbndk = BlackberryNDK(args.ndk_path and args.ndk_path.decode('utf-8'), Builder._type2variantCpu[args.type.decode('utf-8')][1], log = log)
 	except Exception, e:
 		print >>sys.stderr, e
 		sys.exit(1)

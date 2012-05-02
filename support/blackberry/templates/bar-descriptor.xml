@@ -52,6 +52,7 @@
     <category>${config['category']}</category>
     <asset path="icon.png">icon.png</asset>
     <asset path="assets">assets</asset>
+	<!-- TODO Mac: List all files need to be included in assets -->
     <asset path="assets/app.js">assets/app.js</asset>
 	
 	<!-- Configuration section -->

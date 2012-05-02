@@ -5,7 +5,7 @@
 # WARNING: the paths to qde, project and project name must not contain any
 #          spaces for the tools to work correctly
 
-import os, sys, platform, subprocess, pprint
+import os, sys, platform, subprocess, pprint, shutil
 from argparse import ArgumentParser
 
 class Device:
@@ -151,9 +151,9 @@ class BlackberryNDK:
 
 	def build(self, project, variant):
 		assert os.path.exists(project)
-		template_dir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
+		templateDir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
 		os.environ['CPULIST'] = self.cpu		
-		os.environ['BB_ROOT'] = template_dir
+		os.environ['BB_ROOT'] = templateDir
 		oldPath = os.getcwd()
 		os.chdir(project)
 		command = ['make']
@@ -161,6 +161,14 @@ class BlackberryNDK:
 		os.chdir(oldPath)
 		
 	def package(self, package, savePath, projectName):
+		# TODO Mac: Copy all needed resources to assets (images, sounds, etc.). For now copy only the app.js to assets
+		buildDir = os.path.abspath(os.path.join(savePath, '..', '..', '..'))
+		projectDir = os.path.abspath(os.path.join(buildDir, '..', '..', '..'))
+		assetsDir = os.path.join(buildDir, 'assets')
+		if not os.path.exists(assetsDir):
+			os.makedirs(assetsDir)
+		shutil.copy2(os.path.join(projectDir, 'Resources', 'app.js'), assetsDir)
+
 		if platform.system() == 'Windows':
 			packager = 'blackberry-nativepackager.bat'
 		else:
