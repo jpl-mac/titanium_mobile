@@ -151,11 +151,11 @@ class BlackberryNDK:
 	def build(self, project, cpu):
 		assert os.path.exists(project)
 		templateDir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
-		os.environ['CPULIST'] = cpu
-		os.environ['BB_ROOT'] = templateDir
+		cpuList = 'CPULIST=' + cpu
+		bbRoot = 'BB_ROOT=' + templateDir
 		oldPath = os.getcwd()
 		os.chdir(project)
-		command = ['make']
+		command = ['make', cpuList, bbRoot]
 		self._run(command)
 		os.chdir(oldPath)
 		

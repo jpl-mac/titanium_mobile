@@ -61,7 +61,7 @@ class Blackberry(object):
 		shutil.copytree(os.path.join(template_dir,'resources'),blackberry_project_resources)
 		
 		# TODO Mac: Using tibbtest project as default. Could be renamed to something more precise in the future.
-		sourcePath = os.path.join(template_dir,'tibbtest')
+		sourcePath = os.path.join(template_dir,'tibbapp')
 		for file in os.listdir(sourcePath):
 			path = os.path.join(sourcePath, file)
 			try:
