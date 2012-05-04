@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <malloc.h>
 
-int cascades_user_main(int argc, char **argv)
+int cascades_user_main(int argc, char** argv)
 {
     FILE* fp;
     fp = fopen("app/native/assets/app.js", "r");
