@@ -10,7 +10,7 @@ EXTRA_INCVPATH+=$(QNX_TARGET)/usr/include/freetype2 \
 	$(QNX_TARGET)/../target-override/usr/include \
 	$(BB_ROOT)/libv8/include \
 	$(BB_ROOT)/tibb/include
-	
+
 # Extra library search path for target overrides and patches
 EXTRA_LIBVPATH+=$(QNX_TARGET)/$(CPUVARDIR)/usr/lib \
 	$(QNX_TARGET)/$(CPUVARDIR)/usr/lib/qt4/lib \
@@ -30,7 +30,7 @@ LIBS+=tibb QtCascades_main v8 v8preparser
 
 # Extra .so required
 LDFLAGS+=-lQtCascades -lQtCore -lQtDeclarative -lQtGui -lQtMultimedia -lQtNetwork -lm -lbb
-LDFLAGS+=-lQtOpenGL -lQtScript -lQtScriptTools -lQtSql -lQtSvg -lQtTest -lQtXml -lheimdall 
+LDFLAGS+=-lQtOpenGL -lQtScript -lQtScriptTools -lQtSql -lQtSvg -lQtTest -lQtXml -lheimdall
 
 include $(MKFILES_ROOT)/qmacros.mk
 

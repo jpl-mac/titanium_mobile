@@ -158,7 +158,7 @@ class BlackberryNDK:
 		command = ['make', cpuList, bbRoot]
 		self._run(command)
 		os.chdir(oldPath)
-		
+
 	def package(self, package, savePath, projectName):
 		# TODO Mac: Copy all needed resources to assets (images, sounds, etc.). For now copy only the app.js to assets
 		buildDir = os.path.abspath(os.path.join(savePath, '..', '..', '..'))

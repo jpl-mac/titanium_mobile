@@ -56,7 +56,7 @@ class Builder(object):
 	def build(self):
 		info('Building')
 		self.ndk.build(self.buildDir, self.cpu)
-		
+
 def info(msg):
 	log.info(msg)
 
