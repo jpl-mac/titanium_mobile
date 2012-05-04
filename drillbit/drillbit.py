@@ -24,7 +24,10 @@ elif platform.system() == 'Windows':
 		system_sdk = 'C:\\ProgramData\\Titanium\\sdk\\win32'
 	if os.path.exists(system_sdk):
 		sdk_dirs.append(system_sdk)
-	# TODO: support User SDK installs in win32
+	user_sdk = os.path.join(os.environ['APPDATA'], 'Titanium', 'sdk', 'win32')
+	if os.path.exists(user_sdk):
+		sdk_dirs.append(user_sdk)
+	# TODO: support more User SDK installs in win32
 	platform_name = 'win32'
 elif platform.system() == 'Linux':
 	user_sdk = os.path.expanduser("~/.titanium/sdk/linux")
@@ -102,7 +105,7 @@ def usage():
 	print """
 %s [--platforms=PLATFORMS] [--tests-dir=DIR] [--results-dir=DIR] [--tests=TESTS] [platform specific args..]
     Common Arguments
-    --platforms=PLATFORMS           A list of platforms to run Drillbit for (default: android,iphone)
+    --platforms=PLATFORMS           A list of platforms to run Drillbit for (default: android,iphone,blackberry)
     --tests-dir=DIR                 Additional tests are loaded from DIR
     --results-dir=DIR               Generates JSON and HTML results in DIR
     --tests=TESTS                   Specify which test suites to enable by default (separated by comma)
@@ -124,6 +127,9 @@ def usage():
     --android-device=DEVICE         The device argument to pass to ADB.
                                     Valid values: emulator (-e), device (-d), or specific serial (default: emulator)
     --android-runtime=RUNTIME       The Android runtime to run tests with (default: v8)
+    
+    BlackBerry Specific Arguments
+    TODO
 """ % sys.argv[0]
 	sys.exit(1)
 
