@@ -36,7 +36,9 @@
 
     <!--  Name of author which is used for signing. Must match the developer name of your development certificate. -->
     <author>${config['author']}</author>
+    <!-- TODO Mac: Figure out why do not packaged with 10.0.3 version. 
     <platformVersion>${config['platformversion']}</platformVersion>
+    -->
     
     <!--  Unique author ID assigned by signing authority. Required if using debug tokens. -->
     <!-- <authorId>ABC1234YjsnUk235h</authorId> -->
@@ -49,11 +51,30 @@
     <!--  The category where the application appears. Either core.games or core.media. -->
     <category>${config['category']}</category>
     <asset path="icon.png">icon.png</asset>
+    <asset path="assets">assets</asset>
+	<!-- TODO Mac: List all files need to be included in assets -->
+    <asset path="assets/app.js">assets/app.js</asset>
+	
+	<!-- Configuration section -->
+    <configuration id="com.qnx.qcc.toolChain.1839462390" name="Default">
+       <platformArchitecture>armle-v7</platformArchitecture>
+       <asset path="arm/o.le-v7-g/${config['appname']}" entry="true" type="Qnx/Elf">${config['appname']}</asset>
+    </configuration>
+    <configuration id="com.qnx.qcc.toolChain.1912267853" name="Device-Debug">
+       <platformArchitecture>armle-v7</platformArchitecture>
+       <asset path="arm/o.le-v7-g/${config['appname']}" entry="true" type="Qnx/Elf">${config['appname']}</asset>
+    </configuration>
+    <configuration id="com.qnx.qcc.toolChain.374311080" name="Device-Release">
+       <platformArchitecture>armle-v7</platformArchitecture>
+       <asset path="arm/o.le-v7/${config['appname']}" entry="true" type="Qnx/Elf">${config['appname']}</asset>
+    </configuration>
+    <configuration id="com.qnx.qcc.toolChain.1212388947" name="Simulator-Debug">
+       <platformArchitecture>x86</platformArchitecture>
+       <asset path="x86/o-g/${config['appname']}" entry="true" type="Qnx/Elf">${config['appname']}</asset>
+    </configuration>
+
     <asset path="LICENSE">LICENSE</asset>
     <asset path="NOTICE">NOTICE</asset>
-    
-    <!--  TODO MAC: Need to figure out do we need the configuration section here (in template) or not. 
-          Since that could be written later, based on studio settings -->
         
     <!--  The icon for the application, which should be 86x86. -->
     <icon>
@@ -78,6 +99,6 @@
     <!--  <action>read_device_identifying_information</action> -->
 
     <!-- Ensure that shared libraries in the package are found at run-time. -->
-    <env var="LD_LIBRARY_PATH" value="app/native/lib"/>
+    <env var="LD_LIBRARY_PATH" value="app/native/lib:/usr/lib/qt4/lib"/>
     
 </qnx>
