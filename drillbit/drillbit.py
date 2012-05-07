@@ -129,7 +129,7 @@ def usage():
     --android-runtime=RUNTIME       The Android runtime to run tests with (default: v8)
     
     BlackBerry Specific Arguments
-    TODO
+    TODO Mac
 """ % sys.argv[0]
 	sys.exit(1)
 

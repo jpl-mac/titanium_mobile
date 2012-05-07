@@ -187,7 +187,7 @@ Drillbit.prototype.initPlatforms = function() {
 		var result = process();
 		ti.api.debug("result="+result);
 		
-		// TODO: the above needs to be implemented in blackberryndk.py. For now just fake it:
+		// TODO Mac: the above needs to be implemented in blackberryndk.py. For now just fake it:
 		result = "BLACKBERRY_NDK=C:\\bbndk-10.0.03";
 		
 		if (process.getExitCode() != 0) {

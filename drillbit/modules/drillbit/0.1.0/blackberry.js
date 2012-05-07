@@ -38,25 +38,25 @@ BlackBerrySimulator.prototype.createTestHarnessBuilderProcess = function(command
 };
 
 BlackBerrySimulator.prototype.getTestHarnessPID = function() {
-	// TODO
+	// TODO Mac
 	ti.api.error("Not implemented: getTestHarnessPID");
 	return null;
 };
 
 BlackBerrySimulator.prototype.isTestHarnessRunning = function() {
-	// TODO
+	// TODO Mac
 	ti.api.error("Not implemented: isTestHarnessRunning");
 	return true;
 };
 
 BlackBerrySimulator.prototype.isEmulatorRunning = function() {
-	// TODO
+	// TODO Mac
 	ti.api.error("Not implemented: isEmulatorRunning");
 	return true;
 };
 
 BlackBerrySimulator.prototype.getTestJSInclude = function() {
-	// TODO: check
+	// TODO Mac: check
 	return "Ti.include(\"test.js\")";
 };
 
@@ -74,17 +74,17 @@ BlackBerrySimulator.prototype.run = function(readLineCb) {
 		this.testHarnessRunning = this.isTestHarnessRunning();
 	} else {
 		// launch the (si|e)mulator async
-		// TODO
+		// TODO Mac
 	}
 
 	/*
-	TODO
+	TODO Mac
 	blackberrySimulatorProcess.setOnReadLine(readLineCb);
 	blackberrySimulatorProcess.launch();
 	*/
 
 	if (this.device == 'emulator' && !emulatorRunning) {
-		// TODO
+		// TODO Mac
 	} else {
 		if (this.testHarnessRunning) {
 			// Kill the test harness on bootup if it's still running
@@ -96,12 +96,12 @@ BlackBerrySimulator.prototype.run = function(readLineCb) {
 };
 
 BlackBerrySimulator.prototype.removeTestJS = function(testScript) {
-	// TODO
+	// TODO Mac
 	ti.api.error("Not implemented: removeTestJS");
 };
 
 BlackBerrySimulator.prototype.fillTestTemplateData = function(data) {
-	// TODO
+	// TODO Mac
 	ti.api.error("Not implemented: fillTestTemplateData");
 }
 
@@ -112,33 +112,33 @@ BlackBerrySimulator.prototype.pushTestJS = function(testScript) {
 	stream.write(testScript);
 	stream.close();
 
-	// TODO
+	// TODO Mac
 };
 
 BlackBerrySimulator.prototype.stageSDK = function(sdkTimestamp) {
-	// TODO
-	ti.api.error("Not implemented: fillTestTemplateData");
+	// TODO Mac
+	ti.api.error("Not implemented: stageSDK");
 	return null;
 };
 
 BlackBerrySimulator.prototype.testHarnessNeedsBuild = function(stagedFiles) {
-	// TODO
+	// TODO Mac
 	ti.api.error("Not implemented: testHarnessNeedsBuild");
 	return false;
 };
 
 BlackBerrySimulator.prototype.installTestHarness = function(launch) {
-	// TODO
+	// TODO Mac
 	ti.api.error("Not implemented: installTestHarness");
 };
 
 BlackBerrySimulator.prototype.launchTestHarness = function() {
-	// TODO
+	// TODO Mac
 	ti.api.error("Not implemented: launchTestHarness");
 };
 
 BlackBerrySimulator.prototype.killTestHarness = function() {
-	// TODO
+	// TODO Mac
 	ti.api.error("Not implemented: killTestHarness");
 	this.testHarnessRunning = false;
 };
@@ -152,15 +152,6 @@ BlackBerrySimulator.prototype.runTestHarness = function(suite, stagedFiles) {
 	if (!this.testHarnessRunning || this.needsBuild || this.testHarnessNeedsBuild(stagedFiles) || forceBuild) {
 		var command = 'build';
 		var commandArgs = [];
-		var needsInstall = true;
-		var needsLaunch = false;
-
-		if (this.device.indexOf('emulator') != 0) {
-			command = 'install';
-			commandArgs = [this.avdId, this.device];
-			needsLaunch = true;
-			needsInstall = false;
-		}
 		
 		var process = this.createTestHarnessBuilderProcess(command, commandArgs);
 		this.drillbit.frontendDo('building_test_harness', suite.name, 'blackberry');
@@ -177,11 +168,7 @@ BlackBerrySimulator.prototype.runTestHarness = function(suite, stagedFiles) {
 				self.drillbit.handleTestError(suite);
 				return;
 			}
-			if (needsInstall) {
-				self.installTestHarness(true);
-			} else if (needsLaunch) {
-				self.launchTestHarness();
-			}
+			self.installTestHarness(true);
 			self.testHarnessRunning = true;
 			self.needsBuild = false;
 		});
