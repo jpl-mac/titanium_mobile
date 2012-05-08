@@ -5,7 +5,7 @@
 # WARNING: the paths to qde, project and project name must not contain any
 #          spaces for the tools to work correctly
 
-import os, sys, platform, subprocess, pprint
+import os, sys, platform, subprocess, pprint, shutil
 from argparse import ArgumentParser
 
 class Device:
@@ -57,9 +57,9 @@ class BlackberryNDK:
 
 		if platform.system() == 'Windows':
 			# TODO Mac: find out where the NDK installs on windows
-			default_dirs = ['C:\\bbndk-2.0.0']
+			default_dirs = ['C:\\bbndk-10.0.03']
 		else:
-			default_dirs = ['/Developer/SDKs/bbndk-2.0.0', '/opt/bbndk-2.0.0', '~/bbndk-2.0.0', '~/opt/bbndk-2.0.0']
+			default_dirs = ['/Developer/SDKs/bbndk-10.0.03', '/opt/bbndk-10.0.03', '~/bbndk-10.0.03', '~/opt/bbndk-10.0.03']
 
 		for default_dir in default_dirs:
 			if os.path.exists(default_dir):
@@ -148,21 +148,31 @@ class BlackberryNDK:
 		command = [self.qde, '-nosplash', '-application', 'org.eclipse.cdt.managedbuilder.core.headlessbuild', '-consoleLog', '-data', workspace, '-import', project]
 		self._run(command)
 
-	def build(self, project, variant):
+	def build(self, project, cpu):
 		assert os.path.exists(project)
-		if platform.system() == 'Windows':
-			mkbuild = 'mkbuild.bat'
-		else:
-			mkbuild = 'mkbuild'
-		command = [mkbuild, project, '-variant', variant]
+		templateDir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
+		cpuList = 'CPULIST=' + cpu
+		bbRoot = 'BB_ROOT=' + templateDir
+		oldPath = os.getcwd()
+		os.chdir(project)
+		command = ['make', cpuList, bbRoot]
 		self._run(command)
+		os.chdir(oldPath)
 
 	def package(self, package, savePath, projectName):
+		# TODO Mac: Copy all needed resources to assets (images, sounds, etc.). For now copy only the app.js to assets
+		buildDir = os.path.abspath(os.path.join(savePath, '..', '..', '..'))
+		projectDir = os.path.abspath(os.path.join(buildDir, '..', '..', '..'))
+		assetsDir = os.path.join(buildDir, 'assets')
+		if not os.path.exists(assetsDir):
+			os.makedirs(assetsDir)
+		shutil.copy2(os.path.join(projectDir, 'Resources', 'app.js'), assetsDir)
+
 		if platform.system() == 'Windows':
 			packager = 'blackberry-nativepackager.bat'
 		else:
 			packager = 'blackberry-nativepackager'
-		command = [packager, '-package', package, 'bar-descriptor.xml', '-e', savePath, projectName, 'icon.png']
+		command = [packager, '-package', package, 'bar-descriptor.xml', '-e', savePath, projectName, 'icon.png', 'assets']
 		self._run(command)
 
 	def deploy(self, deviceIP, package):

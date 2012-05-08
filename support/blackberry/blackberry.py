@@ -14,7 +14,7 @@ from blackberryndk import BlackberryNDK
 from argparse import ArgumentParser
 
 template_dir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
-top_support_dir = os.path.dirname(template_dir) 
+top_support_dir = os.path.dirname(template_dir)
 sys.path.append(os.path.join(top_support_dir, 'common'))
 
 from mako.template import Template
@@ -25,7 +25,7 @@ class Blackberry(object):
 		self.name = name
 		self.id = appid
 		self.ndk = bbndk
-		
+
 		# Configuration for the bar-descriptor.xml file
 		self.configDescriptor = {
 			'id':self.id,
@@ -36,16 +36,15 @@ class Blackberry(object):
 			'author':'Appcelerator Titanium Mobile', # TODO MAC: Find out how validate the author
 			'category':'core.games'					 # TODO MAC: Find out how validate the category
 		}
-		
+
 		# Configuration for the project file
 		self.configProject = {
 			'appname':self.name,
 			'buildlocation':None # TODO MAC: Find out how specify the build location
 		}
-		
-	def create(self, dir): 
-		project_dir = os.path.join(dir, self.name)
 
+	def create(self, dir):
+		project_dir = os.path.join(dir, self.name)
 		# Creates directory named as project name.
 		# mkbuild utility uses path's last component as project name. So, project directory should be named as project
 		build_dir = os.path.join(project_dir, 'build', 'blackberry', self.name)
@@ -60,9 +59,9 @@ class Blackberry(object):
 		if os.path.exists(blackberry_project_resources):
 			shutil.rmtree(blackberry_project_resources)
 		shutil.copytree(os.path.join(template_dir,'resources'),blackberry_project_resources)
-		
-		# TODO Mac: For now used temporarily created directory where exist source files
-		sourcePath = os.path.join(template_dir,'HelloWorldDisplay')
+
+		# Copy the tibbapp sample project
+		sourcePath = os.path.join(template_dir,'tibbapp')
 		for file in os.listdir(sourcePath):
 			path = os.path.join(sourcePath, file)
 			try:
@@ -76,7 +75,7 @@ class Blackberry(object):
 			except Exception, e:
 				print >> sys.stderr, e
 				sys.exit(1)
-				
+
 		# add replaced templates: bar-descriptor.xml, .project files
 		templates = os.path.join(template_dir,'templates')
 		# copy bar-descriptor.xml
@@ -84,7 +83,7 @@ class Blackberry(object):
 		_renderTemplate(os.path.join(build_dir,'bar-descriptor.xml'), self.configDescriptor)
 		# copy project file
 		shutil.copy2(os.path.join(templates,'project'), os.path.join(build_dir, '.project'))
-		_renderTemplate(os.path.join(build_dir,'.project'), self.configProject)		
+		_renderTemplate(os.path.join(build_dir,'.project'), self.configProject)
 
 		# import project into workspace so it can be built with mkbuild
 		self.ndk.importProject(build_dir)
@@ -105,7 +104,7 @@ def _renderTemplate(template, config):
 		print >>sys.stderr, e
 		sys.exit(1)
 	finally:
-		if f != None: 
+		if f != None:
 			f.close
 
 def _loadTemplate(template):
@@ -121,7 +120,7 @@ def __runTemplatingDescriptorTest(configDesc):
 		# Uncomment the following function for debugging
 		# __unitTestTraceback()
 		return False
-	
+
 def __runTemplatingProjectTest(configProj):
 	projectFile = os.path.join(template_dir, 'templates', 'project')
 	try:
@@ -142,23 +141,23 @@ def __unitTestTraceback():
 		print line
 	print "%s: %s" % (str(traceback.error.__class__.__name__), traceback.error)
 	print "\n\n-------------END TRACEBACK---------------\n"
-	
+
 def __runUnitTests():
 	from tiunittest import UnitTest
-	
+
 	ndk = None if args.test == True else args.test
 
 	bbndk = BlackberryNDK(ndk)
 	bb = Blackberry('TemplateTest', 'com.macadamian.template', bbndk)
-	
+
 	with UnitTest('Test template replacing on bar-descriptor.xml file..'):
 		passed =__runTemplatingDescriptorTest(bb.configDescriptor)
 		assert passed
-		
+
 	with UnitTest('Test template replacing on .project file..'):
 		passed = __runTemplatingProjectTest(bb.configProject)
 		assert passed
-	
+
 	print '\nFinished Running Unit Tests'
 	UnitTest.printDetails()
 
@@ -181,7 +180,7 @@ if __name__ == '__main__':
 		if args.name == None or args.id == None or args.dir == None or args.ndk == None:
 			parser.print_usage()
 			sys.exit(1)
-	
+
 	try:
 		bbndk = BlackberryNDK(args.ndk.decode("utf-8"))
 		bb = Blackberry(args.name.decode("utf-8"), args.id.decode("utf-8"), bbndk)
