@@ -50,6 +50,7 @@
     <asset path="icon.png">icon.png</asset>
     <asset path="app.js">assets/app.js</asset>
     <asset path="icon2.png">icon2.png</asset>
+    <asset path="mac_labs_icon.png">mac_labs_icon.png</asset>
     <configuration id="com.qnx.qcc.toolChain.1839462390" name="Default">
        <platformArchitecture>armle-v7</platformArchitecture>
        <asset path="arm/o.le-v7-g/tibbtest" entry="true" type="Qnx/Elf">tibbtest</asset>
@@ -69,7 +70,7 @@
     
     <!--  The icon for the application, which should be 86x86. -->
     <icon>
-        <image>icon2.png</image>
+        <image>mac_labs_icon.png</image>
     </icon>
     
     <!--  The splash screen that will appear when your application is launching. Should be 1024x600. -->
