@@ -29,6 +29,7 @@ public:
     virtual int setText(const char* text);
     virtual int setTextAlign(const char* align);
     virtual int setValue(float value);
+    virtual int setHintText(const char* text);
     virtual int setImage(const char* image);
     virtual int setWidth(float width);
     virtual int setHeight(float height);

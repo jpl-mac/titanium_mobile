@@ -25,7 +25,7 @@ NativeImageViewObject::~NativeImageViewObject()
 
 NativeImageViewObject* NativeImageViewObject::createImageView()
 {
-   return new NativeImageViewObject;
+    return new NativeImageViewObject;
 }
 
 int NativeImageViewObject::getObjectType() const

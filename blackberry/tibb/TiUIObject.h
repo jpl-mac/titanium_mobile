@@ -36,6 +36,7 @@ private:
     static Handle<Value> createSlider_(void* userContext, TiObject* caller, const Arguments& args);
     static Handle<Value> createProgressBar_(void* userContext, TiObject* caller, const Arguments& args);
     static Handle<Value> createImageView_(void* userContext, TiObject* caller, const Arguments& args);
+    static Handle<Value> createTextField_(void* userContext, TiObject* caller, const Arguments& args);
     NativeObjectFactory* objectFactory_;
     NativeObject* contentContainer_;
 };

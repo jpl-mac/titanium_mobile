@@ -22,6 +22,7 @@ typedef void* NAHANDLE;
 #define N_TYPE_SLIDER                           5
 #define N_TYPE_PROGRESSBAR                      6
 #define N_TYPE_IMAGEVIEW                        7
+#define N_TYPE_TEXT_FIELD                       8
 
 #define N_PROP_SET_UNDEFINED                    0
 #define N_PROP_SET_ANCHOR_POINT                 1
@@ -41,6 +42,8 @@ typedef void* NAHANDLE;
 #define N_PROP_SET_WIDTH                        15
 #define N_PROP_SET_HEIGHT                       16
 #define N_PROP_SET_LEFT                         17
+#define N_PROP_SET_HINT_TEXT                    18
+
 
 class NativeObjectFactory;
 class TiEvent;

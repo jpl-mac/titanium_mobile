@@ -8,7 +8,7 @@
 #include "TiUIImageView.h"
 
 TiUIImageView::TiUIImageView(NativeObjectFactory* nativeObjectFactory)
-        : TiUIBase(nativeObjectFactory, "")
+    : TiUIBase(nativeObjectFactory, "")
 {
 }
 

@@ -34,6 +34,7 @@ public slots:
     void valueChanged(float value);
     void clicked();
     void imageChanged(const bb::cascades::Image);
+    void textChanging(QString str);
 
 private:
     TiEventContainer* eventContainer_;

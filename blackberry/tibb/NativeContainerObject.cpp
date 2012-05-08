@@ -18,6 +18,7 @@
 #include <bb/cascades/ProgressIndicator>
 #include <bb/cascades/Slider>
 #include <bb/cascades/Stacklayout>
+#include <bb/cascades/TextField>
 #include <qtgui/QColor>
 
 using namespace bb::cascades;
@@ -119,13 +120,23 @@ int NativeContainerObject::addChildNativeObject(NativeObject* obj)
         return NATIVE_ERROR_OK;
     }
 
+    case N_TYPE_TEXT_FIELD:
+
+    {
+        bb::cascades::TextField* textField = (bb::cascades::TextField*) obj->getNativeHandle();
+        container_->add(textField);
+        return NATIVE_ERROR_OK;
+
     }
+
+    }
+
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
 int NativeContainerObject::open()
 {
-    container_->setLayout(new DockLayout());
+    container_->setLayout(new AbsoluteLayout());
     nativeObjectFactory_->setRootContainer(this);
     return NATIVE_ERROR_OK;
 }

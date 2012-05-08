@@ -84,6 +84,25 @@ int NativeControlObject::setImage(const char* image)
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
+PROP_SETTER_CSTRING(setTextAlign)
+int NativeControlObject::setTextAlign(const char* align)
+{
+    return NATIVE_ERROR_NOTSUPPORTED;
+}
+
+PROP_SETTER_FLOAT(setTop)
+int NativeControlObject::setTop(float top)
+{
+    control_->setTopMargin(top);
+    return NATIVE_ERROR_OK;
+}
+
+PROP_SETTER_FLOAT(setValue)
+int NativeControlObject::setValue(float value)
+{
+    return NATIVE_ERROR_NOTSUPPORTED;
+}
+
 PROP_SETTER_FLOAT(setWidth)
 int NativeControlObject::setWidth(float width)
 {
@@ -102,21 +121,8 @@ int NativeControlObject::setLeft(float left)
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
-PROP_SETTER_CSTRING(setTextAlign)
-int NativeControlObject::setTextAlign(const char* align)
-{
-    return NATIVE_ERROR_NOTSUPPORTED;
-}
-
-PROP_SETTER_FLOAT(setTop)
-int NativeControlObject::setTop(float top)
-{
-    control_->setTopMargin(top);
-    return NATIVE_ERROR_OK;
-}
-
-PROP_SETTER_FLOAT(setValue)
-int NativeControlObject::setValue(float value)
+PROP_SETTER_CSTRING(setHintText)
+int NativeControlObject::setHintText(const char* hint)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
@@ -140,12 +146,10 @@ const static NATIVE_PROPSET_CALLBACK g_functionMap[] =
     PROP_SETTING_FUNCTION(setTextAlign),           // N_PROP_SET_TEXT_ALIGN
     PROP_SETTING_FUNCTION(setTop),                 // N_PROP_SET_TOP
     PROP_SETTING_FUNCTION(setValue),               // N_PROP_SET_VALUE
-    PROP_SETTING_FUNCTION(setImage),               // N_PROP_SET_IMAGE
+    PROP_SETTING_FUNCTION(setLeft),                // N_PROP_SET_LEFT
     PROP_SETTING_FUNCTION(setWidth),               // N_PROP_SET_WIDTH
     PROP_SETTING_FUNCTION(setHeight),              // N_PROP_SET_HEIGHT
-    PROP_SETTING_FUNCTION(setLeft),                // N_PROP_SET_LEFT
-    PROP_SETTING_FUNCTION(setTop)                  // N_PROP_SET_RIGHT
-
+    PROP_SETTING_FUNCTION(setHintText)             // N_RROP_HINT_TEXT
 };
 
 int NativeControlObject::setPropertyValue(int propertyNumber, const char* value)
