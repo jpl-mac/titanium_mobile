@@ -66,6 +66,10 @@ class TiLogger:
 	def error(self, msg):
 		self._log(msg, TiLogger.ERROR)
 
+	def getLogfile(self):
+		global _logfile
+		return _logfile
+
 # if __name__ == "__main__":
 	# _logfile = ''
 	# print "[DEBUG] TiLogger initialized"
