@@ -134,12 +134,13 @@ class BlackberryNDK:
 				# Need this write() or else subprocess will overwrite for some reason
 				f.write('\n')
 				subprocess.check_call(command, stdout = f, stderr = f)
+				return 0
 		except subprocess.CalledProcessError, cpe:
 			print >>sys.stderr, cpe, cpe.output
-			return
+			return cpe.returncode
 		except OSError, e:
 			print >>sys.stderr, e
-			return
+			return e.errno
 
 	def importProject(self, project, workspace = None):
 		assert os.path.exists(project)
@@ -156,8 +157,9 @@ class BlackberryNDK:
 		oldPath = os.getcwd()
 		os.chdir(project)
 		command = ['make', cpuList, bbRoot]
-		self._run(command)
+		retCode = self._run(command)
 		os.chdir(oldPath)
+		return retCode
 
 	def package(self, package, savePath, projectName):
 		# TODO Mac: Copy all needed resources to assets (images, sounds, etc.). For now copy only the app.js to assets
@@ -173,7 +175,7 @@ class BlackberryNDK:
 		else:
 			packager = 'blackberry-nativepackager'
 		command = [packager, '-package', package, 'bar-descriptor.xml', '-e', savePath, projectName, 'icon.png', 'assets']
-		self._run(command)
+		return self._run(command)
 
 	def deploy(self, deviceIP, package):
 		if platform.system() == 'Windows':
@@ -181,7 +183,7 @@ class BlackberryNDK:
 		else:
 			deploy = 'blackberry-deploy'
 		command = [deploy, '-installApp', '-launchApp', '-device', deviceIP, '-package', package]
-		self._run(command)
+		return self._run(command)
 
 def __runUnitTests():
 	# on windows the double dirname need to be done on 2 lines
@@ -276,6 +278,7 @@ if __name__ == "__main__":
 		print "BLACKBERRY_NDK_VERSION=%s" % ndk.getVersion()
 	except Exception, e:
 		print >>sys.stderr, e
+		sys.exit(1)
 
 	if args.test:
 		__runUnitTests()
