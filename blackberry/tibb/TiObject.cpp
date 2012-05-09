@@ -161,6 +161,13 @@ Handle<Value> TiObject::getValue() const
     return value_;
 }
 
+Handle<Value> TiObject::evaluate() const
+{
+    // TODO: complete this
+    HandleScope handleScope;
+    return value_;
+}
+
 TiObject* TiObject::onLookupMember(const char* memberName)
 {
     map<string, ObjectEntry>::iterator it;
@@ -352,7 +359,7 @@ bool TiObject::isUIObject() const
     return false;
 }
 
-void TiObject::setTiMappingProperties(const TI_PROPERTY* prop, int propertyCount)
+void TiObject::setTiMappingProperties(const TiProperty* prop, int propertyCount)
 {
 }
 

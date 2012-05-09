@@ -63,7 +63,6 @@ int NativeContainerObject::initialize(TiEventContainerFactory* containerFactory)
     {
         return NATIVE_ERROR_OUTOFMEMORY;
     }
-    //container_->setLayout(StackLayout::create());
     return NATIVE_ERROR_OK;
 }
 

@@ -8,76 +8,79 @@
 #include "TiUIBase.h"
 #include "TiGenericFunctionObject.h"
 #include "TiPropertySetFunctionObject.h"
+#include "TiPropertyGetFunctionObject.h"
 #include "TiPropertyMapObject.h"
 #include "TiV8Event.h"
+#include <string>
+#include <ctype.h>
 
-const static TI_PROPERTY g_tiProperties[] =
+const static TiProperty g_tiProperties[] =
 {
     {
-        "backgroundColor", "setBackgroundColor", "black", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
-        NATIVE_TYPE_CSTRING, N_PROP_SET_BACKGROUND_COLOR
+        "backgroundColor", "black", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        NATIVE_TYPE_CSTRING, N_PROP_BACKGROUND_COLOR
     },
 
     {
-        "label", "setLabel", "", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
-        NATIVE_TYPE_CSTRING, N_PROP_SET_LABEL
+        "label", "", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        NATIVE_TYPE_CSTRING, N_PROP_LABEL
     },
 
     {
-        "max", "setMax", "0", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
-        NATIVE_TYPE_INT | NATIVE_TYPE_DOUBLE, N_PROP_SET_MAX
+        "max", "0", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        NATIVE_TYPE_INT | NATIVE_TYPE_DOUBLE, N_PROP_MAX
     },
 
     {
-        "min", "setMin", "0", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
-        NATIVE_TYPE_INT | NATIVE_TYPE_DOUBLE, N_PROP_SET_MIN
+        "min", "0", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        NATIVE_TYPE_INT | NATIVE_TYPE_DOUBLE, N_PROP_MIN
     },
 
     {
-        "text", "setText", "", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
-        NATIVE_TYPE_CSTRING, N_PROP_SET_TEXT
+        "text", "", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        NATIVE_TYPE_CSTRING, N_PROP_TEXT
     },
 
     {
-        "textAlign", "setTextAlign", "center", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
-        NATIVE_TYPE_CSTRING | NATIVE_TYPE_INT, N_PROP_SET_TEXT_ALIGN
+        "textAlign", "center", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        NATIVE_TYPE_CSTRING | NATIVE_TYPE_INT, N_PROP_TEXT_ALIGN
     },
 
     {
-        "top", "setTop", "0", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
-        NATIVE_TYPE_INT | NATIVE_TYPE_DOUBLE, N_PROP_SET_TOP
+        "top", "0", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        NATIVE_TYPE_INT | NATIVE_TYPE_DOUBLE, N_PROP_TOP
     },
 
     {
-        "value", "setValue", "0", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
-        NATIVE_TYPE_INT, N_PROP_SET_VALUE
+        "value", "0", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        NATIVE_TYPE_INT, N_PROP_VALUE
     },
 
     {
-        "image", "setImage", "", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
-        NATIVE_TYPE_CSTRING, N_PROP_SET_IMAGE
+        "image", "", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        NATIVE_TYPE_CSTRING, N_PROP_IMAGE
     },
 
     {
-        "width", "setWidth", "", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
-        NATIVE_TYPE_DOUBLE, N_PROP_SET_WIDTH
+        "width", "", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        NATIVE_TYPE_DOUBLE, N_PROP_WIDTH
     },
 
     {
-        "height", "setHeight", "", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
-        NATIVE_TYPE_DOUBLE, N_PROP_SET_HEIGHT
-    },
-
-
-    {
-        "hintText", "setHintText", "", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
-        NATIVE_TYPE_CSTRING, N_PROP_SET_HINT_TEXT
+        "height", "", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        NATIVE_TYPE_DOUBLE, N_PROP_HEIGHT
     },
 
 
     {
-        "left", "setLeft", "", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
-        NATIVE_TYPE_DOUBLE, N_PROP_SET_LEFT
+        "hintText", "", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        NATIVE_TYPE_CSTRING, N_PROP_HINT_TEXT
+    },
+
+
+    {
+        "left", "", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        NATIVE_TYPE_DOUBLE, N_PROP_LEFT
     },
 };
 
@@ -140,16 +143,33 @@ NativeObject* TiUIBase::getNativeObject() const
     return nativeObject_;
 }
 
-void TiUIBase::setTiMappingProperties(const TI_PROPERTY* prop, int propertyCount)
+void TiUIBase::setTiMappingProperties(const TiProperty* props, int propertyCount)
 {
+    string name;
+    char c[2];
+    c[1] = 0;
     for (int i = 0; i < propertyCount; i++)
     {
-        TiObject* value = TiPropertyMapObject::addProperty(this, prop[i].propertyName, prop[i].nativePropertyNumber,
-                          prop[i].supportedTypes,
+        TiObject* value = TiPropertyMapObject::addProperty(this, props[i].propertyName, props[i].nativePropertyNumber,
+                          props[i].supportedTypes,
                           valueModify, this);
-        if ((prop[i].permissions & TI_PROP_PERMISSION_WRITE) && (prop[i].propertySetterFunctionName != NULL))
+        // For all properties that have write permissions, add a setter method, e.g., myLabel.text=<my text>; myLabel.setText(<my text>);
+        if (props[i].permissions & TI_PROP_PERMISSION_WRITE)
         {
-            TiPropertySetFunctionObject::addPropertySetter(this, value, prop[i].propertySetterFunctionName);
+            c[0] = toupper(props[i].propertyName[0]);
+            name = "set";
+            name += c;
+            name += props[i].propertyName + 1;
+            TiPropertySetFunctionObject::addPropertySetter(this, value, name.c_str());
+        }
+        // For all properties that have read permissions, add a getter method, e.g., var test=myLabel.text; var test=myLabel.getText();
+        if (props[i].permissions & TI_PROP_PERMISSION_READ)
+        {
+            c[0] = toupper(props[i].propertyName[0]);
+            name = "get";
+            name += c;
+            name += props[i].propertyName + 1;
+            TiPropertyGetFunctionObject::addPropertyGetter(this, value, name.c_str());
         }
         value->release();
     }
@@ -185,7 +205,6 @@ void TiUIBase::setParametersFromObject(Local<Object> obj)
     {
         return;
     }
-    Handle<Object> self = Handle<Object>::Cast(controlValue);
     Handle<Array> propNames = obj->GetPropertyNames();
     uint32_t props = propNames->Length();
     Local<Value> propValue;

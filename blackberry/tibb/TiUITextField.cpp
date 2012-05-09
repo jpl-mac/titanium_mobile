@@ -8,7 +8,7 @@
 #include "TiUITextField.h"
 
 TiUITextField::TiUITextField(NativeObjectFactory* nativeObjectFactory)
-        : TiUIBase(nativeObjectFactory, "")
+    : TiUIBase(nativeObjectFactory, "")
 {
 }
 

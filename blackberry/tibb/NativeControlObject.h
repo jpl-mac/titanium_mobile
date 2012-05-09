@@ -23,19 +23,20 @@ public:
     virtual int setPropertyValue(int propertyNumber, const char* value);
 
     virtual int setBackgroundColor(const char* text);
+    virtual int setColor(const char* color);
     virtual int setLabel(const char* text);
     virtual int setMax(float max);
     virtual int setMin(float min);
     virtual int setText(const char* text);
     virtual int setTextAlign(const char* align);
     virtual int setValue(float value);
+    virtual int setVisible(bool value);
     virtual int setHintText(const char* text);
     virtual int setImage(const char* image);
     virtual int setWidth(float width);
     virtual int setHeight(float height);
     virtual int setLeft(float left);
     virtual int setTop(float top);
-
 protected:
     NativeControlObject();
     virtual ~NativeControlObject();
