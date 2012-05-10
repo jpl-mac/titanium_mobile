@@ -19,6 +19,7 @@
 #include <bb/cascades/Slider>
 #include <bb/cascades/Stacklayout>
 #include <bb/cascades/TextField>
+#include <bb/cascades/ActivityIndicator>
 #include <qtgui/QColor>
 
 using namespace bb::cascades;
@@ -116,6 +117,14 @@ int NativeContainerObject::addChildNativeObject(NativeObject* obj)
     {
         bb::cascades::ImageView* imageView = (bb::cascades::ImageView*) obj->getNativeHandle();
         container_->add(imageView);
+        return NATIVE_ERROR_OK;
+    }
+
+    case N_TYPE_ACTIVITYINDICATOR:
+
+    {
+        bb::cascades::ActivityIndicator* activityIndicator = (bb::cascades::ActivityIndicator*) obj->getNativeHandle();
+        container_->add(activityIndicator);
         return NATIVE_ERROR_OK;
     }
 
