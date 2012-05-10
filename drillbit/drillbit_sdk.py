@@ -19,10 +19,11 @@ def main():
 	loader = unittest2.TestLoader()
 
 	if options.tests == None:
-		import android, iphone
+		import android, iphone, blackberry
 		androidSuite = loader.loadTestsFromModule(android)
 		iphoneSuite = loader.loadTestsFromModule(iphone)
-		allSuites = unittest2.TestSuite([androidSuite, iphoneSuite])
+		blackberrySuite = loader.loadTestsFromModule(blackberry)
+		allSuites = unittest2.TestSuite([androidSuite, iphoneSuite, blackberrySuite])
 		runner.run(allSuites)
 	else:
 		tests = options.tests.split(",")
