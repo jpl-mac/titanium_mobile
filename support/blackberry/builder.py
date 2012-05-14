@@ -37,7 +37,9 @@ class Builder(object):
 	def run(self):
 		# TODO Mac: V8 runtime should be added and possibly a lot of other stuff
 		
-		self.build()
+		retCode = self.build()
+		if retCode != 0:
+			return retCode
 		info('Running')
 		
 		# Change current directory to do relative operations
@@ -50,12 +52,15 @@ class Builder(object):
 		# TODO Mac: See if we can reasonably launch the simulator from here and fetch the ip address
 		barPath = os.path.join(self.buildDir, self.cpu, self.variant, '%s.bar' % self.name)
 		savePath = os.path.join(self.buildDir, self.cpu, self.variant, self.name)
-		self.ndk.package(barPath, savePath, self.name)
-		self.ndk.deploy('192.168.226.132', barPath)
+		retCode = self.ndk.package(barPath, savePath, self.name)
+		if retCode != 0:
+			return retCode
+		retCode = self.ndk.deploy('192.168.226.132', barPath)
+		return retCode
 	
 	def build(self):
 		info('Building')
-		self.ndk.build(self.buildDir, self.cpu)
+		return self.ndk.build(self.buildDir, self.cpu)
 
 def info(msg):
 	log.info(msg)
@@ -95,7 +100,9 @@ if __name__ == "__main__":
 
 	builder = Builder(args.project_path.decode('utf-8'), args.type.decode('utf-8'), bbndk)
 
+	retCode = 1
 	if (args.command == 'build'):
-		builder.build()
+		retCode = builder.build()
 	elif (args.command == 'run'):
-		builder.run()
+		retCode = builder.run()
+	sys.exit(retCode)

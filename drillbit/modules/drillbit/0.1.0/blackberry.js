@@ -127,14 +127,35 @@ BlackBerrySimulator.prototype.testHarnessNeedsBuild = function(stagedFiles) {
 	return false;
 };
 
-BlackBerrySimulator.prototype.installTestHarness = function(launch) {
-	// TODO Mac
-	ti.api.error("Not implemented: installTestHarness");
+BlackBerrySimulator.prototype.installTestHarness = function(launch, suite) {
+	// TODO Mac: need to separate install from launch
+	if (launch) {
+		this.launchTestHarness(suite);
+	}
 };
 
-BlackBerrySimulator.prototype.launchTestHarness = function() {
-	// TODO Mac
-	ti.api.error("Not implemented: launchTestHarness");
+BlackBerrySimulator.prototype.launchTestHarness = function(suite) {
+	// TODO Mac: need to separate install from launch
+	var command = 'run';
+	var commandArgs = [];
+	var process = this.createTestHarnessBuilderProcess(command, commandArgs);
+
+	var self = this;
+	process.setOnReadLine(function(data) {
+		var lines = data.split("\n");
+		lines.forEach(function(line) {
+			self.drillbit.frontendDo('process_data', line);
+		});
+	});
+	process.setOnExit(function(e) {
+		if (process.getExitCode() !== 0) {
+			self.drillbit.handleTestError(suite, 'blackberry');
+			return;
+		}
+		self.testHarnessRunning = true;
+		self.needsBuild = false;
+	});
+	process.launch();
 };
 
 BlackBerrySimulator.prototype.killTestHarness = function() {
@@ -165,10 +186,11 @@ BlackBerrySimulator.prototype.runTestHarness = function(suite, stagedFiles) {
 		});
 		process.setOnExit(function(e) {
 			if (process.getExitCode() != 0) {
-				self.drillbit.handleTestError(suite);
+				self.drillbit.handleTestError(suite, 'blackberry');
 				return;
 			}
-			self.installTestHarness(true);
+			self.drillbit.frontendDo('running_test_harness', suite.name, 'blackberry');
+			self.installTestHarness(true, suite);
 			self.testHarnessRunning = true;
 			self.needsBuild = false;
 		});
@@ -181,7 +203,7 @@ BlackBerrySimulator.prototype.runTestHarness = function(suite, stagedFiles) {
 		// be hanging up when we try to start it after kill returns
 		var self = this;
 		this.drillbit.window.setTimeout(function() {
-			self.launchTestHarness();
+			self.launchTestHarness(suite);
 		}, 2000);
 	}
 };

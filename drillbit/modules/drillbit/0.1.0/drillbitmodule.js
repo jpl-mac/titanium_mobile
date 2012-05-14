@@ -180,15 +180,14 @@ Drillbit.prototype.initPlatforms = function() {
 	if (platformsArg == null || platformsArg.indexOf('blackberry') != -1) {
 		// Try to detect the BlackBerry NDK
 		var blackberryNdkScript = ti.path.join(this.mobileSdk, 'blackberry', 'blackberryndk.py');
-		var blackberryNdk = 'blackberryNdk' in this.argv ? this.argv.blackberryNdk : '-';
-		var args = [blackberryNdkScript, blackberryNdk];
+		var args = [blackberryNdkScript];
+		if ('blackberryNdk' in this.argv) {
+			args.push(this.argv.blackberryNdk);
+		}
 		
 		var process = this.createPythonProcess(args);
 		var result = process();
 		ti.api.debug("result="+result);
-		
-		// TODO Mac: the above needs to be implemented in blackberryndk.py. For now just fake it:
-		result = "BLACKBERRY_NDK=C:\\bbndk-10.0.03";
 		
 		if (process.getExitCode() != 0) {
 			ti.api.warn("No BlackBerry NDK found, disabling BlackBerry tests, exit code: " + process.getExitCode());
@@ -949,9 +948,12 @@ Drillbit.prototype.generateFinalResults = function()
 	this.logStream = null;
 };
 
-Drillbit.prototype.handleTestError = function(suite)
+Drillbit.prototype.handleTestError = function(suite, platform)
 {
-	this.frontendDo('test_platform_status', suite.name, 'Error', 'android');
+	if (platform === undefined) {
+		platform = 'android';
+	}
+	this.frontendDo('test_platform_status', suite.name, 'Error', platform);
 	this.frontendDo('test_status', suite.name, 'Error')
 	this.testDuration = (new Date().getTime() - this.testsStarted)/1000;
 	this.frontendDo('all_finished');
