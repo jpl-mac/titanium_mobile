@@ -2,6 +2,12 @@
 #
 # Top level scons script
 #
+# Usage:
+#
+# TODO: fill in the rest
+# blackberry        1 to build only blackberry, 0 to skip
+# blackberry_ndk    path to the BlackBerry NDK
+#
 import os, shutil, platform, os.path as path, sys
 import package
 import SCons.Variables
