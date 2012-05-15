@@ -107,7 +107,7 @@ Handle<ObjectTemplate> TiObject::getObjectTemplateFromJsObject(Handle<Value> val
     Handle<Object> obj = Handle<Object>::Cast(value);
     Handle<Context> context = obj->CreationContext();
     Handle<External> globalTemplateExternal = Handle<External>::Cast(
-            context->Global()->GetHiddenValue(String::New(HIDDEN_TEMP_OBJECT_PROPERTY)));
+                context->Global()->GetHiddenValue(String::New(HIDDEN_TEMP_OBJECT_PROPERTY)));
     Handle<ObjectTemplate>temp = *((Handle<ObjectTemplate>*) globalTemplateExternal->Value());
     return handleScope.Close(temp);
 }
@@ -220,11 +220,23 @@ VALUE_MODIFY TiObject::onChildValueChange(TiObject* childObject, Handle<Value> o
     return VALUE_MODIFY_ALLOW;
 }
 
+/*
+ * setValue calls onValueChange which will determine how
+ * the value is handled. If the value VALUE_MODIFY_IGNORE
+ * is returned, the value is silently discarded without
+ * changing the value of the JavaScript object. This is
+ * useful in the case where the value has already been changed
+ * by calling forceSetValue in the overridden onValueChange.
+ */
 VALUE_MODIFY TiObject::setValue(Handle<Value> value)
 {
     VALUE_MODIFY modify = onValueChange(value_, value);
     if (modify != VALUE_MODIFY_ALLOW)
     {
+        if (modify == VALUE_MODIFY_IGNORE)
+        {
+            modify = VALUE_MODIFY_ALLOW;
+        }
         return modify;
     }
     TiObject* parent = getParentObject();
@@ -234,11 +246,20 @@ VALUE_MODIFY TiObject::setValue(Handle<Value> value)
         parent->release();
         if (modify != VALUE_MODIFY_ALLOW)
         {
+            if (modify == VALUE_MODIFY_IGNORE)
+            {
+                modify = VALUE_MODIFY_ALLOW;
+            }
             return modify;
         }
     }
     value_ = Persistent<Value>::New(value);
     return modify;
+}
+
+void TiObject::forceSetValue(Handle<Value> value)
+{
+    value_ = Persistent<Value>::New(value);
 }
 
 bool TiObject::userCanAddMember(const char* propertyName) const
@@ -293,8 +314,8 @@ Handle<Value> TiObject::propSetter_(Local<String> prop, Local<Value> value, cons
     TiObject* obj = getTiObjectFromJsObject(info.Holder());
     if (obj == NULL)
     {
-        obj=new TiObject("",info.Holder());
-        setTiObjectToJsObject(info.Holder(),obj);
+        obj = new TiObject("", info.Holder());
+        setTiObjectToJsObject(info.Holder(), obj);
     }
     String::Utf8Value propName(prop);
     const char* propString = (const char*)(*propName);

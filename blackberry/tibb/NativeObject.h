@@ -92,6 +92,10 @@ class TiEventContainerFactory;
 #include "TiEventContainer.h"
 #include "TiBase.h"
 
+class TiObject;
+
+#define N_SUCCEEDED(x)          ((x)==NATIVE_ERROR_OK)
+
 /*
  * NativeObject
  *
@@ -105,7 +109,7 @@ class NativeObject :
 {
 public:
     virtual int getObjectType() const = 0;
-    virtual int setPropertyValue(int propertyNumber, const char* value);
+    virtual int setPropertyValue(int propertyNumber, TiObject* obj);
     virtual int addChildNativeObject(NativeObject* obj);
     virtual NAHANDLE getNativeHandle() const;
     virtual int open();

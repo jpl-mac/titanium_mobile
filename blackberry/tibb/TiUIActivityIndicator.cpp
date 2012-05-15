@@ -9,7 +9,7 @@
 #include "TiGenericFunctionObject.h"
 
 TiUIActivityIndicator::TiUIActivityIndicator(NativeObjectFactory* nativeObjectFactory)
-:TiUIBase(nativeObjectFactory, "")
+    : TiUIBase(nativeObjectFactory, "")
 {
 }
 

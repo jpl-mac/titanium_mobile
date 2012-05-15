@@ -51,6 +51,3 @@ NAHANDLE NativeActivityIndicatorObject::getNativeHandle() const
 {
     return indicator_;
 }
-
-
-

@@ -166,14 +166,14 @@ BlackBerrySimulator.prototype.killTestHarness = function() {
 
 BlackBerrySimulator.prototype.runTestHarness = function(suite, stagedFiles) {
 	var forceBuild = 'forceBuild' in suite.options && suite.options.forceBuild;
-	
+
 	// FIXME: for now just force it
 	forceBuild = true;
-	
+
 	if (!this.testHarnessRunning || this.needsBuild || this.testHarnessNeedsBuild(stagedFiles) || forceBuild) {
 		var command = 'build';
 		var commandArgs = [];
-		
+
 		var process = this.createTestHarnessBuilderProcess(command, commandArgs);
 		this.drillbit.frontendDo('building_test_harness', suite.name, 'blackberry');
 

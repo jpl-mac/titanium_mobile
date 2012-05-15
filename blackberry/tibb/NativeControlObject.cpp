@@ -8,33 +8,20 @@
 #include "NativeControlObject.h"
 #include <stdlib.h>
 #include <string.h>
+#include "TiObject.h"
+#include <bb/cascades/Color>
+#include <qtgui/QColor>
 
 #define PROP_SETTING_FUNCTION(NAME)     prop_##NAME
-#define PROP_SETTER_CSTRING(NAME)       static int prop_##NAME(NativeControlObject* object,const char* value) \
+
+#define PROP_SETTER(NAME)               static int prop_##NAME(NativeControlObject* object, TiObject* obj) \
     {\
-        return object->NAME(value);\
-    }
-#define PROP_SETTER_INT(NAME)           static int prop_##NAME(NativeControlObject* object,const char* value) \
-    {\
-        return object->NAME(atoi(value));\
+        return object->NAME(obj);\
     }
 
-#define PROP_SETTER_FLOAT(NAME)         static int prop_##NAME(NativeControlObject* object,const char* value) \
-    {\
-        return object->NAME(atof(value));\
-    }
+#define GET_ARRAY_SIZE(T)               ((int)(sizeof(T) / sizeof(*T)))
 
-#define PROP_SETTER_BOOL(NAME)          static int prop_##NAME(NativeControlObject* object,const char* value) \
-    {\
-        bool b=false;\
-        if((stricmp(value,"true")==0)||(atoi(value)!=0)) \
-        {\
-            b=true;\
-        }\
-        return object->NAME(b);\
-    }
-
-typedef int (*NATIVE_PROPSET_CALLBACK)(NativeControlObject*, const char*);
+typedef int (*NATIVE_PROPSET_CALLBACK)(NativeControlObject*, TiObject*);
 
 NativeControlObject::NativeControlObject()
 {
@@ -59,70 +46,76 @@ void NativeControlObject::setControl(bb::cascades::Control* control)
 // calls the non-static on method on the NativeControlObject
 // class.
 
-PROP_SETTER_CSTRING(setBackgroundColor)
-int NativeControlObject::setBackgroundColor(const char* text)
+PROP_SETTER(setBackgroundColor)
+int NativeControlObject::setBackgroundColor(TiObject* obj)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
-PROP_SETTER_CSTRING(setColor)
-int NativeControlObject::setColor(const char* color)
+PROP_SETTER(setColor)
+int NativeControlObject::setColor(TiObject* obj)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
-PROP_SETTER_CSTRING(setLabel)
-int NativeControlObject::setLabel(const char* text)
+PROP_SETTER(setLabel)
+int NativeControlObject::setLabel(TiObject* obj)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
-PROP_SETTER_FLOAT(setMax)
-int NativeControlObject::setMax(float max)
+PROP_SETTER(setMax)
+int NativeControlObject::setMax(TiObject* obj)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
-PROP_SETTER_FLOAT(setMin)
-int NativeControlObject::setMin(float min)
+PROP_SETTER(setMin)
+int NativeControlObject::setMin(TiObject* obj)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
-PROP_SETTER_CSTRING(setText)
-int NativeControlObject::setText(const char* text)
+PROP_SETTER(setText)
+int NativeControlObject::setText(TiObject* obj)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
-PROP_SETTER_CSTRING(setTextAlign)
-int NativeControlObject::setTextAlign(const char* align)
+PROP_SETTER(setTextAlign)
+int NativeControlObject::setTextAlign(TiObject* obj)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
-PROP_SETTER_FLOAT(setTop)
-int NativeControlObject::setTop(float top)
-{
-    control_->setTopMargin(top);
-    return NATIVE_ERROR_OK;
-}
-
-PROP_SETTER_FLOAT(setValue)
-int NativeControlObject::setValue(float value)
+PROP_SETTER(setTitle)
+int NativeControlObject::setTitle(TiObject* obj)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
-PROP_SETTER_BOOL(setVisible)
-int NativeControlObject::setVisible(bool visible)
+PROP_SETTER(setTop)
+int NativeControlObject::setTop(TiObject* obj)
 {
-    NAHANDLE value = getNativeHandle();
-    if (value == NULL)
+    return NATIVE_ERROR_NOTSUPPORTED;
+}
+
+PROP_SETTER(setValue)
+int NativeControlObject::setValue(TiObject* obj)
+{
+    return NATIVE_ERROR_NOTSUPPORTED;
+}
+
+PROP_SETTER(setVisible)
+int NativeControlObject::setVisible(TiObject* obj)
+{
+    bool visible;
+    int error = getBoolean(obj, &visible);
+    if (error != NATIVE_ERROR_OK)
     {
-        return NATIVE_ERROR_NOTSUPPORTED;
+        return error;
     }
-    ((bb::cascades::Control*)value)->setVisible(visible);
+    ((bb::cascades::Control*)getNativeHandle())->setVisible(visible);
     return NATIVE_ERROR_OK;
 }
 
@@ -191,12 +184,73 @@ const static NATIVE_PROPSET_CALLBACK g_functionMap[] =
     NULL                                           // N_PROP_ZINDEX
 };
 
-int NativeControlObject::setPropertyValue(int propertyNumber, const char* value)
+int NativeControlObject::setPropertyValue(int propertyNumber, TiObject* obj)
 {
-    if ((propertyNumber < 0) || (propertyNumber >= (int)(sizeof(g_functionMap) / sizeof(*g_functionMap)))
+    if ((propertyNumber < 0) || (propertyNumber >= GET_ARRAY_SIZE(g_functionMap))
             || (g_functionMap[propertyNumber] == NULL))
     {
         return NATIVE_ERROR_NOTSUPPORTED;
     }
-    return (g_functionMap[propertyNumber])(this, value);
+    return (g_functionMap[propertyNumber])(this, obj);
+}
+
+int NativeControlObject::getColorComponents(TiObject* obj, float* r, float* g, float* b, float* a)
+{
+    Handle<Value> value = obj->getValue();
+    if ((value.IsEmpty()) || (!value->IsString()))
+    {
+        return NATIVE_ERROR_INVALID_ARG;
+    }
+    Handle<String> v8color = Handle<String>::Cast(value);
+    String::Utf8Value v8colorString(v8color);
+    if (!QColor::isValidColor(*v8colorString))
+    {
+        return NATIVE_ERROR_INVALID_ARG;
+    }
+    QColor qcolor(*v8colorString);
+    qreal qr, qg, qb, qa;
+    qcolor.getRgbF(&qr, &qg, &qb, &qa);
+    *r = qr;
+    *g = qg;
+    *b = qb;
+    *a = qa;
+    return NATIVE_ERROR_OK;
+}
+
+int NativeControlObject::getBoolean(TiObject* obj, bool* value)
+{
+    Handle<Value> v8value = obj->getValue();
+    if ((v8value.IsEmpty()) || ((!v8value->IsBoolean()) && (!v8value->IsBooleanObject())))
+    {
+        return NATIVE_ERROR_INVALID_ARG;
+    }
+    Handle<Boolean> b = v8value->ToBoolean();
+    *value = b->Value();
+    return NATIVE_ERROR_OK;
+}
+
+int NativeControlObject::getString(TiObject* obj, QString& str)
+{
+    Handle<Value> value = obj->getValue();
+    if ((value.IsEmpty()) || (!value->IsString()))
+    {
+        return NATIVE_ERROR_INVALID_ARG;
+    }
+    Handle<String> v8string = Handle<String>::Cast(value);
+    String::Utf8Value v8UtfString(v8string);
+    const char* cStr = *v8UtfString;
+    str = cStr;
+    return NATIVE_ERROR_OK;
+}
+
+int NativeControlObject::getFloat(TiObject* obj, float* value)
+{
+    Handle<Value> v8value = obj->getValue();
+    if ((v8value.IsEmpty()) || ((!v8value->IsNumber()) && (!v8value->IsNumberObject())))
+    {
+        return NATIVE_ERROR_INVALID_ARG;
+    }
+    Handle<Number> num = Handle<Number>::Cast(v8value);
+    *value = (float)num->Value();
+    return NATIVE_ERROR_OK;
 }
