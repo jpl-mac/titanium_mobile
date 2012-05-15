@@ -9,7 +9,7 @@
  */
 var ti = Ti = Titanium;
 // This should always list all available test platforms
-var ALL_PLATFORMS = ['android', 'iphone'];
+var ALL_PLATFORMS = ['android', 'iphone', 'blackberry'];
 
 Drillbit = function() {
 	this.module = ti.api.findModule('drillbit', '0.1.0');
@@ -176,6 +176,49 @@ Drillbit.prototype.initPlatforms = function() {
 		this.platforms.push('android');
 		//this.emulators.android = new Titanium.AndroidEmulator(this, androidSdk, apiLevel, platform, googleApis);
 		this.emulators.android = ti.createAndroidEmulator(this, androidSdk, apiLevel, platform, googleApis);
+	}
+	if (platformsArg == null || platformsArg.indexOf('blackberry') != -1) {
+		// Try to detect the BlackBerry NDK
+		var blackberryNdkScript = ti.path.join(this.mobileSdk, 'blackberry', 'blackberryndk.py');
+		var args = [blackberryNdkScript];
+		if ('blackberryNdk' in this.argv) {
+			args.push(this.argv.blackberryNdk);
+		}
+		
+		var process = this.createPythonProcess(args);
+		var result = process();
+		ti.api.debug("result="+result);
+		
+		if (process.getExitCode() != 0) {
+			ti.api.warn("No BlackBerry NDK found, disabling BlackBerry tests, exit code: " + process.getExitCode());
+			return;
+		}
+		
+		var blackberryNdkResult = {};
+		result.toString().split(/\r?\n/).forEach(function(line) {
+			var tokens = line.trim().split('=');
+			if (tokens.length != 2) return;
+			
+			var key = tokens[0].trim();
+			var value = tokens[1].trim();
+			blackberryNdkResult[key] = value;
+		});
+		
+		blackberryNdk = blackberryNdkResult['BLACKBERRY_NDK'];
+		
+		ti.api.info
+		(
+			'Adding BlackBerry NDK to list of Drillbit target platforms.'
+			+ ' NDK: ' + blackberryNdk
+		);
+		
+		ti.include(ti.path.join(this.module.getPath(), 'blackberry.js'));
+		this.platforms.push('blackberry');
+		this.emulators.blackberry = ti.createBlackBerrySimulator
+		(
+			this,
+			blackberryNdk
+		);
 	}
 	if (this.argv.platforms != null) {
 		Titanium.App.Properties.setString("testsPlatforms", this.argv.platforms);
@@ -661,6 +704,9 @@ Drillbit.prototype.setupTestHarness = function(harnessManifest)
 		if ('iphone' in this.emulators) {
 			titaniumArgs.push('--ver=' + this.emulators.iphone.version);
 		}
+		if ('blackberry' in this.emulators) {
+			titaniumArgs.push('--blackberry=' + this.emulators.blackberry.blackberryNdk);
+		}
 		var createProjectProcess = this.createPythonProcess(titaniumArgs);
 		createProjectProcess();
 	}
@@ -902,9 +948,12 @@ Drillbit.prototype.generateFinalResults = function()
 	this.logStream = null;
 };
 
-Drillbit.prototype.handleTestError = function(suite)
+Drillbit.prototype.handleTestError = function(suite, platform)
 {
-	this.frontendDo('test_platform_status', suite.name, 'Error', 'android');
+	if (platform === undefined) {
+		platform = 'android';
+	}
+	this.frontendDo('test_platform_status', suite.name, 'Error', platform);
 	this.frontendDo('test_status', suite.name, 'Error')
 	this.testDuration = (new Date().getTime() - this.testsStarted)/1000;
 	this.frontendDo('all_finished');
