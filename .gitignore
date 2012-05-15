@@ -1,6 +1,7 @@
 *.pyc
 dist
 .sconsign.dblite
+scons_*.log
 .DS_Store
 *~
 project.xcworkspace

@@ -317,14 +317,15 @@ def zip_blackberry(zf,basepath,version):
 			for file in files:
 				if not (file.endswith('.h') or file.endswith('.a')):
 					continue
-				e = os.path.splitext(file)
 				from_ = os.path.join(root, file)
 				to_ = from_.replace(blackberryDir, toPath, 1)
 				zf.write(from_, to_)
 
 	# add folders
 	zipBlackberryDir(os.path.join(blackberryDir, 'libv8'))
-	zipBlackberryDir(os.path.join(blackberryDir, 'tibb'))
+	zipBlackberryDir(os.path.join(blackberryDir, 'tibb', 'arm'))
+	zipBlackberryDir(os.path.join(blackberryDir, 'tibb', 'include'))
+	zipBlackberryDir(os.path.join(blackberryDir, 'tibb', 'x86'))
 	zip_dir(zf, os.path.join(blackberryDir, 'tibbapp'), os.path.join(toPath, 'tibbapp'))
 
 def create_platform_zip(platform,dist_dir,osname,version,version_tag):

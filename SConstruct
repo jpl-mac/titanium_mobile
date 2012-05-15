@@ -15,7 +15,9 @@ cwd = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
 sys.path.append(path.join(cwd,"build"))
 sys.path.append(path.join(cwd,"support","android"))
 sys.path.append(path.join(cwd,"support","blackberry"))
+sys.path.append(path.join(cwd,"support","common"))
 import titanium_version, ant
+from tilogger import TiLogger
 from androidsdk import AndroidSDK
 from blackberryndk import BlackberryNDK
 version = titanium_version.version
@@ -111,8 +113,8 @@ if build_type in ['full', 'iphone', 'ipad'] and not only_package \
 	os.chdir('iphone')
 	try:
 		#output = 0
-		buildType = "clean" if clean else build_type
-		output = os.system("scons PRODUCT_VERSION=%s COMPILER_FLAGS='%s' BUILD_TYPE='%s'" % (version,flags,buildType))	
+		iphone_build_type = "clean" if clean else build_type
+		output = os.system("scons PRODUCT_VERSION=%s COMPILER_FLAGS='%s' BUILD_TYPE='%s'" % (version,flags,iphone_build_type))	
 		if output!=0:
 			sys.stderr.write("BUILD FAILED!!!!\n")
 			# beep, please
@@ -129,7 +131,7 @@ if build_type in ['full', 'mobileweb'] and not only_package:
 	d = os.getcwd()
 	os.chdir('mobileweb')
 	try:
-		buildType = "clean" if clean else build_type
+		mobileweb_build_type = "clean" if clean else build_type
 		# nothing to do... yet
 	finally:
 		os.chdir(d)
@@ -138,17 +140,18 @@ if build_type in ['full', 'blackberry'] and not only_package:
 	d = os.getcwd()
 	try:
 		os.chdir('blackberry')
-		bbndk = BlackberryNDK(ARGUMENTS.get("blackberry_ndk", None))
+		log = TiLogger(os.path.join(cwd, 'scons_blackberry.log'))
+		bbndk = BlackberryNDK(ARGUMENTS.get("blackberry_ndk", None), log = log)
 		if clean:
-			buildType = "clean"
+			blackberryBuildType = "clean"
 			print 'Cleaning for BlackBerry'
 		else:
-			buildType = "all"
+			blackberryBuildType = "all"
 			print 'Building for BlackBerry'
-		output = bbndk.buildTibb(os.path.join(os.getcwd(), 'tibb'), buildType)
-		if output != 0:
+		retCode = bbndk.buildTibb(os.path.join(os.getcwd(), 'tibb'), blackberryBuildType)
+		if retCode != 0:
 			sys.stderr.write("BUILD FAILED!!!!\n")
-			sys.exit(output)
+			sys.exit(retCode)
 	finally:
 		os.chdir(d)
 
