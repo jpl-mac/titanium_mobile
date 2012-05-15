@@ -13,50 +13,54 @@ import os, sys, argparse
 
 template_dir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
 top_support_dir = os.path.dirname(template_dir) 
+sys.path.append(top_support_dir)
 sys.path.append(os.path.join(top_support_dir, 'common'))
 
-from tilogger import *
+from tilogger import TiLogger
+from tiapp import TiAppXML
+from blackberryndk import BlackberryNDK
 
 class Builder(object):
+	_type2variantCpu = {'simulator' : ('o-g', 'x86'),
+	                 'device' : ('o.le-v7-g', 'arm'),
+	                 'deploy' : ('o.le-v7', 'arm')}
 
-	def __init__(self, name, project_dir, ndk):
-		# TODO Mac: Should be under build/blackberry from titanium side.
-		# Should be converted to os.path.join(project_dir,'build','blackberry')
-		self.project_dir = project_dir
-		# TODO Mac: This ndk path need to run environment setup if necessary 
+	def __init__(self, project_dir, type, ndk):
+		self.top_dir = project_dir.rstrip(os.sep)
+		(self.variant, self.cpu) = Builder._type2variantCpu[type]
 		self.ndk = ndk 
-		self.name = name
-		# TODO Mac: Need to figure out when we need to rebuild and when not. 
-		# From initial investigation it could be done based on tiapp.xml.
-		self.force_rebuild = False
+		project_tiappxml = os.path.join(self.top_dir, 'tiapp.xml')
+		tiappxml = TiAppXML(project_tiappxml)
+		self.name = tiappxml.properties['name']
+		self.buildDir = os.path.join(self.top_dir, 'build', 'blackberry', self.name)
 		
 	def run(self):
-		# TODO Mac: Reconfigure function upon blackberry needs
 		# TODO Mac: V8 runtime should be added and possibly a lot of other stuff
 		
-		self.build()
-		print 'Running'
+		retCode = self.build()
+		if retCode != 0:
+			return retCode
+		info('Running')
 		
-		# Change current directory to do a relative operations 
-		os.chdir(self.project_dir)
+		# Change current directory to do relative operations
+		os.chdir("%s" % self.buildDir)
 		# TODO Mac: Add corresponding parameters (ip, icon, bar_descriptor, etc...) to script in order to support:
-		# blackberry-nativepackager script. Could be created a wrapper script package.py
-		# blackberry-deploy script. Could be created a wrapper script deploy.py
-		# For now used HelloWorldDisplay hardcoded project name, simulator ip address, etc...
-		# For now used only for simulator
-		barPath = os.path.join(self.project_dir, 'Simulator-Debug', '%s.bar' % self.name)
-		savePath = os.path.join(self.project_dir, 'Simulator-Debug', self.name)
-		os.system("blackberry-nativepackager -package %s bar-descriptor.xml -e %s %s icon.png" % (barPath, savePath, self.name))
-		os.system("blackberry-deploy -installApp -launchApp -device 192.168.127.128 -package %s" % barPath)
+		# For now use simulator ip address, etc...
+		# For now use only for simulator
+		# TODO Mac: log each command that is executed to the build.log file,
+		# output might be interesting as well
+		# TODO Mac: See if we can reasonably launch the simulator from here and fetch the ip address
+		barPath = os.path.join(self.buildDir, self.cpu, self.variant, '%s.bar' % self.name)
+		savePath = os.path.join(self.buildDir, self.cpu, self.variant, self.name)
+		retCode = self.ndk.package(barPath, savePath, self.name)
+		if retCode != 0:
+			return retCode
+		retCode = self.ndk.deploy('192.168.226.132', barPath)
+		return retCode
 	
 	def build(self):
-		# TODO Mac: Add corresponding parameters (ip, icon, bar_descriptor, etc...) to script in order to support:
-		# blackberry-nativepackager script. Could be created a wrapper script package.py
-		# blackberry-deploy script. Could be created a wrapper script deploy.py
-		# For now used HelloWorldDisplay hardcoded project name, simulator ip address, etc...
-		# For now used only for simulator
-		print 'Building'
-		os.system("mkbuild %s" % self.project_dir)
+		info('Building')
+		return self.ndk.build(self.buildDir, self.cpu)
 
 def info(msg):
 	log.info(msg)
@@ -73,47 +77,32 @@ def trace(msg):
 def error(msg):
 	log.error(msg)
 	
-def build_project(args):
-	# TODO Mac: Remove. For testing only
-	print args.type
-	print args.ndk_path
-	print args.project_path
-	
-	# TODO Mac: Should be available from tiapp.xml
-	# Used hardcoded HelloWorldDisplay for now
-	project_name = 'HelloWorldDisplay'
-	builder = Builder(project_name, args.project_path, args.ndk_path)
-	builder.build()
-	
-def run_project(args):
-	# TODO Mac: Remove. For testing only
-	print args.type
-	print args.ndk_path
-	print args.project_path
-	
-	# TODO Mac: Should be available from tiapp.xml
-	# Used hardcoded HelloWorldDisplay for now
-	project_name = 'HelloWorldDisplay'
-	builder = Builder(project_name, args.project_path, args.ndk_path)
-	builder.run()
-	
 if __name__ == "__main__":
 
 	# Setup script usage 
-	parser = argparse.ArgumentParser(usage='<command> [options] -t TYPE -d PROJECT_PATH -p NDK_PATH')
+	parser = argparse.ArgumentParser(usage='<command> -t TYPE -d PROJECT_PATH -p NDK_PATH')
 	
 	parser.add_argument('command', choices=['build', 'run'], help='commands')
-	parser.add_argument('-t', '--type', choices=['simulator', 'device'], help='simulator | device', required=True)
+	parser.add_argument('-t', '--type', choices=['simulator', 'device', 'deploy'], help='simulator | device | deploy', required=True)
 	parser.add_argument('-d', '--project_path', help='project directory path', required=True)
-	parser.add_argument('-p', '--ndk_path', help='blackberry ndk path', required=True)
+	parser.add_argument('-p', '--ndk_path', help='blackberry ndk path')
 	
 	# Parse input and call apropriate function
 	args = parser.parse_args()
 
-	log = TiLogger(os.path.join(os.path.abspath(os.path.expanduser(args.project_path)), 'build.log'))
+	log = TiLogger(os.path.join(os.path.abspath(os.path.expanduser(args.project_path)), 'build_blackberry.log'))
 	log.debug(" ".join(sys.argv))
-	
+	try:
+		bbndk = BlackberryNDK(args.ndk_path and args.ndk_path.decode('utf-8'), log = log)
+	except Exception, e:
+		print >>sys.stderr, e
+		sys.exit(1)
+
+	builder = Builder(args.project_path.decode('utf-8'), args.type.decode('utf-8'), bbndk)
+
+	retCode = 1
 	if (args.command == 'build'):
-		build_project(args)
+		retCode = builder.build()
 	elif (args.command == 'run'):
-		run_project(args)
+		retCode = builder.run()
+	sys.exit(retCode)

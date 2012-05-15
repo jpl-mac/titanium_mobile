@@ -21,7 +21,7 @@ var DrillbitTest =
 		var isIOS = osname == "iphone" || osname == "ipad";
 
 		event.name = name;
-		event.platform = isIOS ? "iphone" : "android";
+		event.platform = isIOS ? "iphone" : osname;
 		event.suite = DrillbitTest.NAME;
 
 		if (isIOS) {
