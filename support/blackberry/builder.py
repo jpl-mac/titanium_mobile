@@ -55,7 +55,7 @@ class Builder(object):
 		retCode = self.ndk.package(barPath, savePath, self.name)
 		if retCode != 0:
 			return retCode
-		retCode = self.ndk.deploy('192.168.226.132', barPath)
+		retCode = self.ndk.deploy('192.168.135.131', barPath)
 		return retCode
 	
 	def build(self):
