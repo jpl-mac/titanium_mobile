@@ -11,7 +11,7 @@ var win1 = Titanium.UI.createWindow({
 var label1 = Ti.UI.createLabel({
 	textAlign : 'center',
 	text:'Hello, world!',
-	color:'green'
+	color:'green',
 });
 
 label1.text='Test';
@@ -29,7 +29,7 @@ mybutton.addEventListener
 	function(e)
 	{
 		//e.source.label='Pushed!';
-		e.source.visible=false;
+		e.source.setVisible(false);
 	}
 );
 
@@ -41,7 +41,7 @@ var slider1=Ti.UI.createSlider
 		top: 0,
 		min: 0,
 		max: 100,
-		value: 50
+		value: 50,
 	}
 );
 
@@ -61,7 +61,7 @@ win1.add(slider1);
 var progress1=Ti.UI.createProgressBar({
 	value:0,
 	min: 0,
-	max: 100
+	max: 100,
 });
 
 win1.add(progress1);

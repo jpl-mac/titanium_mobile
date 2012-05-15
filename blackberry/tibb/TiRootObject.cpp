@@ -77,7 +77,7 @@ int TiRootObject::executeScript(NativeObjectFactory* objectFactory, const char* 
         // TODO: log
         return -1;
     }
-    Handle<Value> result = compiledScript->Run();
+    Handle<Value>result = compiledScript->Run();
     if (result.IsEmpty())
     {
         String::Utf8Value error(tryCatch.Exception());

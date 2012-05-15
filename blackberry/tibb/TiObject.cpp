@@ -107,8 +107,8 @@ Handle<ObjectTemplate> TiObject::getObjectTemplateFromJsObject(Handle<Value> val
     Handle<Object> obj = Handle<Object>::Cast(value);
     Handle<Context> context = obj->CreationContext();
     Handle<External> globalTemplateExternal = Handle<External>::Cast(
-                context->Global()->GetHiddenValue(String::New(HIDDEN_TEMP_OBJECT_PROPERTY)));
-    Handle<ObjectTemplate> temp = *((Handle<ObjectTemplate>*) globalTemplateExternal->Value());
+            context->Global()->GetHiddenValue(String::New(HIDDEN_TEMP_OBJECT_PROPERTY)));
+    Handle<ObjectTemplate>temp = *((Handle<ObjectTemplate>*) globalTemplateExternal->Value());
     return handleScope.Close(temp);
 }
 
@@ -254,9 +254,8 @@ Handle<Value> TiObject::propGetter_(Local<String> prop, const AccessorInfo& info
     TiObject* obj = getTiObjectFromJsObject(info.Holder());
     if (obj == NULL)
     {
-        Handle<Value> internalReturn;
-        internalReturn = info.Holder()->GetHiddenValue(prop);
-        return handleScope.Close(internalReturn);
+        // Returns "empty". This will cause V8 to go back to default lookup.
+        return result;
     }
     Handle<ObjectTemplate> global = getObjectTemplateFromJsObject(info.Holder());
     String::Utf8Value propName(prop);
@@ -286,6 +285,7 @@ Handle<Value> TiObject::propGetter_(Local<String> prop, const AccessorInfo& info
     propObject->release();
     return handleScope.Close(result);
 }
+
 Handle<Value> TiObject::propSetter_(Local<String> prop, Local<Value> value, const AccessorInfo& info)
 {
     HandleScope handleScope;
@@ -293,8 +293,8 @@ Handle<Value> TiObject::propSetter_(Local<String> prop, Local<Value> value, cons
     TiObject* obj = getTiObjectFromJsObject(info.Holder());
     if (obj == NULL)
     {
-        info.Holder()->SetHiddenValue(prop, value);
-        return value;
+        obj=new TiObject("",info.Holder());
+        setTiObjectToJsObject(info.Holder(),obj);
     }
     String::Utf8Value propName(prop);
     const char* propString = (const char*)(*propName);
