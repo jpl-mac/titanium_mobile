@@ -144,7 +144,7 @@ int NativeContainerObject::addChildNativeObject(NativeObject* obj)
 
 int NativeContainerObject::open()
 {
-    container_->setLayout(new AbsoluteLayout());
+    container_->setLayout(new StackLayout());
     nativeObjectFactory_->setRootContainer(this);
     return NATIVE_ERROR_OK;
 }
