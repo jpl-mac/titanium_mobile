@@ -155,6 +155,7 @@ void TiUIBase::setTiMappingProperties(const TiProperty* props, int propertyCount
     {
         TiObject* value = TiPropertyMapObject::addProperty(this, prop[i].propertyName, prop[i].nativePropertyNumber,
                           valueModify, this);
+        // For all properties that have write permissions, add a setter method, e.g., myLabel.text=<my text>; myLabel.setText(<my text>);
         if (prop[i].permissions & TI_PROP_PERMISSION_WRITE)
         {
             c[0] = toupper(props[i].propertyName[0]);
@@ -206,7 +207,6 @@ void TiUIBase::setParametersFromObject(Local<Object> obj)
     {
         return;
     }
-    Handle<Object> self = Handle<Object>::Cast(controlValue);
     Handle<Array> propNames = obj->GetPropertyNames();
     uint32_t props = propNames->Length();
     Local<Value> propValue;
@@ -258,8 +258,7 @@ void TiUIBase::onAddEventListener(const char* eventName, Handle<Function> eventF
     {
         return;
     }
-    Handle <Object> source = Handle<Object>::Cast(getValue());
-    Handle <ObjectTemplate> global = getObjectTemplateFromJsObject(getValue());
+    Handle<Object> source = Handle<Object>::Cast(getValue());
     TiV8Event* event = TiV8Event::createEvent(eventName, eventFunction, source);
     no->setEventHandler(eventName, event);
 }

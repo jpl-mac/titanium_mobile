@@ -26,11 +26,11 @@ CCFLAGS+=-fstack-protector-all -D_FORTIFY_SOURCE=2 \
 LDFLAGS+=-Wl,-z,relro -Wl,-z,now $(if $(filter g so shared,$(VARIANTS)),,-pie)
 
 # Add your required library names, here
-LIBS+=tibb QtCascades_main v8 v8preparser
+LIBS+=tibb v8 v8preparser socket
 
 # Extra .so required
 LDFLAGS+=-lQtCascades -lQtCore -lQtDeclarative -lQtGui -lQtMultimedia -lQtNetwork -lm -lbb
-LDFLAGS+=-lQtOpenGL -lQtScript -lQtScriptTools -lQtSql -lQtSvg -lQtTest -lQtXml -lheimdall 
+LDFLAGS+=-lQtOpenGL -lQtScript -lQtScriptTools -lQtSql -lQtSvg -lQtTest -lQtXml
 
 include $(MKFILES_ROOT)/qmacros.mk
 

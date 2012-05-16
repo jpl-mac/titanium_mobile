@@ -7,7 +7,6 @@
 
 #include "NativeLabelObject.h"
 #include <bb/cascades/TextAlignment>
-#include <bb/cascades/SystemFont>
 #include <bb/cascades/Color>
 #include <qtgui/QColor>
 
@@ -63,6 +62,7 @@ int NativeLabelObject::setColor(TiObject* obj)
 
 int NativeLabelObject::setTextAlign(TiObject* obj)
 {
+    // TODO: finish
     return NATIVE_ERROR_OK;
 }
 
@@ -70,16 +70,11 @@ int NativeLabelObject::initialize(TiEventContainerFactory*)
 {
     label_ = bb::cascades::Label::create();
     setControl(label_);
-    label_->setFont(bb::cascades::SystemFont::getFont(bb::cascades::SystemFont::H1));
+    // TODO: Set label layout here
     return NATIVE_ERROR_OK;
 }
 
 NAHANDLE NativeLabelObject::getNativeHandle() const
 {
     return label_;
-}
-
-void NativeLabelObject::completeInitialization()
-{
-    NativeControlObject::completeInitialization();
 }
