@@ -28,7 +28,7 @@ mybutton.addEventListener
 	'click',
 	function(e)
 	{
-		//e.source.label='Pushed!';
+		e.source.title='Pushed!';
 		e.source.setVisible(false);
 	}
 );
