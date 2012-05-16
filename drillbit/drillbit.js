@@ -9,13 +9,14 @@ var drillbitTests = {
 	total: 0,
 	android: 0,
 	ios: 0,
+	bb: 0,
 	tests: {}
 };
 
 // this must be run from inside the drillbit dir
 var testsDir = new File("tests");
 
-var platforms = ["android", "iphone"];
+var platforms = ["android", "iphone", "blackberry"];
 var excludes = ["before", "before_all", "after", "after_all", "timeout", "options"];
 
 function describe(name, tests) {
@@ -30,9 +31,12 @@ function describe(name, tests) {
 			drillbitTests.android++;
 		} else if (describe.platform == "iphone") {
 			drillbitTests.ios++;
+		} else if (describe.platform == "blackberry") {
+			drillbitTests.bb++;
 		} else {
 			drillbitTests.android++;
 			drillbitTests.ios++;
+			drillbitTests.bb++;
 		}
 	});
 }
@@ -51,7 +55,7 @@ function readTestDir(dir, platform) {
 		if (file.isFile() && name.indexOf(".js") != -1) {
 			readTestFile(file, platform)
 		} else if (file.isDirectory() && name != "Resources") {
-			readTestDir(file, name == "android" ? "android" : (name == "iphone" ? "iphone" : platform));
+			readTestDir(file, (name == "android" || name == "iphone" || name == "blackberry") ? name : platform));
 		}
 	});
 }

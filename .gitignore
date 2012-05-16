@@ -12,3 +12,6 @@ xcuserdata
 *.BASE.*
 *.LOCAL.*
 *.REMOTE.*
+*.o
+x86
+arm

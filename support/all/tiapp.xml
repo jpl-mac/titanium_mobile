@@ -35,6 +35,8 @@
 		<precache>
 		</precache>
 	</mobileweb>
+	<blackberry xmlns="http://www.qnx.com/schemas/application/1.0">
+	</blackberry>
 	<modules>
 	</modules>
 </ti:app>

@@ -35,4 +35,7 @@
 
 	<property name="ti.ios.enablecoverage" type="bool">true</property>
 	<property name="ti.ios.enablemdfind" type="bool">false</property>
+
+	<blackberry xmlns="http://www.qnx.com/schemas/application/1.0">
+	</blackberry>
 </ti:app>
