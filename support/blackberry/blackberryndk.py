@@ -57,9 +57,9 @@ class BlackberryNDK:
 
 		if platform.system() == 'Windows':
 			# TODO Mac: find out where the NDK installs on windows
-			default_dirs = ['C:\\bbndk-10.0.03']
+			default_dirs = ['C:\\bbndk-10.0.4-beta']
 		else:
-			default_dirs = ['/Developer/SDKs/bbndk-10.0.03', '/opt/bbndk-10.0.03', '~/bbndk-10.0.03', '~/opt/bbndk-10.0.03']
+			default_dirs = ['/Developer/SDKs/bbndk-10.0.4-beta', '/opt/bbndk-10.0.4-beta', '~/bbndk-10.0.4-beta', '~/opt/bbndk-10.0.4-beta']
 
 		for default_dir in default_dirs:
 			if os.path.exists(default_dir):
@@ -166,8 +166,9 @@ class BlackberryNDK:
 		buildDir = os.path.abspath(os.path.join(savePath, '..', '..', '..'))
 		projectDir = os.path.abspath(os.path.join(buildDir, '..', '..', '..'))
 		assetsDir = os.path.join(buildDir, 'assets')
-		if not os.path.exists(assetsDir):
-			os.makedirs(assetsDir)
+		if os.path.exists(assetsDir):
+			shutil.rmtree(assetsDir)
+		shutil.copytree(os.path.join(projectDir, 'Resources', 'blackberry'), assetsDir)
 		shutil.copy2(os.path.join(projectDir, 'Resources', 'app.js'), assetsDir)
 
 		if platform.system() == 'Windows':
