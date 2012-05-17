@@ -161,6 +161,41 @@ class BlackberryNDK:
 		os.chdir(oldPath)
 		return retCode
 
+	def _run(self, command):
+		assert type(command) is list
+		try:
+			if self.log == None:
+				if platform.system() == 'Windows':
+					logfile = 'NUL'
+				else:
+					logfile = '/dev/null'
+			else:
+				logfile = self.log.getLogfile()
+				self.log.info('Command: ' + ' '.join(command))
+			with open(logfile, 'a') as f:
+				# Need this write() or else subprocess will overwrite for some reason
+				#f.write('\n')
+				subprocess.check_call(command, stdout = f, stderr = f)
+				return 0
+		except subprocess.CalledProcessError, cpe:
+			print >>sys.stderr, cpe, cpe.output
+			return cpe.returncode
+		except OSError, e:
+			print >>sys.stderr, e
+			return e.errno
+
+	def build(self, project, cpu):
+		assert os.path.exists(project)
+		templateDir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
+		cpuList = 'CPULIST=' + cpu
+		bbRoot = 'BB_ROOT=' + templateDir
+		oldPath = os.getcwd()
+		os.chdir(project)
+		command = ['make', cpuList, bbRoot]
+		retCode = self._run(command)
+		os.chdir(oldPath)
+		return retCode
+
 	def package(self, package, savePath, projectName):
 		# TODO Mac: Copy all needed resources to assets (images, sounds, etc.). For now copy only the app.js to assets
 		buildDir = os.path.abspath(os.path.join(savePath, '..', '..', '..'))
