@@ -161,9 +161,10 @@ class BlackberryNDK:
 		os.chdir(oldPath)
 		return retCode
 
-	def package(self, package, savePath, projectName):
-		# TODO Mac: Copy all needed resources to assets (images, sounds, etc.). For now copy only the app.js to assets
-		buildDir = os.path.abspath(os.path.join(savePath, '..', '..', '..'))
+	def package(self, package, appFile, projectName):
+		# TODO Mac: Copy all needed resources to assets (images, sounds,
+		# etc.). For now copy app.js and content of Resources/blackberry to assets
+		buildDir = os.path.abspath(os.path.join(appFile, '..', '..', '..'))
 		projectDir = os.path.abspath(os.path.join(buildDir, '..', '..', '..'))
 		assetsDir = os.path.join(buildDir, 'assets')
 		if os.path.exists(assetsDir):
@@ -175,7 +176,7 @@ class BlackberryNDK:
 			packager = 'blackberry-nativepackager.bat'
 		else:
 			packager = 'blackberry-nativepackager'
-		command = [packager, '-package', package, 'bar-descriptor.xml', '-e', savePath, projectName, 'icon.png', 'assets']
+		command = [packager, '-package', package, 'bar-descriptor.xml', '-e', appFile, projectName, 'assets']
 		return self._run(command)
 
 	def deploy(self, deviceIP, package):
