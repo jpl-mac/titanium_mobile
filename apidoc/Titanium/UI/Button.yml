@@ -89,6 +89,7 @@ properties:
         Also sets the background image for the other button states (disabled, focused, selected), 
         unless they've been specified explicitly.
     type: String
+    platforms: [android, iphone, ipad, mobileweb]
   - name: backgroundDisabledImage
     summary: |
         Background image for the button in its disabled state, specified as a local file path 
@@ -97,6 +98,7 @@ properties:
         Also sets the background image for the other button states (normal, focused, selected), 
         unless they've been specified explicitly.
     type: String
+    platforms: [android, iphone, ipad, mobileweb]
   - name: backgroundFocusedImage
     summary: |
         Background image for the button in its focused state, specified as a local file path 
@@ -105,6 +107,7 @@ properties:
         Focusable must be true for normal views. Sets the background image for the focused 
         state only.
     type: String
+    platforms: [android, iphone, ipad, mobileweb]
   - name: backgroundSelectedImage
     summary: |
         Background image for the button in its selected state, specified as a local file 
@@ -113,16 +116,20 @@ properties:
         Focusable must be true for normal views. Sets the background image for the selected 
         state only.
     type: String
+    platforms: [android, iphone, ipad, mobileweb]
   - name: color
     summary: Default button text color.
     type: String
+    platforms: [android, iphone, ipad, mobileweb]
   - name: enabled
     summary: Set to `true` to enable the button, `false` to disable the button.
     type: Boolean
     default: true
+    platforms: [android, iphone, ipad, mobileweb]
   - name: font
     summary: Font to use for the button text.
     type: Font
+    platforms: [android, iphone, ipad, mobileweb]
   - name: image
     summary: Image to display on the button, specified as a local
         path, URL or (on iOS only) a `Blob`.
@@ -153,6 +160,7 @@ properties:
         Text alignment, specified using one of the <Titanium.UI> text alignment constants: [TEXT_ALIGNMENT_LEFT](Titanium.UI.TEXT_ALIGNMENT_LEFT), [TEXT_ALIGNMENT_CENTER](Titanium.UI.TEXT_ALIGNMENT_CENTER), or [TEXT_ALIGNMENT_RIGHT](Titanium.UI.TEXT_ALIGNMENT_RIGHT).
     type: [String,Number]
     default: <Titanium.UI.TEXT_ALIGNMENT_CENTER>
+    platforms: [android, iphone, ipad, mobileweb]
   - name: title
     summary: Button title.
     type: String
@@ -161,6 +169,7 @@ properties:
     description: Only one of `title` or `titleid` should be specified.
     type: String
     since: "1.5"
+    platforms: [android, iphone, ipad, mobileweb]
   - name: verticalAlign
     summary: |
         Vertical alignment for the text field, specified using one of the 
