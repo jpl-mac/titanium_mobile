@@ -27,6 +27,7 @@ class Builder(object):
 
 	def __init__(self, project_dir, type, ndk):
 		self.top_dir = project_dir.rstrip(os.sep)
+		self.type = type
 		(self.variant, self.cpu) = Builder._type2variantCpu[type]
 		self.ndk = ndk 
 		project_tiappxml = os.path.join(self.top_dir, 'tiapp.xml')
@@ -52,7 +53,7 @@ class Builder(object):
 		# TODO Mac: See if we can reasonably launch the simulator from here and fetch the ip address
 		barPath = os.path.join(self.buildDir, self.cpu, self.variant, '%s.bar' % self.name)
 		savePath = os.path.join(self.buildDir, self.cpu, self.variant, self.name)
-		retCode = self.ndk.package(barPath, savePath, self.name)
+		retCode = self.ndk.package(barPath, savePath, self.name, self.type)
 		if retCode != 0:
 			return retCode
 		retCode = self.ndk.deploy('192.168.226.132', barPath)
