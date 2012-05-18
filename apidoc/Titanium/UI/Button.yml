@@ -68,6 +68,17 @@ description: |
     add an event listener to the button and call <Titanium.Media.showCamera> when the 
     button is clicked.
 
+    #### BlackBerry Platform Notes
+
+    A clickable button with a fixed height and an optional image and text.
+
+    The visual appearance of the button is predefined and cannot be changed.
+    The button text has predefined font, font size, and color.
+    The aspect ratio of the button's image scales to fit inside the button.
+    A button with text but no image, or an image with no text,
+    will show the text or image centered on the button,
+    whereas a button with both text and image will be left-aligned, as can be seen in the examples below.
+
 extends: Titanium.UI.View
 since: "0.8"
 properties:
@@ -121,6 +132,8 @@ properties:
         On Android, this property is identical to `backgroundImage`.
 
         Support for using <Titanium.Blob> for this property is only available on iOS.
+
+        On BlackBerry, the image is displayed to the left of the title.
     type: [String, Titanium.Blob]
   - name: selectedColor
     summary: Button text color used to indicate the selected state.
