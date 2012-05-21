@@ -66,7 +66,7 @@ events:
             Index of the option that was pressed. See description for result of the dialog being 
             dismissed in some other way.
         type: Number
-        platforms: [android, iphone, mobileweb]
+        platforms: [android, iphone, ipad, mobileweb]
         
       - name: button
         summary: |
@@ -78,7 +78,7 @@ events:
       - name: cancel
         summary: Index of the cancel option if defined or `-1` otherwise.
         type: Number
-        platforms: [android, iphone, mobileweb]
+        platforms: [android, iphone, ipad, mobileweb]
         
       - name: destructive
         summary: Index of the destructive option if defined or `-1` otherwise.
@@ -122,7 +122,7 @@ properties:
         will not be displayed.
     type: Number
     default: -1
-    platforms: [android, iphone, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb]
 
   - name: destructive
     summary: Index to define the destructive option, indicated by a visual cue when rendered.
@@ -148,7 +148,7 @@ properties:
   - name: titleid
     summary: Key identifying a string in the locale file to use for the title text.
     type: String
-    platforms: [android, iphone, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb]
 
 examples:
   - title: Dialog with 3 Options
