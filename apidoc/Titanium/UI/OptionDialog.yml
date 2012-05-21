@@ -35,11 +35,12 @@ description: |
     On iPad, this dialog is shown in the middle of the display, or as a popover-like dialog if 
     another view or control is specified via an argument.
 
-    ##### BlackBerry
+    #### BlackBerry
 
     On BlackBerry the control consists of a title bar and an expandable list of options.
     The purpose is to give the app developer a simple way to let the user select one of many options.
     The list expands/collapses when tapping on the title bar, and collapses when tapping on an option in the list.
+    It can be displayed anywhere in the screen.
     
     #### Caveats
     
