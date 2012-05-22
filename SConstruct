@@ -146,7 +146,7 @@ if build_type in ['full', 'blackberry'] and not only_package:
 	d = os.getcwd()
 	try:
 		os.chdir('blackberry')
-		log = TiLogger(os.path.join(cwd, 'scons_blackberry.log'))
+		log = TiLogger(os.path.join(cwd, 'scons_blackberry.log'), level = TiLogger.INFO)
 		bbndk = BlackberryNDK(ARGUMENTS.get("blackberry_ndk", None), log = log)
 		if clean:
 			blackberryBuildType = "clean"
