@@ -12,9 +12,8 @@ var label1 = Ti.UI.createLabel({
 	textAlign : 'center',
 	text:'Hello, world!',
 	color:'green',
+	top: 200
 });
-
-label1.text='Test';
 
 win1.add(label1);
 
@@ -52,6 +51,7 @@ slider1.addEventListener
 	{
 		progress1.value=e.value;
 		label1.text='Slider value: '+e.value;
+		label1.top=200.0+e.value;
 	}
 );
 
