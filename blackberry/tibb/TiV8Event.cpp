@@ -17,10 +17,6 @@ TiV8Event::~TiV8Event()
     {
         function_.Dispose();
     }
-    if (!source_.IsEmpty())
-    {
-        source_.Dispose();
-    }
 }
 
 void TiV8Event::fire(void* fireDataObject)
@@ -30,9 +26,17 @@ void TiV8Event::fire(void* fireDataObject)
     {
         return;
     }
+    Handle<Context> context = function_->CreationContext();
+    Context::Scope context_scope(context);
     Handle<Object> dataObject = *((Persistent<Object>*) fireDataObject);
     dataObject->Set(String::New("source"), source_);
-    function_->Call(function_, 1, (Handle<Value>*) &dataObject);
+    // This calls the Javascript function that handles the event. It has
+    // the form of: function(e) {...}
+    // The "1" in the following function refers to the number of arguments that
+    // are passed the the Javascript function. In this case there is one
+    // argument: "e". The argument is an object with properties relating
+    // to the event that was triggered.
+    function_->CallAsFunction(context->Global(), 1, (Handle<Value>*) &dataObject);
 }
 
 TiV8Event* TiV8Event::createEvent(const char* eventName, Handle<Function> eventScript, Handle<Object> source)
@@ -40,6 +44,6 @@ TiV8Event* TiV8Event::createEvent(const char* eventName, Handle<Function> eventS
     HandleScope handleScope;
     TiV8Event* obj = new TiV8Event();
     obj->function_ = Persistent<Function>::New(eventScript);
-    obj->source_ = Persistent<Object>::New(source);
+    obj->source_ = source;
     return obj;
 }

@@ -127,7 +127,7 @@ def usage():
     --android-device=DEVICE         The device argument to pass to ADB.
                                     Valid values: emulator (-e), device (-d), or specific serial (default: emulator)
     --android-runtime=RUNTIME       The Android runtime to run tests with (default: v8)
-    
+
     BlackBerry Specific Arguments
     TODO Mac
 """ % sys.argv[0]

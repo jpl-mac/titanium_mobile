@@ -129,8 +129,7 @@ BlackBerrySimulator.prototype.testHarnessNeedsBuild = function(stagedFiles) {
 
 BlackBerrySimulator.prototype.installTestHarness = function(launch, suite) {
 	// TODO Mac: need to separate install from launch
-	if (launch)
-	{
+	if (launch) {
 		this.launchTestHarness(suite);
 	}
 };
@@ -149,7 +148,7 @@ BlackBerrySimulator.prototype.launchTestHarness = function(suite) {
 		});
 	});
 	process.setOnExit(function(e) {
-		if (process.getExitCode() != 0) {
+		if (process.getExitCode() !== 0) {
 			self.drillbit.handleTestError(suite, 'blackberry');
 			return;
 		}
@@ -167,14 +166,14 @@ BlackBerrySimulator.prototype.killTestHarness = function() {
 
 BlackBerrySimulator.prototype.runTestHarness = function(suite, stagedFiles) {
 	var forceBuild = 'forceBuild' in suite.options && suite.options.forceBuild;
-	
+
 	// FIXME: for now just force it
 	forceBuild = true;
-	
+
 	if (!this.testHarnessRunning || this.needsBuild || this.testHarnessNeedsBuild(stagedFiles) || forceBuild) {
 		var command = 'build';
 		var commandArgs = [];
-		
+
 		var process = this.createTestHarnessBuilderProcess(command, commandArgs);
 		this.drillbit.frontendDo('building_test_harness', suite.name, 'blackberry');
 

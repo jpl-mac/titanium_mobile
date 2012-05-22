@@ -149,14 +149,19 @@ int NativeContainerObject::open()
     return NATIVE_ERROR_OK;
 }
 
-int NativeContainerObject::setBackgroundColor(const char* text)
+int NativeContainerObject::setBackgroundColor(TiObject* obj)
 {
-    QString colorString = text;
-    QColor color;
-    color.setNamedColor(colorString);
-    qreal r, g, b, a;
-    color.getRgbF(&r, &g, &b, &a);
-    Color cscolor = Color::fromRGBA(r, g, b, a);
+    float r;
+    float g;
+    float b;
+    float a;
+
+    int error = NativeControlObject::getColorComponents(obj, &r, &g, &b, &a);
+    if (error != NATIVE_ERROR_OK)
+    {
+        return error;
+    }
+    bb::cascades::Color cscolor = bb::cascades::Color::fromRGBA(r, g, b, a);
     container_->setBackground(cscolor);
     return NATIVE_ERROR_OK;
 }

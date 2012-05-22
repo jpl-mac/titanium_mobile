@@ -67,7 +67,8 @@ enum VALUE_MODIFY
     VALUE_MODIFY_DENY,
     VALUE_MODIFY_NOT_SUPPORTED,
     VALUE_MODIFY_INVALID,
-    VALUE_MODIFY_INVALID_TYPE
+    VALUE_MODIFY_INVALID_TYPE,
+    VALUE_MODIFY_IGNORE,
 };
 
 #define TI_PROP_PERMISSION_READ         1
@@ -77,9 +78,7 @@ enum VALUE_MODIFY
 struct TiProperty
 {
     const char* propertyName;
-    const char* defaultValue;
     int permissions;
-    int supportedTypes;
     int nativePropertyNumber;
 };
 
@@ -107,6 +106,7 @@ public:
     virtual Handle<Value> getValue() const;
     virtual Handle<Value> evaluate() const;
     virtual VALUE_MODIFY setValue(Handle<Value> value);
+    virtual void forceSetValue(Handle<Value> value);
     virtual bool hasMembers() const;
     virtual bool isFunction() const;
     virtual bool canAddMembers() const;

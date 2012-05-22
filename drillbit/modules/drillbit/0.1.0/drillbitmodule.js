@@ -184,34 +184,34 @@ Drillbit.prototype.initPlatforms = function() {
 		if ('blackberryNdk' in this.argv) {
 			args.push(this.argv.blackberryNdk);
 		}
-		
+
 		var process = this.createPythonProcess(args);
 		var result = process();
 		ti.api.debug("result="+result);
-		
+
 		if (process.getExitCode() != 0) {
 			ti.api.warn("No BlackBerry NDK found, disabling BlackBerry tests, exit code: " + process.getExitCode());
 			return;
 		}
-		
+
 		var blackberryNdkResult = {};
 		result.toString().split(/\r?\n/).forEach(function(line) {
 			var tokens = line.trim().split('=');
 			if (tokens.length != 2) return;
-			
+
 			var key = tokens[0].trim();
 			var value = tokens[1].trim();
 			blackberryNdkResult[key] = value;
 		});
-		
+
 		blackberryNdk = blackberryNdkResult['BLACKBERRY_NDK'];
-		
+
 		ti.api.info
 		(
 			'Adding BlackBerry NDK to list of Drillbit target platforms.'
 			+ ' NDK: ' + blackberryNdk
 		);
-		
+
 		ti.include(ti.path.join(this.module.getPath(), 'blackberry.js'));
 		this.platforms.push('blackberry');
 		this.emulators.blackberry = ti.createBlackBerrySimulator

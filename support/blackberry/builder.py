@@ -38,7 +38,7 @@ class Builder(object):
 		# TODO Mac: V8 runtime should be added and possibly a lot of other stuff
 		
 		retCode = self.build()
-		if(retCode != 0):
+		if retCode != 0:
 			return retCode
 		info('Running')
 		
@@ -53,7 +53,7 @@ class Builder(object):
 		barPath = os.path.join(self.buildDir, self.cpu, self.variant, '%s.bar' % self.name)
 		savePath = os.path.join(self.buildDir, self.cpu, self.variant, self.name)
 		retCode = self.ndk.package(barPath, savePath, self.name)
-		if(retCode != 0):
+		if retCode != 0:
 			return retCode
 		retCode = self.ndk.deploy('192.168.226.132', barPath)
 		return retCode

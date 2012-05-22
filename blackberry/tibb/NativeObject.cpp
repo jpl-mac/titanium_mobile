@@ -17,7 +17,7 @@ NativeObject::~NativeObject()
 {
 }
 
-int NativeObject::setPropertyValue(int propertyNumber, const char* value)
+int NativeObject::setPropertyValue(size_t propertyNumber, TiObject* obj)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
@@ -44,12 +44,12 @@ int NativeObject::open()
 
 int NativeObject::start()
 {
-	return NATIVE_ERROR_NOTSUPPORTED;
+    return NATIVE_ERROR_NOTSUPPORTED;
 }
 
 int NativeObject::stop()
 {
-	return NATIVE_ERROR_NOTSUPPORTED;
+    return NATIVE_ERROR_NOTSUPPORTED;
 }
 
 void NativeObject::completeInitialization()
