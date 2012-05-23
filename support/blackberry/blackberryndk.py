@@ -187,6 +187,15 @@ class BlackberryNDK:
 		command = [deploy, '-installApp', '-launchApp', '-device', deviceIP, '-package', package]
 		return self._run(command)
 
+	def buildTibb(self, tibbPath, buildType):
+		assert os.path.exists(tibbPath)
+		oldPath = os.getcwd()
+		os.chdir(tibbPath)
+		command = ['make', buildType]
+		retCode = self._run(command)
+		os.chdir(oldPath)
+		return retCode
+
 def __runUnitTests():
 	# on windows the double dirname need to be done on 2 lines
 	baseDir = os.path.abspath(os.path.dirname(sys.argv[0]))
