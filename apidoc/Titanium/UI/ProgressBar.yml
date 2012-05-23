@@ -11,20 +11,23 @@ description: |
     Use the <Titanium.UI.createProgressBar> method to create a progress bar.
 extends: Titanium.UI.View
 since: "0.8"
-platforms: [android, iphone, ipad, mobileweb]
+platforms: [android, iphone, ipad, mobileweb, blackberry]
 properties:
   - name: color
     summary: Color of the progress bar text.
     type: String
+    platforms: [android, iphone, ipad, mobileweb]
   - name: font
     summary: Font for the progress bar text.
     type: Font
+    platforms: [android, iphone, ipad, mobileweb]
   - name: max
     summary: Maximum value of the progress bar.
     type: Number
   - name: message
     summary: Progress bar text.
     type: String
+    platforms: [android, iphone, ipad, mobileweb]
   - name: min
     summary: Minimum value of the progress bar.
     type: Number
