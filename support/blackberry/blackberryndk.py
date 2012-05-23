@@ -57,9 +57,9 @@ class BlackberryNDK:
 
 		if platform.system() == 'Windows':
 			# TODO Mac: find out where the NDK installs on windows
-			default_dirs = ['C:\\bbndk-10.0.03']
+			default_dirs = ['C:\\bbndk-10.0.4-beta']
 		else:
-			default_dirs = ['/Developer/SDKs/bbndk-10.0.03', '/opt/bbndk-10.0.03', '~/bbndk-10.0.03', '~/opt/bbndk-10.0.03']
+			default_dirs = ['/Developer/SDKs/bbndk-10.0.4-beta', '/opt/bbndk-10.0.4-beta', '~/bbndk-10.0.4-beta', '~/opt/bbndk-10.0.4-beta']
 
 		for default_dir in default_dirs:
 			if os.path.exists(default_dir):
@@ -161,20 +161,22 @@ class BlackberryNDK:
 		os.chdir(oldPath)
 		return retCode
 
-	def package(self, package, savePath, projectName):
-		# TODO Mac: Copy all needed resources to assets (images, sounds, etc.). For now copy only the app.js to assets
-		buildDir = os.path.abspath(os.path.join(savePath, '..', '..', '..'))
+	def package(self, package, appFile, projectName):
+		# TODO Mac: Copy all needed resources to assets (images, sounds,
+		# etc.). For now copy app.js and content of Resources/blackberry to assets
+		buildDir = os.path.abspath(os.path.join(appFile, '..', '..', '..'))
 		projectDir = os.path.abspath(os.path.join(buildDir, '..', '..', '..'))
 		assetsDir = os.path.join(buildDir, 'assets')
-		if not os.path.exists(assetsDir):
-			os.makedirs(assetsDir)
+		if os.path.exists(assetsDir):
+			shutil.rmtree(assetsDir)
+		shutil.copytree(os.path.join(projectDir, 'Resources', 'blackberry'), assetsDir)
 		shutil.copy2(os.path.join(projectDir, 'Resources', 'app.js'), assetsDir)
 
 		if platform.system() == 'Windows':
 			packager = 'blackberry-nativepackager.bat'
 		else:
 			packager = 'blackberry-nativepackager'
-		command = [packager, '-package', package, 'bar-descriptor.xml', '-e', savePath, projectName, 'icon.png', 'assets']
+		command = [packager, '-package', package, 'bar-descriptor.xml', '-e', appFile, projectName, 'assets']
 		return self._run(command)
 
 	def deploy(self, deviceIP, package):

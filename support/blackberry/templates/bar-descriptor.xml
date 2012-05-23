@@ -50,7 +50,6 @@
 
     <!--  The category where the application appears. Either core.games or core.media. -->
     <category>${config['category']}</category>
-    <asset path="icon.png">icon.png</asset>
     <asset path="assets">assets</asset>
 	<!-- TODO Mac: List all files need to be included in assets -->
     <asset path="assets/app.js">assets/app.js</asset>
@@ -78,11 +77,13 @@
 
     <!--  The icon for the application, which should be 86x86. -->
     <icon>
-        <image>icon.png</image>
+        <image>${config['icon']}</image>
     </icon>
 
     <!--  The splash screen that will appear when your application is launching. Should be 1024x600. -->
-    <!-- <splashscreen></splashscreen> -->
+    <splashscreen>
+        <image>${config['splashscreen']}</image>
+    </splashscreen>
 
     <!-- Request permission to execute native code.  Required for native applications. -->
     <action system="true">run_native</action>

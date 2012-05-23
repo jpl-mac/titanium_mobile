@@ -26,6 +26,8 @@ class Blackberry(object):
 		self.id = appid
 		self.ndk = bbndk
 
+		# TODO MAC: the bar-descriptor likely needs to be regenerated at
+		# 	build time to capture changes to tiapp.xml
 		# Configuration for the bar-descriptor.xml file
 		self.configDescriptor = {
 			'id':self.id,
@@ -34,7 +36,9 @@ class Blackberry(object):
 			'description':None,
 			'version':'1.0',
 			'author':'Appcelerator Titanium Mobile', # TODO MAC: Find out how validate the author
-			'category':'core.games'					 # TODO MAC: Find out how validate the category
+			'category':'core.games',                 # TODO MAC: Find out how validate the category
+			'icon':'assets/appicon.png',
+			'splashscreen':'assets/default.png'
 		}
 
 		# Configuration for the project file
