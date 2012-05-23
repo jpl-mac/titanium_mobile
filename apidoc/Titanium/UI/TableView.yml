@@ -190,7 +190,7 @@ methods:
 events:
   - name: click
     summary: Fired when a table row is clicked by the user.
-    platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb, backberry]
     properties:
       - name: index
         summary: Row index.
