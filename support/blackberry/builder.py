@@ -21,14 +21,14 @@ from tiapp import TiAppXML
 from blackberryndk import BlackberryNDK
 
 class Builder(object):
-	_type2variantCpu = {'simulator' : ('o-g', 'x86'),
+	type2variantCpu = {'simulator' : ('o-g', 'x86'),
 	                 'device' : ('o.le-v7-g', 'arm'),
 	                 'deploy' : ('o.le-v7', 'arm')}
 
 	def __init__(self, project_dir, type, ndk):
 		self.top_dir = project_dir.rstrip(os.sep)
 		self.type = type
-		(self.variant, self.cpu) = Builder._type2variantCpu[type]
+		(self.variant, self.cpu) = Builder.type2variantCpu[type]
 		self.ndk = ndk 
 		project_tiappxml = os.path.join(self.top_dir, 'tiapp.xml')
 		tiappxml = TiAppXML(project_tiappxml)

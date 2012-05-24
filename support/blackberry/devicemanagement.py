@@ -23,30 +23,18 @@ from builder import Builder
 class DeviceManagement(object):
 	def __init__(self, project_dir, type, ndk):
 		self.top_dir = project_dir.rstrip(os.sep)
-		(self.variant, self.cpu) = Builder._type2variantCpu[type]
+		(self.variant, self.cpu) = Builder.type2variantCpu[type]
 		self.ndk = ndk
 		project_tiappxml = os.path.join(self.top_dir, 'tiapp.xml')
 
 		# hide property output
 		with open(os.devnull, 'w') as nul:
+			oldStdout = sys.stdout
 			sys.stdout = nul
 			tiappxml = TiAppXML(project_tiappxml, True)
-			sys.stdout = sys.__stdout__
+			sys.stdout = oldStdout
 		self.name = tiappxml.properties['name']
 		self.buildDir = os.path.join(self.top_dir, 'build', 'blackberry', self.name)
-
-	def _run(self, command):
-		assert type(command) is list
-		try:
-			print 'Command: ' + ' '.join(command)
-			subprocess.check_call(command)
-			return 0
-		except subprocess.CalledProcessError, cpe:
-			print >>sys.stderr, cpe, cpe.output
-			return cpe.returncode
-		except OSError, e:
-			print >>sys.stderr, e
-			return e.errno
 
 	def getDevice(self):
 		# TODO Mac: either get this through a passed argument or try to detect
@@ -56,36 +44,16 @@ class DeviceManagement(object):
 		return os.path.join(self.buildDir, self.cpu, self.variant, '%s.bar' % self.name)
 
 	def terminateApp(self):
-		if platform.system() == 'Windows':
-			deploy = 'blackberry-deploy.bat'
-		else:
-			deploy = 'blackberry-deploy'
-		command = [deploy, '-terminateApp', '-device', self.getDevice(), '-package', self.getPackage()]
-		return self._run(command)
+		return self.ndk.terminateApp(self.getDevice(), self.getPackage())
 
 	def isAppRunning(self):
-		if platform.system() == 'Windows':
-			deploy = 'blackberry-deploy.bat'
-		else:
-			deploy = 'blackberry-deploy'
-		command = [deploy, '-isAppRunning', '-device', self.getDevice(), '-package', self.getPackage()]
-		return self._run(command)
+		return self.ndk.isAppRunning(self.getDevice(), self.getPackage())
 
 	def getFile(self, hostFile, deviceFile):
-		if platform.system() == 'Windows':
-			deploy = 'blackberry-deploy.bat'
-		else:
-			deploy = 'blackberry-deploy'
-		command = [deploy, '-getFile', deviceFile, hostFile, '-device', self.getDevice(), '-package', self.getPackage()]
-		return self._run(command)
+		return self.ndk.getFile(self.getDevice(), self.getPackage(), hostFile, deviceFile)
 
 	def putFile(self, hostFile, deviceFile):
-		if platform.system() == 'Windows':
-			deploy = 'blackberry-deploy.bat'
-		else:
-			deploy = 'blackberry-deploy'
-		command = [deploy, '-putFile', hostFile, deviceFile, '-device', self.getDevice(), '-package', self.getPackage()]
-		return self._run(command)
+		return self.ndk.putFile(self.getDevice(), self.getPackage(), hostFile, deviceFile)
 
 if __name__ == "__main__":
 
