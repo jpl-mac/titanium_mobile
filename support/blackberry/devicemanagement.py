@@ -49,11 +49,17 @@ class DeviceManagement(object):
 	def isAppRunning(self):
 		return self.ndk.isAppRunning(self.getDevice(), self.getPackage())
 
+	def printExitCode(self):
+		return self.ndk.printExitCode(self.getDevice(), self.getPackage())
+
 	def getFile(self, hostFile, deviceFile):
 		return self.ndk.getFile(self.getDevice(), self.getPackage(), hostFile, deviceFile)
 
 	def putFile(self, hostFile, deviceFile):
 		return self.ndk.putFile(self.getDevice(), self.getPackage(), hostFile, deviceFile)
+
+	def appLog(self):
+		return self.ndk.appLog(self.getDevice(), self.getPackage())
 
 if __name__ == "__main__":
 
@@ -67,12 +73,14 @@ if __name__ == "__main__":
 	subparser.add_parser('getDevice')
 	subparser.add_parser('terminateApp')
 	subparser.add_parser('isAppRunning')
+	subparser.add_parser('printExitCode')
 	putFileParser = subparser.add_parser('getFile')
 	putFileParser.add_argument('hostFile')
 	putFileParser.add_argument('deviceFile')
 	putFileParser = subparser.add_parser('putFile')
 	putFileParser.add_argument('hostFile')
 	putFileParser.add_argument('deviceFile')
+	subparser.add_parser('appLog')
 
 	# Parse input and call apropriate function
 	args = parser.parse_args()
@@ -93,10 +101,14 @@ if __name__ == "__main__":
 			retCode = deviceManagement.terminateApp()
 		elif (args.subparser_name == 'isAppRunning'):
 			retCode = deviceManagement.isAppRunning()
+		elif (args.subparser_name == 'printExitCode'):
+			retCode = deviceManagement.printExitCode()
 		elif (args.subparser_name == 'getFile'):
 			retCode = deviceManagement.getFile(args.hostFile.decode('utf-8'), args.deviceFile.decode('utf-8'))
 		elif (args.subparser_name == 'putFile'):
 			retCode = deviceManagement.putFile(args.hostFile.decode('utf-8'), args.deviceFile.decode('utf-8'))
+		elif (args.subparser_name == 'appLog'):
+			retCode = deviceManagement.appLog()
 		sys.exit(retCode)
 	except Exception, e:
 		print >>sys.stderr, e
