@@ -309,31 +309,25 @@ def zip_mobileweb(zf,basepath,version):
 				zf.write(from_, to_)
 
 def zip_blackberry(zf,basepath,version):
-	# TODO Mac: adjust zipping logic for the mobile_sdk as we add to it, using zip_mobileweb as starting point
-	subs = {
-		"__VERSION__":version,
-		"__TIMESTAMP__":ts,
-		"__GITHASH__": githash
-	}
-	dir = os.path.join(top_dir, 'blackberry')
+	blackberryDir = os.path.join(top_dir, 'blackberry')
+	toPath = os.path.join(basepath, 'blackberry')
 
-	for root, dirs, files in os.walk(dir):
-		for name in ignoreDirs:
-			if name in dirs:
-				dirs.remove(name)
-		for file in files:
-			e = os.path.splitext(file)
-			if len(e)==2 and e[1] in ignoreExtensions: continue
-			from_ = os.path.join(root, file)
-			to_ = from_.replace(dir, os.path.join(basepath,'blackberry'), 1)
-			if file == 'package.json':
-				c = open(from_).read()
-				for key in subs:
-					c = c.replace(key, subs[key])
-				zf.writestr(to_, c)
-			else:
+	def zipBlackberryDir(dir):
+		for root, dirs, files in os.walk(dir):
+			for file in files:
+				if not file.endswith('.a'):
+					continue
+				from_ = os.path.join(root, file)
+				to_ = from_.replace(blackberryDir, toPath, 1)
 				zf.write(from_, to_)
 
+	# add folders
+	zipBlackberryDir(os.path.join(blackberryDir, 'libv8'))
+	zipBlackberryDir(os.path.join(blackberryDir, 'tibb'))
+	zip_dir(zf, os.path.join(blackberryDir, 'tibbapp'), os.path.join(toPath, 'tibbapp'))
+
+	# add files
+	zf.write(os.path.join(blackberryDir, 'tibb', 'include', 'tibb.h'), os.path.join(toPath, 'tibb', 'include', 'tibb.h'))
 
 def create_platform_zip(platform,dist_dir,osname,version,version_tag):
 	if not os.path.exists(dist_dir):
