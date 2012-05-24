@@ -74,6 +74,7 @@ properties:
     summary: Key identifying a string in the locale file to use for the message text. 
     description: Only one of `message` or `messageid` should be specified.
     type: String
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: right
     summary: Right position of the view.

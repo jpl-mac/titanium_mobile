@@ -17,16 +17,22 @@ events:
     properties:
       - name: value
         summary: Value of the field at the time of the event.
+    platforms: [android, iphone, ipad, mobileweb]
+
   - name: change
     summary: Fired when the field value changes.
     properties:
       - name: value
         summary: New value of the field.
+    platforms: [android, iphone, ipad, mobileweb]
+
   - name: focus
     summary: Fired when the field gains focus.
     properties:
       - name: value
         summary: Value of the field at the time of the event.
+    platforms: [android, iphone, ipad, mobileweb]
+
   - name: return
     summary: Fired when the return key is pressed on the keyboard.
 properties:
@@ -38,6 +44,7 @@ properties:
         [KEYBOARD_APPEARANCE_DEFAULT](Titanium.UI.KEYBOARD_APPEARANCE_DEFAULT).
     type: Number
     platforms: [iphone, ipad]
+
   - name: autocapitalization
     summary: Determines how text is capitalized during typing. 
     description: |
@@ -52,10 +59,12 @@ properties:
   - name: autocorrect
     summary: If true, allows the input field to autocorrect misspelled words.
     type: Boolean
+    platforms: [android, iphone, ipad, mobileweb]
   - name: borderStyle
     summary: Border style for the field. 
     description: Specify one of the `INPUT_BORDERSTYLE` constants defined in [Titanium.UI](Titanium.UI.INPUT_BORDERSTYLE_BEZEL).
     type: Number
+    platforms: [android, iphone, ipad, mobileweb]
   - name: clearButtonMode
     summary: When to display the clear button. 
     description: |
@@ -69,20 +78,25 @@ properties:
   - name: clearOnEdit
     summary: Should the value of the field be cleared when the user starts editing?
     type: Boolean
+    platforms: [android, iphone, ipad, mobileweb]
   - name: editable
     summary: Is the field editable?
     type: Boolean
     default: true
+    platforms: [android, iphone, ipad, mobileweb]
   - name: enabled
     summary: Is the field enabled?
     type: Boolean
     default: true
+    platforms: [android, iphone, ipad, mobileweb]
   - name: font
     summary: Font to use for text.
     type: Font
+    platforms: [android, iphone, ipad, mobileweb]
   - name: hintText
     summary: Hint text to display when the field is unfocused.
     type: String
+    platforms: [android, iphone, ipad, mobileweb]
   - name: keyboardToolbar
     summary: Array of toolbar button objects or a [toolbar](Titanium.UI.iOS.Toolbar) to be used when the keyboard is displayed.
     description: |
@@ -108,6 +122,7 @@ properties:
         address, you should always specify the appropriate keyboard type.
     type: Number
     default: the platform's default keyboard
+    platforms: [android, iphone, ipad, mobileweb]
   - name: leftButton
     summary: Left button view. Using an object other than a [Button](Titanium.UI.Button) may have unpredictable results.
     type: Object
@@ -147,6 +162,7 @@ properties:
         Note: on iOS, `passwordMask` *must* be specified when the text field is created.
     type: Boolean
     default: false
+    platforms: [android, iphone, ipad, mobileweb]
   - name: returnKeyType
     summary: Specifies the text to display on the keyboard **Return** key when this field is focused.
     description: |
@@ -160,6 +176,7 @@ properties:
         Mobile Web on Android devices will only display "Go" regardless of which `RETURNKEY` type is used.
     type: Number
     default: the platform's default return key
+    platforms: [android, iphone, ipad, mobileweb]
   - name: rightButton
     summary: Right button view. 
     description: Using an object other than a [Button](Titanium.UI.Button) may have 
@@ -189,9 +206,11 @@ properties:
         Text alignment, specified using one of the <Titanium.UI> text alignment constants: [TEXT_ALIGNMENT_LEFT](Titanium.UI.TEXT_ALIGNMENT_LEFT), [TEXT_ALIGNMENT_CENTER](Titanium.UI.TEXT_ALIGNMENT_CENTER), or [TEXT_ALIGNMENT_RIGHT](Titanium.UI.TEXT_ALIGNMENT_RIGHT).
     type: [String,Number]
     default: <Titanium.UI.TEXT_ALIGNMENT_LEFT>
+    platforms: [android, iphone, ipad, mobileweb]
   - name: value
     summary: Value of the field.
     type: String
+    platforms: [android, iphone, ipad, mobileweb]
   - name: verticalAlign
     summary: |
         Vertical alignment for the text field, specified using one of the 

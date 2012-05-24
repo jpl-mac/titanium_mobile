@@ -61,10 +61,12 @@ methods:
     summary: |
         Starts the image animation. On Android and Mobile Web, also resets `index` to the first image.
     description:  This method only works if multiple images are specified.
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: stop
     summary: Stops a running animation. On iOS and Mobile Web, also resets `index` to the first image.
     description:  This method only works if multiple images are specified.
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: toBlob
     summary: Returns the image as a Blob object.
@@ -87,18 +89,22 @@ events:
             [image](Titanium.UI.ImageView.image) property is loaded. Set to `images`, when the series 
             of images defined in the [images](Titanium.UI.ImageView.images) property are loaded.
         type: String
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: start
     summary: Fired when the animation starts.
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: stop
     summary: Fired when the animation stops.
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: error
     summary: Fired when an image fails to load.
     properties:
       - name: image
         summary: URL of the image that failed to load.
+    platforms: [android, iphone, ipad, mobileweb]
 
   - name: pause
     summary: Fired when the animation pauses.
@@ -110,6 +116,7 @@ properties:
     type: Boolean
     default: false on creation, true on load (Android), false (iPhone, iPad, Mobile Web)
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: canScale
     summary: |
@@ -184,6 +191,7 @@ properties:
     type: Boolean
     default: false
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
 
   - name: preventDefaultImage
     summary: |
@@ -202,12 +210,14 @@ properties:
     summary: Run the animation in reverse.
     type: Boolean
     default: false
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: url
     summary: |
         URL to the image to display. Deprecated: use [image](Titanium.UI.ImageView.image) instead.
     type: String
     deprecated: {since: "1.5.0"}
+    platforms: [android, iphone, ipad, mobileweb]
 
 examples:
   - title: Basic Image View
