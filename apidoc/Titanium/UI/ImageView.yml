@@ -149,6 +149,7 @@ properties:
         On iOS and Mobile Web, the default is 30ms.
     type: Number
     default: See description (Android), 30 (iPhone, iPad, Mobile Web)
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: enableZoomControls
     summary: Show zoom controls when the user touches the image view.
@@ -185,6 +186,7 @@ properties:
         remote URLs (Android only), or `Blob` objects containing image data. `Blob` and `File` 
         objects are not supported on Mobile Web.
     type: [ Array<String>, Array<Titanium.Blob>, Array<Titanium.Filesystem.File> ]
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: paused
     summary: Indicates whether the animation is paused.
@@ -205,6 +207,7 @@ properties:
     summary: Number of times to repeat the image animation.
     type: Number
     default: 0 (infinite)
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: reverse
     summary: Run the animation in reverse.

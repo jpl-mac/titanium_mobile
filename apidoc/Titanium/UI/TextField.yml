@@ -7,10 +7,13 @@ since: "0.8"
 methods:
   - name: blur
     summary: Forces the field to lose focus.
+    platforms: [android, iphone, ipad, mobileweb]
   - name: focus
     summary: Forces the field to gain focus.
+    platforms: [android, iphone, ipad, mobileweb]
   - name: hasText
     summary: Returns `true` if the field contains text, `false` if it is empty.
+    platforms: [android, iphone, ipad, mobileweb]
 events:
   - name: blur
     summary: Fired when the field loses focus.
@@ -24,7 +27,6 @@ events:
     properties:
       - name: value
         summary: New value of the field.
-    platforms: [android, iphone, ipad, mobileweb]
 
   - name: focus
     summary: Fired when the field gains focus.
@@ -35,6 +37,7 @@ events:
 
   - name: return
     summary: Fired when the return key is pressed on the keyboard.
+    platforms: [android, iphone, ipad, mobileweb]
 properties:
   - name: appearance
     summary: Determines the appearance of the keyboard displayed when this field is focused.
@@ -56,6 +59,7 @@ properties:
 
         For Mobile Web, `TEXT_AUTOCAPITALIZATION_WORDS` is unsupported.
     type: Number
+    platforms: [android, iphone, ipad, mobileweb]
   - name: autocorrect
     summary: If true, allows the input field to autocorrect misspelled words.
     type: Boolean
