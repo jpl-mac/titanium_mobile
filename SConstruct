@@ -120,7 +120,7 @@ if build_type in ['full', 'iphone', 'ipad'] and not only_package \
 	try:
 		#output = 0
 		iphone_build_type = "clean" if clean else build_type
-		output = os.system("scons PRODUCT_VERSION=%s COMPILER_FLAGS='%s' BUILD_TYPE='%s'" % (version,flags,iphone_build_type))	
+		output = os.system("scons PRODUCT_VERSION=%s COMPILER_FLAGS='%s' BUILD_TYPE='%s'" % (version,flags,iphone_build_type))
 		if output!=0:
 			sys.stderr.write("BUILD FAILED!!!!\n")
 			# beep, please
