@@ -91,20 +91,15 @@ BlackBerrySimulator.prototype.fillTiAppData = function(data) {
 };
 
 BlackBerrySimulator.prototype.run = function(readLineCb) {
-	var blackberrySimulatorProcess = null;
-
 	var emulatorRunning = this.isEmulatorRunning();
 	if (emulatorRunning || this.device.indexOf('emulator') != 0) {
-		// TODO Mac
-		blackberrySimulatorProcess = this.createDeviceManagementProcess('log');
 		this.testHarnessRunning = this.isTestHarnessRunning();
 	} else {
 		// launch the (si|e)mulator async
 		// TODO Mac
 	}
 
-	blackberrySimulatorProcess.setOnReadLine(readLineCb);
-	blackberrySimulatorProcess.launch();
+	this.readLineCb = readLineCb;
 
 	if (this.device == 'emulator' && !emulatorRunning) {
 		// TODO Mac
@@ -116,6 +111,12 @@ BlackBerrySimulator.prototype.run = function(readLineCb) {
 		this.drillbit.frontendDo('status', 'ready to run tests');
 		this.drillbit.frontendDo('setup_finished');
 	}
+};
+
+BlackBerrySimulator.prototype.handleCompleteBlackBerryEvent = function(event)
+{
+	// TODO Mac
+	ti.api.error("Not implemented: handleCompleteBlackBerryEvent");
 };
 
 BlackBerrySimulator.prototype.removeTestJS = function(testScript) {
@@ -181,6 +182,29 @@ BlackBerrySimulator.prototype.launchTestHarness = function(suite) {
 		}
 		self.testHarnessRunning = true;
 		self.needsBuild = false;
+		var logProcess = self.createDeviceManagementProcess('appLog');
+		logProcess.setOnReadLine(self.readLineCb);
+		logProcess.setOnExit(function(e) {
+			if (logProcess.getExitCode() !== 0) {
+				self.drillbit.handleTestError(suite, 'blackberry');
+				return;
+			}
+
+			var exitCodeProcess = self.createDeviceManagementProcess('printExitCode');
+			var lastLine = "";
+			exitCodeProcess.setOnReadLine(function(data) {
+				var lines = data.split("\n");
+				lastLine = lines[lines.length - 1];
+			});
+			exitCodeProcess.setOnExit(function(e) {
+				if (exitCodeProcess.getExitCode() !== 0 || lastLine !== "0") {
+					self.drillbit.handleTestError(suite, 'blackberry');
+					return;
+				}
+			});
+			exitCodeProcess.launch();
+		});
+		logProcess.launch();
 	});
 	process.launch();
 };
