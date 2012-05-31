@@ -35,7 +35,7 @@ class Builder(object):
 		self.name = tiappxml.properties['name']
 		self.buildDir = os.path.join(self.top_dir, 'build', 'blackberry', self.name)
 		
-	def run(self):
+	def run(self, ipAddress, password = None):
 		# TODO Mac: V8 runtime should be added and possibly a lot of other stuff
 		
 		retCode = self.build()
@@ -56,7 +56,7 @@ class Builder(object):
 		retCode = self.ndk.package(barPath, savePath, self.name, self.type)
 		if retCode != 0:
 			return retCode
-		retCode = self.ndk.deploy('192.168.226.132', barPath)
+		retCode = self.ndk.deploy(ipAddress, barPath, password)
 		return retCode
 	
 	def build(self):
@@ -108,14 +108,11 @@ if __name__ == "__main__":
 		print >>sys.stderr, e
 		sys.exit(1)
 
-	if (args.subparser_name == 'run'):
-		builder = Builder(args.project_path.decode('utf-8'), args.type.decode('utf-8'), bbndk, args.ip_address.decode('utf-8'), args.password.decode('utf-8') if args.password != None else None)
-	else:
-		builder = Builder(args.project_path.decode('utf-8'), args.type.decode('utf-8'), bbndk)
+	builder = Builder(args.project_path.decode('utf-8'), args.type.decode('utf-8'), bbndk)
 
 	retCode = 1
 	if (args.command == 'build'):
 		retCode = builder.build()
-	elif (args.command == 'run'):
-		retCode = builder.run()
+	elif (args.subparser_name == 'run'):
+		retCode = builder.run(args.ip_address.decode('utf-8'), args.device_password.decode('utf-8') if args.device_password != None else None)
 	sys.exit(retCode)
