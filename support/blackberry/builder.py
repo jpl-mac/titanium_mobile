@@ -83,10 +83,19 @@ if __name__ == "__main__":
 	# Setup script usage 
 	parser = argparse.ArgumentParser(usage='<command> -t TYPE -d PROJECT_PATH -p NDK_PATH')
 	
-	parser.add_argument('command', choices=['build', 'run'], help='commands')
-	parser.add_argument('-t', '--type', choices=['simulator', 'device', 'deploy'], help='simulator | device | deploy', required=True)
-	parser.add_argument('-d', '--project_path', help='project directory path', required=True)
-	parser.add_argument('-p', '--ndk_path', help='blackberry ndk path')
+	parsers = parser.add_subparsers(dest='subparser_name')
+	buildParser = parsers.add_parser('build')
+	runParser = parsers.add_parser('run')
+
+	buildParser.add_argument('-t', '--type', choices=['simulator', 'device', 'deploy'], help='simulator | device | deploy', required=True)
+	buildParser.add_argument('-d', '--project_path', help='project directory path', required=True)
+	buildParser.add_argument('-n', '--ndk_path', help='blackberry ndk path')
+
+	runParser.add_argument('-t', '--type', choices=['simulator', 'device', 'deploy'], help='simulator | device | deploy', required=True)
+	runParser.add_argument('-i', '--ip_address', help='(simulator | device) ip address', required=True)
+	runParser.add_argument('-p', '--device_password', help='(simulator | device) protection password')
+	runParser.add_argument('-d', '--project_path', help='project directory path', required=True)
+	runParser.add_argument('-n', '--ndk_path', help='blackberry ndk path')
 	
 	# Parse input and call apropriate function
 	args = parser.parse_args()
@@ -99,7 +108,10 @@ if __name__ == "__main__":
 		print >>sys.stderr, e
 		sys.exit(1)
 
-	builder = Builder(args.project_path.decode('utf-8'), args.type.decode('utf-8'), bbndk)
+	if (args.subparser_name == 'run'):
+		builder = Builder(args.project_path.decode('utf-8'), args.type.decode('utf-8'), bbndk, args.ip_address.decode('utf-8'), args.password.decode('utf-8') if args.password != None else None)
+	else:
+		builder = Builder(args.project_path.decode('utf-8'), args.type.decode('utf-8'), bbndk)
 
 	retCode = 1
 	if (args.command == 'build'):
