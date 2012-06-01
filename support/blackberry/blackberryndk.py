@@ -359,4 +359,4 @@ if __name__ == "__main__":
 		sys.exit(1)
 
 	if args.test:
-		__runUnitTests(args.ip_address)
+		__runUnitTests(args.ip_address.decode('utf-8') if args.ip_address != None else None)
