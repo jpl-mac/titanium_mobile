@@ -188,8 +188,11 @@ class BlackberryNDK:
 			command.append('-devMode')
 		return self._run(command)
 
-	def deploy(self, deviceIP, package):
+	def deploy(self, deviceIP, package, password = None):
 		command = [self.deployProgram, '-installApp', '-launchApp', '-device', deviceIP, '-package', package]
+		if password != None:
+			command.append('-password')
+			command.append(password)
 		return self._run(command)
 
 	def terminateApp(self, deviceIP, package):
