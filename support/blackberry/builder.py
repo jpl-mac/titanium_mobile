@@ -75,7 +75,7 @@ def error(msg):
 if __name__ == "__main__":
 
 	# Setup script usage 
-	parser = argparse.ArgumentParser(usage='<command> -t TYPE -d PROJECT_PATH -p NDK_PATH')
+	parser = argparse.ArgumentParser()
 	
 	parsers = parser.add_subparsers(dest='subparser_name')
 	buildParser = parsers.add_parser('build')
