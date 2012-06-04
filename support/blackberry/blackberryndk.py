@@ -170,7 +170,7 @@ class BlackberryNDK:
 		os.chdir(oldPath)
 		return retCode
 
-	def package(self, package, appFile, projectName, type, isUnitTest = False):
+	def package(self, package, appFile, projectName, type, debugToken, isUnitTest = False):
 		# Copy all needed resources to assets
 		buildDir = os.path.abspath(os.path.join(appFile, '..', '..', '..'))
 		projectDir = os.path.abspath(os.path.join(buildDir, '..', '..', '..'))
@@ -205,6 +205,8 @@ class BlackberryNDK:
 			command.append('icon.png')
 		if type != 'deploy':
 			command.append('-devMode')
+		if debugToken != None:
+			command.extend(['-debugToken', debugToken])
 		return self._run(command)
 
 	def deploy(self, deviceIP, package, password = None):
@@ -323,7 +325,7 @@ def __runUnitTests(ipAddress = None):
 		variant = 'o-g'
 		barPath = os.path.join(project, cpu, variant, '%s.bar' % projectName)
 		savePath = os.path.join(project, cpu, variant, projectName)
-		assert 0 == ndk.package(barPath, savePath, os.path.basename(project), 'simulator', isUnitTest = True)
+		assert 0 == ndk.package(barPath, savePath, os.path.basename(project), 'simulator', None, isUnitTest = True)
 		assert os.path.exists(barPath)
 	os.chdir(oldDir)
 
