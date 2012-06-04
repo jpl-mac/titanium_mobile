@@ -105,7 +105,7 @@ if __name__ == "__main__":
 	builder = Builder(args.project_path.decode('utf-8'), args.type.decode('utf-8'), bbndk)
 
 	retCode = 1
-	if (args.command == 'build'):
+	if (args.subparser_name == 'build'):
 		retCode = builder.build()
 	elif (args.subparser_name == 'run'):
 		retCode = builder.run(args.ip_address.decode('utf-8'), args.device_password.decode('utf-8') if args.device_password != None else None)
