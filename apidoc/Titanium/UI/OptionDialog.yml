@@ -34,6 +34,13 @@ description: |
     
     On iPad, this dialog is shown in the middle of the display, or as a popover-like dialog if 
     another view or control is specified via an argument.
+
+    #### BlackBerry
+
+    On BlackBerry the control consists of a title bar and an expandable list of options.
+    The purpose is to give the app developer a simple way to let the user select one of many options.
+    The list expands/collapses when tapping on the title bar, and collapses when tapping on an option in the list.
+    It can be displayed anywhere in the screen.
     
     #### Caveats
     
@@ -60,6 +67,7 @@ events:
             Index of the option that was pressed. See description for result of the dialog being 
             dismissed in some other way.
         type: Number
+        platforms: [android, iphone, ipad, mobileweb]
         
       - name: button
         summary: |
@@ -71,6 +79,7 @@ events:
       - name: cancel
         summary: Index of the cancel option if defined or `-1` otherwise.
         type: Number
+        platforms: [android, iphone, ipad, mobileweb]
         
       - name: destructive
         summary: Index of the destructive option if defined or `-1` otherwise.
@@ -114,6 +123,7 @@ properties:
         will not be displayed.
     type: Number
     default: -1
+    platforms: [android, iphone, ipad, mobileweb]
 
   - name: destructive
     summary: Index to define the destructive option, indicated by a visual cue when rendered.
@@ -128,7 +138,7 @@ properties:
     
   - name: selectedIndex
     summary: Defines the default selected option.
-    platforms: [android]
+    platforms: [android, blackberry]
     type: Number
     availability: creation
     
@@ -139,6 +149,7 @@ properties:
   - name: titleid
     summary: Key identifying a string in the locale file to use for the title text.
     type: String
+    platforms: [android, iphone, ipad, mobileweb]
 
 examples:
   - title: Dialog with 3 Options

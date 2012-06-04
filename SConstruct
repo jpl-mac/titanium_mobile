@@ -2,6 +2,12 @@
 #
 # Top level scons script
 #
+# Usage:
+#
+# TODO: fill in the rest
+# blackberry        1 to build only blackberry, 0 to skip
+# blackberry_ndk    path to the BlackBerry NDK
+#
 import os, shutil, platform, os.path as path, sys
 import package
 import SCons.Variables
@@ -14,8 +20,12 @@ from SCons.Script import *
 cwd = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
 sys.path.append(path.join(cwd,"build"))
 sys.path.append(path.join(cwd,"support","android"))
+sys.path.append(path.join(cwd,"support","blackberry"))
+sys.path.append(path.join(cwd,"support","common"))
 import titanium_version, ant
+from tilogger import TiLogger
 from androidsdk import AndroidSDK
+from blackberryndk import BlackberryNDK
 version = titanium_version.version
 module_apiversion = titanium_version.module_apiversion
 
@@ -109,8 +119,8 @@ if build_type in ['full', 'iphone', 'ipad'] and not only_package \
 	os.chdir('iphone')
 	try:
 		#output = 0
-		if clean: build_type = "clean"
-		output = os.system("scons PRODUCT_VERSION=%s COMPILER_FLAGS='%s' BUILD_TYPE='%s'" % (version,flags,build_type))	
+		iphone_build_type = "clean" if clean else build_type
+		output = os.system("scons PRODUCT_VERSION=%s COMPILER_FLAGS='%s' BUILD_TYPE='%s'" % (version,flags,iphone_build_type))
 		if output!=0:
 			sys.stderr.write("BUILD FAILED!!!!\n")
 			# beep, please
@@ -127,7 +137,7 @@ if build_type in ['full', 'mobileweb'] and not only_package:
 	d = os.getcwd()
 	os.chdir('mobileweb')
 	try:
-		if clean: build_type = "clean"
+		mobileweb_build_type = "clean" if clean else build_type
 		# nothing to do... yet
 	finally:
 		os.chdir(d)
@@ -136,14 +146,18 @@ if build_type in ['full', 'blackberry'] and not only_package:
 	d = os.getcwd()
 	try:
 		os.chdir('blackberry')
-		if clean: build_type = "clean"
-		# nothing to do... yet
-		print 'Building for BlackBerry'
-		# Add blackberry build steps here
-	except OSError as (errno, strerror):
-		# Temporary except clause while the blackberry folder doesn't
-		# yet exist in the github repo, so the script won't just exit
-		print "OS error ({0}): {1} [{2}]".format(errno, strerror, 'blackberry')
+		log = TiLogger(os.path.join(cwd, 'scons_blackberry.log'), level = TiLogger.INFO)
+		bbndk = BlackberryNDK(ARGUMENTS.get("blackberry_ndk", None), log = log)
+		if clean:
+			blackberryBuildType = "clean"
+			print 'Cleaning for BlackBerry'
+		else:
+			blackberryBuildType = "all"
+			print 'Building for BlackBerry'
+		retCode = bbndk.buildTibb(os.path.join(os.getcwd(), 'tibb'), blackberryBuildType)
+		if retCode != 0:
+			sys.stderr.write("BUILD FAILED!!!!\n")
+			sys.exit(retCode)
 	finally:
 		os.chdir(d)
 
