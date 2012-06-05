@@ -589,7 +589,6 @@ properties:
     platforms: [android, iphone, ipad]
     type: Number
     permission: read-only
-    platforms: [android, iphone, ipad, mobileweb]
   - name: RETURNKEY_EMERGENCY_CALL
     summary: Set the return key text to "Emergency Call".
     platforms: [android, iphone, ipad]
@@ -753,6 +752,7 @@ properties:
         windows.
     type: String
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: backgroundImage
     summary: Local path or URL to an image file for setting a background for the master view (when there are no windows or other top-level controls displayed).
     description: |
