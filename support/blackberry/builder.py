@@ -9,7 +9,8 @@
 # General builder script for staging, packaging, deploying,
 # and debugging Titanium Mobile applications on Blackberry
 #
-import os, sys, argparse
+import os, sys
+from optparse import OptionParser
 
 template_dir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
 top_support_dir = os.path.dirname(template_dir) 
@@ -80,25 +81,31 @@ def error(msg):
 	
 if __name__ == "__main__":
 
-	# Setup script usage 
-	parser = argparse.ArgumentParser(usage='<command> -t TYPE -d PROJECT_PATH -p NDK_PATH')
+	# Setup script usage using argparse
+	parser = OptionParser(usage='<command> -t TYPE -d PROJECT_PATH -p NDK_PATH')
 	
-	parsers = parser.add_subparsers(dest='subparser_name')
-	buildParser = parsers.add_parser('build')
-	runParser = parsers.add_parser('run')
-
-	buildParser.add_argument('-t', '--type', choices=['simulator', 'device', 'deploy'], help='simulator | device | deploy', required=True)
-	buildParser.add_argument('-d', '--project_path', help='project directory path', required=True)
-	buildParser.add_argument('-n', '--ndk_path', help='blackberry ndk path')
-
-	runParser.add_argument('-t', '--type', choices=['simulator', 'device', 'deploy'], help='simulator | device | deploy', required=True)
-	runParser.add_argument('-i', '--ip_address', help='(simulator | device) ip address', required=True)
-	runParser.add_argument('-p', '--device_password', help='(simulator | device) protection password')
-	runParser.add_argument('-d', '--project_path', help='project directory path', required=True)
-	runParser.add_argument('-n', '--ndk_path', help='blackberry ndk path')
+	parser.add_option('-t', '--type', choices=['simulator', 'device', 'deploy'], help='simulator | device | deploy', dest='type')
+	parser.add_option('-d', '--project_path', help='project directory path', dest='project_path')
+	parser.add_option('-n', '--ndk_path', help='blackberry ndk path', dest='ndk_path')
+	parser.add_option('-i', '--ip_address', help='(simulator | device) ip address', dest='ip_address')
+	parser.add_option('-p', '--device_password', help='(simulator | device) protection password', dest='device_password')
 	
-	# Parse input and call apropriate function
-	args = parser.parse_args()
+	(args, pos_args) = parser.parse_args()
+	if len(pos_args) != 1:
+		print parser.get_usage()
+		sys.exit(1)
+
+	if pos_args[0] == 'build':
+		if args.type == None or args.project_path == None or args.ndk_path == None:
+			print parser.get_usage()
+			sys.exit(1)
+	elif pos_args[0] == 'run':
+		if args.type == None or args.project_path == None or args.ndk_path == None or args.ip_address == None:
+			print parser.get_usage()
+			sys.exit(1)
+	else:
+		print parser.get_usage()
+		sys.exit(1)
 
 	log = TiLogger(os.path.join(os.path.abspath(os.path.expanduser(args.project_path)), 'build_blackberry.log'))
 	log.debug(" ".join(sys.argv))
@@ -111,8 +118,8 @@ if __name__ == "__main__":
 	builder = Builder(args.project_path.decode('utf-8'), args.type.decode('utf-8'), bbndk)
 
 	retCode = 1
-	if (args.command == 'build'):
+	if (pos_args[0] == 'build'):
 		retCode = builder.build()
-	elif (args.subparser_name == 'run'):
+	elif (pos_args[0] == 'run'):
 		retCode = builder.run(args.ip_address.decode('utf-8'), args.device_password.decode('utf-8') if args.device_password != None else None)
 	sys.exit(retCode)
