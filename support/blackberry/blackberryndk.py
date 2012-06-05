@@ -34,6 +34,13 @@ class Device:
 
 class BlackberryNDK:
 	def __init__(self, blackberryNdk, log = None):
+		if platform.system() == 'Windows':
+			self.packagerProgram = 'blackberry-nativepackager.bat'
+			self.deployProgram = 'blackberry-deploy.bat'
+		else:
+			self.packagerProgram = 'blackberry-nativepackager'
+			self.deployProgram = 'blackberry-deploy'
+
 		self.log = log
 		self.blackberryNdk = self._findNdk(blackberryNdk)
 		if self.blackberryNdk is None:
@@ -119,22 +126,26 @@ class BlackberryNDK:
 			return qde
 		return None
 
-	def _run(self, command):
+	def _run(self, command, echoCommand = True):
 		assert type(command) is list
 		try:
+			# if no log, don't output
 			if self.log == None:
-				if platform.system() == 'Windows':
-					logfile = 'NUL'
-				else:
-					logfile = '/dev/null'
+				logfile = os.devnull
 			else:
 				logfile = self.log.getLogfile()
-				self.log.info('Command: ' + ' '.join(command))
-			with open(logfile, 'a') as f:
-				# Need this write() or else subprocess will overwrite for some reason
-				f.write('\n')
-				subprocess.check_call(command, stdout = f, stderr = f)
+				if echoCommand:
+					self.log.info('Command: ' + ' '.join(command))
+			# if no logfile, output to stdout
+			if logfile == None:
+				subprocess.check_call(command)
 				return 0
+			else:
+				with open(logfile, 'a') as f:
+					# Need this write() or else subprocess will overwrite for some reason
+					f.write('\n')
+					subprocess.check_call(command, stdout = f, stderr = f)
+					return 0
 		except subprocess.CalledProcessError, cpe:
 			print >>sys.stderr, cpe, cpe.output
 			return cpe.returncode
@@ -161,7 +172,7 @@ class BlackberryNDK:
 		os.chdir(oldPath)
 		return retCode
 
-	def package(self, package, appFile, projectName):
+	def package(self, package, appFile, projectName, type):
 		# TODO Mac: Copy all needed resources to assets (images, sounds,
 		# etc.). For now copy app.js and content of Resources/blackberry to assets
 		buildDir = os.path.abspath(os.path.join(appFile, '..', '..', '..'))
@@ -172,20 +183,51 @@ class BlackberryNDK:
 		shutil.copytree(os.path.join(projectDir, 'Resources', 'blackberry'), assetsDir)
 		shutil.copy2(os.path.join(projectDir, 'Resources', 'app.js'), assetsDir)
 
-		if platform.system() == 'Windows':
-			packager = 'blackberry-nativepackager.bat'
-		else:
-			packager = 'blackberry-nativepackager'
-		command = [packager, '-package', package, 'bar-descriptor.xml', '-e', appFile, projectName, 'assets']
+		command = [self.packagerProgram, '-package', package, 'bar-descriptor.xml', '-e', appFile, projectName, 'assets']
+		if type != 'deploy':
+			command.append('-devMode')
 		return self._run(command)
 
 	def deploy(self, deviceIP, package):
-		if platform.system() == 'Windows':
-			deploy = 'blackberry-deploy.bat'
-		else:
-			deploy = 'blackberry-deploy'
-		command = [deploy, '-installApp', '-launchApp', '-device', deviceIP, '-package', package]
+		command = [self.deployProgram, '-installApp', '-launchApp', '-device', deviceIP, '-package', package]
 		return self._run(command)
+
+	def terminateApp(self, deviceIP, package):
+		command = [self.deployProgram, '-terminateApp', '-device', deviceIP, '-package', package]
+		return self._run(command)
+
+	def isAppRunning(self, deviceIP, package):
+		command = [self.deployProgram, '-isAppRunning', '-device', deviceIP, '-package', package]
+		return self._run(command, echoCommand = False)
+
+	def printExitCode(self, deviceIP, package):
+		command = [self.deployProgram, '-printExitCode', '-device', deviceIP, '-package', package]
+		return self._run(command, echoCommand = False)
+
+	def getFile(self, deviceIP, package, hostFile, deviceFile):
+		command = [self.deployProgram, '-getFile', deviceFile, hostFile, '-device', deviceIP, '-package', package]
+		return self._run(command)
+
+	def putFile(self, deviceIP, package, hostFile, deviceFile):
+		command = [self.deployProgram, '-putFile', hostFile, deviceFile, '-device', deviceIP, '-package', package]
+		return self._run(command)
+
+	def _isAppRunning(self, deviceIP, package):
+		command = [self.deployProgram, '-isAppRunning', '-device', deviceIP, '-package', package]
+		output = subprocess.check_output(command)
+		return output.find("result::true") != -1
+
+	def _printAppLog(self, deviceIP, package):
+		hostFile = "-"
+		deviceFile = "logs/log"
+		command = [self.deployProgram, '-getFile', deviceFile, hostFile, '-device', deviceIP, '-package', package]
+		return self._run(command)
+
+	def appLog(self, deviceIP, package):
+		import time
+		while self._isAppRunning(deviceIP, package):
+			time.sleep(2)
+		self._printAppLog(deviceIP, package)
 
 	def buildTibb(self, tibbPath, buildType):
 		assert os.path.exists(tibbPath)
@@ -246,9 +288,10 @@ def __runUnitTests():
 		passed = os.path.exists(os.path.join(workspace, '.metadata'))
 		assert passed
 
-	with UnitTest('Test build project (Simulator)..'):
-		variant = 'Simulator-Debug'
-		ndk.build(project, variant)
+	with UnitTest('Test build project (x86)..'):
+		cpu = 'x86'
+		ndk.build(project, cpu)
+		assert os.path.exists(os.path.join(project, 'x86', 'o', projectName))
 		assert os.path.exists(os.path.join(project, 'x86', 'o-g', projectName))
 
 	# TODO Mac: Complete the following unit tests
@@ -261,15 +304,11 @@ def __runUnitTests():
 #	with UnitTest('Test deploy project to simulator (hard-coded ip)..'):
 #		ndk.deploy('192.168.135.129', )
 #
-	with UnitTest('Test build project (Device-Debug)..'):
-		variant = 'Device-Debug'
-		ndk.build(project, variant)
-		assert os.path.exists(os.path.join(project, 'arm', 'o.le-v7-g', projectName))
-
-	with UnitTest('Test build project (Device-Release)..'):
-		variant = 'Device-Release'
-		ndk.build(project, variant)
+	with UnitTest('Test build project (arm)..'):
+		cpu = 'arm'
+		ndk.build(project, cpu)
 		assert os.path.exists(os.path.join(project, 'arm', 'o.le-v7', projectName))
+		assert os.path.exists(os.path.join(project, 'arm', 'o.le-v7-g', projectName))
 
 	shutil.rmtree(workspace)
 
