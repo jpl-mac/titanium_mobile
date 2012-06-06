@@ -133,18 +133,6 @@ int NativeControlObject::setValue(TiObject* obj)
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
-PROP_SETTER(setWidth)
-int NativeControlObject::setWidth(TiObject* obj)
-{
-    return NATIVE_ERROR_NOTSUPPORTED;
-}
-
-PROP_SETTER(setHeight)
-int NativeControlObject::setHeight(TiObject* obj)
-{
-    return NATIVE_ERROR_NOTSUPPORTED;
-}
-
 PROP_SETTER(setData)
 int NativeControlObject::setData(TiObject* obj)
 {
@@ -178,6 +166,46 @@ int NativeControlObject::setSelectedIndex(TiObject* obj)
 
 PROP_SETTER(setImage)
 int NativeControlObject::setImage(TiObject* obj)
+{
+    return NATIVE_ERROR_NOTSUPPORTED;
+}
+
+PROP_SETTER(setFont)
+int NativeControlObject::setFont(TiObject* obj)
+{
+    return NATIVE_ERROR_NOTSUPPORTED;
+}
+
+PROP_SETTER(setWidth)
+int NativeControlObject::setWidth(TiObject* obj)
+{
+    float width = 0;
+    int error = NativeControlObject::getFloat(obj, &width);
+    if (!N_SUCCEEDED(error))
+    {
+        return error;
+    }
+    control_->setMinWidth(width);
+    control_->setMaxWidth(width);
+    return NATIVE_ERROR_OK;
+}
+
+PROP_SETTER(setHeight)
+int NativeControlObject::setHeight(TiObject* obj)
+{
+    float height = 0;
+    int error = NativeControlObject::getFloat(obj, &height);
+    if (!N_SUCCEEDED(error))
+    {
+        return error;
+    }
+    control_->setMinHeight(height);
+    control_->setMaxHeight(height);
+    return NATIVE_ERROR_OK;
+}
+
+PROP_SETTER(setHintText)
+int NativeControlObject::setHintText(TiObject* obj)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
@@ -219,10 +247,10 @@ static vector<NATIVE_PROPSET_CALLBACK> initFunctionMap()
     vect[N_PROP_COLOR]                             = PROP_SETTING_FUNCTION(setColor);
     vect[N_PROP_ELLIPSIZE]                         = NULL;
     vect[N_PROP_FOCUSABLE]                         = NULL;
-    vect[N_PROP_FONT]                              = NULL;
+    vect[N_PROP_FONT]                              = PROP_SETTING_FUNCTION(setFont);
     vect[N_PROP_HEIGHT]                            = PROP_SETTING_FUNCTION(setHeight);
     vect[N_PROP_HIGHLIGHTED_COLOR]                 = NULL;
-    vect[N_PROP_HINT_TEXT]                         = NULL;
+    vect[N_PROP_HINT_TEXT]                         = PROP_SETTING_FUNCTION(setHintText);
     vect[N_PROP_HTML]                              = NULL;
     vect[N_PROP_IMAGE]                             = PROP_SETTING_FUNCTION(setImage);
     vect[N_PROP_KEEP_SCREEN_ON]                    = NULL;
@@ -360,6 +388,31 @@ int NativeControlObject::getStringArray(TiObject* obj, QVector<QString>& value)
         const char* cStr = *v8UtfString;
         value.append(cStr);
     }
+    return NATIVE_ERROR_OK;
+}
+
+int NativeControlObject::getMapObject(TiObject* obj, QMap<QString, QString>& props)
+{
+    Handle<Value> v8value = obj->getValue();
+    if (v8value.IsEmpty() || !v8value->IsObject())
+    {
+        return NATIVE_ERROR_INVALID_ARG;
+    }
+    Handle<Object> object = Handle<Object>::Cast(v8value);
+    Handle<Array> keys = object->GetPropertyNames();
+
+    for (unsigned int i = 0; i < keys->Length(); i++)
+    {
+        v8::Handle<v8::String> key = keys->Get(v8::Integer::New(i))->ToString();
+        v8::String::Utf8Value keyStr(key);
+        v8::Handle<v8::String> value = object->Get(key)->ToString();
+        v8::String::Utf8Value valueStr(value);
+        QString strKey = QString::fromUtf8(*keyStr);
+        QString strValue = QString::fromUtf8(*valueStr);
+
+        props.insert(strKey, strValue);
+    }
+
     return NATIVE_ERROR_OK;
 }
 

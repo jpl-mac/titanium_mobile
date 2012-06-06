@@ -43,12 +43,15 @@ public:
     virtual int setOptions(TiObject* obj);
     virtual int setSelectedIndex(TiObject* obj);
     virtual int setImage(TiObject* obj);
+    virtual int setFont(TiObject* obj);
+    virtual int setHintText(TiObject* obj);
     static int getColorComponents(TiObject* obj, float* r, float* g, float* b, float* a);
     static int getBoolean(TiObject* obj, bool* value);
     static int getString(TiObject* obj, QString& str);
     static int getFloat(TiObject* obj, float* value);
     static int getInteger(TiObject* obj, int* value);
     static int getStringArray(TiObject* obj, QVector<QString>& value);
+    static int getMapObject(TiObject* obj, QMap<QString, QString>& props);
     //obtain java script dictionary object and keep it in the multimap
     static int getDictionaryData(TiObject* obj, QVector<QPair<QString, QString> >& dictionary);
 

@@ -17,76 +17,100 @@
 #endif
 
 QT_BEGIN_MOC_NAMESPACE
-static const uint qt_meta_data_ListViewEventHandler[] = {
+static const uint qt_meta_data_ListViewEventHandler[] =
+{
 
- // content:
-       6,       // revision
-       0,       // classname
-       0,    0, // classinfo
-       1,   14, // methods
-       0,    0, // properties
-       0,    0, // enums/sets
-       0,    0, // constructors
-       0,       // flags
-       0,       // signalCount
+    // content:
+    6,       // revision
+    0,       // classname
+    0,    0, // classinfo
+    1,   14, // methods
+    0,    0, // properties
+    0,    0, // enums/sets
+    0,    0, // constructors
+    0,       // flags
+    0,       // signalCount
 
- // slots: signature, parameters, type, tag, flags
-      28,   22,   21,   21, 0x0a,
+    // slots: signature, parameters, type, tag, flags
+    28,   22,   21,   21, 0x0a,
 
-       0        // eod
+    0        // eod
 };
 
-static const char qt_meta_stringdata_ListViewEventHandler[] = {
+static const char qt_meta_stringdata_ListViewEventHandler[] =
+{
     "ListViewEventHandler\0\0var,b\0"
     "selectionChanged(QVariantList,bool)\0"
 };
 
-void ListViewEventHandler::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+void ListViewEventHandler::qt_static_metacall(QObject* _o, QMetaObject::Call _c, int _id, void** _a)
 {
-    if (_c == QMetaObject::InvokeMetaMethod) {
+    if (_c == QMetaObject::InvokeMetaMethod)
+    {
         Q_ASSERT(staticMetaObject.cast(_o));
-        ListViewEventHandler *_t = static_cast<ListViewEventHandler *>(_o);
-        switch (_id) {
-        case 0: _t->selectionChanged((*reinterpret_cast< QVariantList(*)>(_a[1])),(*reinterpret_cast< bool(*)>(_a[2]))); break;
-        default: ;
+        ListViewEventHandler* _t = static_cast<ListViewEventHandler*>(_o);
+        switch (_id)
+        {
+        case 0:
+            _t->selectionChanged((*reinterpret_cast< QVariantList(*)>(_a[1])), (*reinterpret_cast< bool(*)>(_a[2])));
+            break;
+        default:
+            ;
         }
     }
 }
 
-const QMetaObjectExtraData ListViewEventHandler::staticMetaObjectExtraData = {
-    0,  qt_static_metacall 
+const QMetaObjectExtraData ListViewEventHandler::staticMetaObjectExtraData =
+{
+    0,  qt_static_metacall
 };
 
-const QMetaObject ListViewEventHandler::staticMetaObject = {
-    { &QObject::staticMetaObject, qt_meta_stringdata_ListViewEventHandler,
-      qt_meta_data_ListViewEventHandler, &staticMetaObjectExtraData }
+const QMetaObject ListViewEventHandler::staticMetaObject =
+{
+    {
+        &QObject::staticMetaObject, qt_meta_stringdata_ListViewEventHandler,
+        qt_meta_data_ListViewEventHandler, &staticMetaObjectExtraData
+    }
 };
 
 #ifdef Q_NO_DATA_RELOCATION
-const QMetaObject &ListViewEventHandler::getStaticMetaObject() { return staticMetaObject; }
+const QMetaObject& ListViewEventHandler::getStaticMetaObject()
+{
+    return staticMetaObject;
+}
 #endif //Q_NO_DATA_RELOCATION
 
-const QMetaObject *ListViewEventHandler::metaObject() const
+const QMetaObject* ListViewEventHandler::metaObject() const
 {
     return QObject::d_ptr->metaObject ? QObject::d_ptr->metaObject : &staticMetaObject;
 }
 
-void *ListViewEventHandler::qt_metacast(const char *_clname)
+void* ListViewEventHandler::qt_metacast(const char* _clname)
 {
-    if (!_clname) return 0;
+    if (!_clname)
+    {
+        return 0;
+    }
     if (!strcmp(_clname, qt_meta_stringdata_ListViewEventHandler))
+    {
         return static_cast<void*>(const_cast< ListViewEventHandler*>(this));
+    }
     return QObject::qt_metacast(_clname);
 }
 
-int ListViewEventHandler::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+int ListViewEventHandler::qt_metacall(QMetaObject::Call _c, int _id, void** _a)
 {
     _id = QObject::qt_metacall(_c, _id, _a);
     if (_id < 0)
+    {
         return _id;
-    if (_c == QMetaObject::InvokeMetaMethod) {
+    }
+    if (_c == QMetaObject::InvokeMetaMethod)
+    {
         if (_id < 1)
+        {
             qt_static_metacall(this, _c, _id, _a);
+        }
         _id -= 1;
     }
     return _id;

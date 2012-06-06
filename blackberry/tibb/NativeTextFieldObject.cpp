@@ -9,14 +9,12 @@
 #include "TiEventContainerFactory.h"
 #include <bb/cascades/AbsoluteLayoutProperties>
 #include <bb/cascades/AbsoluteLayout>
-#include <bb/cascades/textField>
-#include <QtCore/QString>
+#include <bb/cascades/TextField>
+#include <QString>
 
 NativeTextFieldObject::NativeTextFieldObject()
 {
     textField_ = NULL;
-    left_ = 0;
-    top_ = 0;
 }
 
 NativeTextFieldObject::~NativeTextFieldObject()
@@ -36,77 +34,22 @@ NativeTextFieldObject* NativeTextFieldObject::createTextField()
 int NativeTextFieldObject::initialize(TiEventContainerFactory* containerFactory)
 {
     textField_ = bb::cascades::TextField::create();
-    setControl(textField_);
+    setTextControl(textField_);
     eventFieldChanged_ = containerFactory->createEventContainer();
     eventFieldChanged_->setDataProperty("type", "change");
     eventHandler_ = new TextFieldEventHandler(eventFieldChanged_);
     return NATIVE_ERROR_OK;
 }
 
-int NativeTextFieldObject::setWidth(TiObject* obj)
+int NativeTextFieldObject::setHintText(TiObject* obj)
 {
-    float width;
-    int error = NativeControlObject::getFloat(obj, &width);
-    if (!N_SUCCEEDED(error))
+    QString strHint;
+    int error = NativeControlObject::getString(obj, strHint);
+    if (error != NATIVE_ERROR_OK)
     {
         return error;
     }
-
-    textField_->setMaxWidth(width);
-    textField_->setMinWidth(width);
-    return NATIVE_ERROR_OK;
-}
-
-int NativeTextFieldObject::setHeight(TiObject* obj)
-{
-    float height;
-    int error = NativeControlObject::getFloat(obj, &height);
-    if (!N_SUCCEEDED(error))
-    {
-        return error;
-    }
-    textField_->setMaxHeight(height);
-    textField_->setMinHeight(height);
-    return NATIVE_ERROR_OK;
-}
-
-int NativeTextFieldObject::setLeft(TiObject* obj)
-{
-    float left;
-    int error = NativeControlObject::getFloat(obj, &left);
-    if (!N_SUCCEEDED(error))
-    {
-        return error;
-    }
-    bb::cascades::AbsoluteLayoutProperties* pProp = new bb::cascades::AbsoluteLayoutProperties;
-    left_ = left;
-    pProp->setPositionX(left_);
-    pProp->setPositionY(top_);
-    textField_->setLayoutProperties(pProp);
-
-    return NATIVE_ERROR_OK;
-}
-
-int NativeTextFieldObject::setTop(TiObject* obj)
-{
-    float top;
-    int error = NativeControlObject::getFloat(obj, &top);
-    if (!N_SUCCEEDED(error))
-    {
-        return error;
-    }
-    bb::cascades::AbsoluteLayoutProperties* pProp = new bb::cascades::AbsoluteLayoutProperties;
-    top_ = top;
-    pProp->setPositionY(top_);
-    pProp->setPositionX(left_);
-    textField_->setLayoutProperties(pProp);
-
-    return NATIVE_ERROR_OK;
-}
-
-int NativeTextFieldObject::setHintText(const char* hintText)
-{
-    textField_->setHintText(hintText);
+    textField_->setHintText(strHint);
     return NATIVE_ERROR_OK;
 }
 
