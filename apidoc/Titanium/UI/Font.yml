@@ -93,8 +93,7 @@ properties:
         iOS ingores any unit specifier after the size value.
 
         On BlackBerry, fontSize use post script units. Valid ranges are >= 0. Sizes < 0 will be clamped to 0.
-        fontSize value should be a Number. String currently also work but only if not followed by unit specifier.
-        BlackBerry ingores any unit specifier after the size value.
+        fontSize value is a Number.
     type: [ Number, String ]
     default: 15px
   - name: fontWeight

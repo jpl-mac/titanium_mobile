@@ -21,7 +21,6 @@ events:
     properties:
       - name: value
         summary: Value of the field at the time of the event.
-    platforms: [android, iphone, ipad, mobileweb]
 
   - name: change
     summary: Fired when the field value changes.
@@ -36,7 +35,6 @@ events:
     properties:
       - name: value
         summary: Value of the field at the time of the event.
-    platforms: [android, iphone, ipad, mobileweb]
 
   - name: return
     summary: Fired when the return key is pressed on the keyboard.
