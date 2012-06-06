@@ -39,6 +39,7 @@ methods:
         summary: Animation properties, only used on iOS.
         type: TableViewAnimationProperties
         optional: true
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: deleteRow
     summary: Deletes an existing row.
@@ -53,6 +54,7 @@ methods:
         summary: Animation properties. Only used on iOS.
         type: TableViewAnimationProperties
         optional: true
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: deselectRow
     summary: Programmatically deselects a row.
@@ -82,6 +84,7 @@ methods:
         summary: Animation properties. Only used on iOS.
         type: TableViewAnimationProperties
         optional: true
+    platforms: [android, iphone, ipad, mobileweb]
         
   - name: insertRowBefore
     summary: Inserts a row before another row.
@@ -103,6 +106,7 @@ methods:
         summary: Animation properties. Only used on iOS.
         type: TableViewAnimationProperties
         optional: true
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: scrollToIndex
     summary: Scrolls the table view to ensure that the specified row is on screen.
@@ -150,6 +154,7 @@ methods:
         summary: Animation properties. Only used on iOS. 
         type: TableViewAnimationProperties
         optional: true
+    platforms: [android, iphone, ipad, mobileweb]
         
   - name: selectRow
     summary: Programmatically selects a row.
@@ -187,10 +192,14 @@ methods:
       - name: properties
         summary: Animation properties. Only used on iOS.
         type: TableViewAnimationProperties
+    platforms: [android, iphone, ipad, mobileweb]
+
 events:
   - name: click
     summary: Fired when a table row is clicked by the user.
-    platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
+    description: |
+        For now, Blackberry supports only 'index' property of this event
     properties:
       - name: index
         summary: Row index.
@@ -645,6 +654,7 @@ properties:
   - name: footerTitle
     summary: Table view footer title.
     type: String
+    platforms: [android, iphone, ipad, mobileweb]
 
   - name: hideSearchOnSelection
     summary: Boolean to indicate whether or not the search field should hide on completion.
@@ -663,14 +673,17 @@ properties:
   - name: footerView
     summary: Table view footer as a view that will be rendered instead of a label.
     type: Titanium.UI.View
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: headerTitle
     summary: Table view header title.
     type: String
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: headerView
     summary: Table view header as a view that will be rendered instead of a label.
     type: Titanium.UI.View
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: index
     summary: Array of objects (with `title` and `index` properties) to control the table view index.
@@ -684,10 +697,12 @@ properties:
   - name: maxRowHeight
     summary: Maximum row height for table view rows.
     type: Number
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: minRowHeight
     summary: Minimum row height for table view rows.
     type: Number
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: moving
     summary: Boolean to control the moveable state of the table view.
@@ -697,6 +712,7 @@ properties:
   - name: rowHeight
     summary: Default row height for table view rows.
     type: Number
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: scrollable
     summary: If `true`, the tableview can be scrolled.
@@ -719,6 +735,7 @@ properties:
     summary: Separator color between rows, specified as a hex or named value.
     type: String
     default: platform-specific default color
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: separatorStyle
     summary: Separator style constant. 

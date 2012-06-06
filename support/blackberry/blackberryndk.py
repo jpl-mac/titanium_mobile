@@ -188,8 +188,11 @@ class BlackberryNDK:
 			command.append('-devMode')
 		return self._run(command)
 
-	def deploy(self, deviceIP, package):
+	def deploy(self, deviceIP, package, password = None):
 		command = [self.deployProgram, '-installApp', '-launchApp', '-device', deviceIP, '-package', package]
+		if password != None:
+			command.append('-password')
+			command.append(password)
 		return self._run(command)
 
 	def terminateApp(self, deviceIP, package):
@@ -200,6 +203,10 @@ class BlackberryNDK:
 		command = [self.deployProgram, '-isAppRunning', '-device', deviceIP, '-package', package]
 		return self._run(command, echoCommand = False)
 
+	def printExitCode(self, deviceIP, package):
+		command = [self.deployProgram, '-printExitCode', '-device', deviceIP, '-package', package]
+		return self._run(command, echoCommand = False)
+
 	def getFile(self, deviceIP, package, hostFile, deviceFile):
 		command = [self.deployProgram, '-getFile', deviceFile, hostFile, '-device', deviceIP, '-package', package]
 		return self._run(command)
@@ -207,6 +214,23 @@ class BlackberryNDK:
 	def putFile(self, deviceIP, package, hostFile, deviceFile):
 		command = [self.deployProgram, '-putFile', hostFile, deviceFile, '-device', deviceIP, '-package', package]
 		return self._run(command)
+
+	def _isAppRunning(self, deviceIP, package):
+		command = [self.deployProgram, '-isAppRunning', '-device', deviceIP, '-package', package]
+		output = subprocess.check_output(command)
+		return output.find("result::true") != -1
+
+	def _printAppLog(self, deviceIP, package):
+		hostFile = "-"
+		deviceFile = "logs/log"
+		command = [self.deployProgram, '-getFile', deviceFile, hostFile, '-device', deviceIP, '-package', package]
+		return self._run(command)
+
+	def appLog(self, deviceIP, package):
+		import time
+		while self._isAppRunning(deviceIP, package):
+			time.sleep(2)
+		self._printAppLog(deviceIP, package)
 
 	def buildTibb(self, tibbPath, buildType):
 		assert os.path.exists(tibbPath)

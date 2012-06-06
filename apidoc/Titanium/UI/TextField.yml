@@ -21,20 +21,26 @@ events:
     properties:
       - name: value
         summary: Value of the field at the time of the event.
+    platforms: [android, iphone, ipad, mobileweb]
+
   - name: change
     summary: Fired when the field value changes.
     platforms: [android, iphone, ipad, mobileweb]
     properties:
       - name: value
         summary: New value of the field.
+
   - name: focus
     summary: Fired when the field gains focus.
     platforms: [android, iphone, ipad, mobileweb]
     properties:
       - name: value
         summary: Value of the field at the time of the event.
+    platforms: [android, iphone, ipad, mobileweb]
+
   - name: return
     summary: Fired when the return key is pressed on the keyboard.
+    platforms: [android, iphone, ipad, mobileweb]
 properties:
   - name: appearance
     summary: Determines the appearance of the keyboard displayed when this field is focused.
@@ -44,6 +50,7 @@ properties:
         [KEYBOARD_APPEARANCE_DEFAULT](Titanium.UI.KEYBOARD_APPEARANCE_DEFAULT).
     type: Number
     platforms: [iphone, ipad]
+
   - name: autocapitalization
     summary: Determines how text is capitalized during typing. 
     description: |
@@ -92,9 +99,11 @@ properties:
   - name: font
     summary: Font to use for text.
     type: Font
+    platforms: [android, iphone, ipad, mobileweb]
   - name: hintText
     summary: Hint text to display when the field is unfocused.
     type: String
+    platforms: [android, iphone, ipad, mobileweb]
   - name: keyboardToolbar
     summary: Array of toolbar button objects or a [toolbar](Titanium.UI.iOS.Toolbar) to be used when the keyboard is displayed.
     description: |
@@ -204,9 +213,11 @@ properties:
         Text alignment, specified using one of the <Titanium.UI> text alignment constants: [TEXT_ALIGNMENT_LEFT](Titanium.UI.TEXT_ALIGNMENT_LEFT), [TEXT_ALIGNMENT_CENTER](Titanium.UI.TEXT_ALIGNMENT_CENTER), or [TEXT_ALIGNMENT_RIGHT](Titanium.UI.TEXT_ALIGNMENT_RIGHT).
     type: [String,Number]
     default: <Titanium.UI.TEXT_ALIGNMENT_LEFT>
+    platforms: [android, iphone, ipad, mobileweb]
   - name: value
     summary: Value of the field.
     type: String
+    platforms: [android, iphone, ipad, mobileweb]
   - name: verticalAlign
     summary: |
         Vertical alignment for the text field, specified using one of the 
