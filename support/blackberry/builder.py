@@ -82,44 +82,50 @@ def error(msg):
 if __name__ == "__main__":
 
 	# Setup script usage using argparse
-	parser = OptionParser(usage='<command> -t TYPE -d PROJECT_PATH -p NDK_PATH')
+	parser = OptionParser(usage='<command: build | run> -t TYPE -d PROJECT_PATH -n NDK_PATH -i IP_ADDRESS [-p DEVICE_PASSWORD]')
 	
-	parser.add_option('-t', '--type', choices=['simulator', 'device', 'deploy'], help='simulator | device | deploy', dest='type')
-	parser.add_option('-d', '--project_path', help='project directory path', dest='project_path')
-	parser.add_option('-n', '--ndk_path', help='blackberry ndk path', dest='ndk_path')
-	parser.add_option('-i', '--ip_address', help='(simulator | device) ip address', dest='ip_address')
-	parser.add_option('-p', '--device_password', help='(simulator | device) protection password', dest='device_password')
+	commonGroup = parser.add_option_group('Common options')
+	commonGroup.add_option('-t', '--type', choices=['simulator', 'device', 'deploy'], help='simulator | device | deploy', dest='type')
+	commonGroup.add_option('-d', '--project_path', help='project directory path', dest='project_path')
+	commonGroup.add_option('-n', '--ndk_path', help='blackberry ndk path', dest='ndk_path')
 	
-	(args, pos_args) = parser.parse_args()
-	if len(pos_args) != 1:
+	runGroup = parser.add_option_group('Run/Deploy options')
+	runGroup.add_option('-i', '--ip_address', help='(simulator | device) ip address', dest='ip_address')
+	runGroup.add_option('-p', '--device_password', help='(simulator | device) protection password', dest='device_password')
+
+	(options, args) = parser.parse_args()
+	if len(args) != 1:
 		print parser.get_usage()
 		sys.exit(1)
 
-	if pos_args[0] == 'build':
-		if args.type == None or args.project_path == None or args.ndk_path == None:
-			print parser.get_usage()
+	buildUsage = 'Usage: build -t TYPE -d PROJECT_PATH -n NDK_PATH'
+	runUsage = 'Usage: run -t TYPE -d PROJECT_PATH -n NDK_PATH -i IP_ADDRESS [-p DEVICE_PASSWORD]'
+
+	if args[0] == 'build':
+		if options.type == None or options.project_path == None or options.ndk_path == None:
+			parser.error(buildUsage)
 			sys.exit(1)
-	elif pos_args[0] == 'run':
-		if args.type == None or args.project_path == None or args.ndk_path == None or args.ip_address == None:
-			print parser.get_usage()
+	elif args[0] == 'run':
+		if options.type == None or options.project_path == None or options.ndk_path == None or options.ip_address == None:
+			parser.error(runUsage)
 			sys.exit(1)
 	else:
 		print parser.get_usage()
 		sys.exit(1)
 
-	log = TiLogger(os.path.join(os.path.abspath(os.path.expanduser(args.project_path)), 'build_blackberry.log'))
+	log = TiLogger(os.path.join(os.path.abspath(os.path.expanduser(options.project_path)), 'build_blackberry.log'))
 	log.debug(" ".join(sys.argv))
 	try:
-		bbndk = BlackberryNDK(args.ndk_path and args.ndk_path.decode('utf-8'), log = log)
+		bbndk = BlackberryNDK(options.ndk_path and options.ndk_path.decode('utf-8'), log = log)
 	except Exception, e:
 		print >>sys.stderr, e
 		sys.exit(1)
 
-	builder = Builder(args.project_path.decode('utf-8'), args.type.decode('utf-8'), bbndk)
+	builder = Builder(options.project_path.decode('utf-8'), options.type.decode('utf-8'), bbndk)
 
 	retCode = 1
-	if (pos_args[0] == 'build'):
+	if (args[0] == 'build'):
 		retCode = builder.build()
-	elif (pos_args[0] == 'run'):
-		retCode = builder.run(args.ip_address.decode('utf-8'), args.device_password.decode('utf-8') if args.device_password != None else None)
+	elif (args[0] == 'run'):
+		retCode = builder.run(options.ip_address.decode('utf-8'), options.device_password.decode('utf-8') if options.device_password != None else None)
 	sys.exit(retCode)
