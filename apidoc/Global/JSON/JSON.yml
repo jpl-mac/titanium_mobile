@@ -58,6 +58,7 @@ methods:
         used for indentation. If the space parameter is a number, then
         each level is indented by the specified number of spaces. 
 
+        On BlackBerry: NYI
     parameters: 
     
       - name: value
@@ -105,7 +106,8 @@ methods:
         and its return value is used instead of the original value.
         If it returns what it received, then the structure is not modified.
         If it returns undefined then the member is deleted.
-        
+
+        On BlackBerry: NYI
     parameters:
       - name: text
         summary: JSON text to parse.
