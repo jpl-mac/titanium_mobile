@@ -636,7 +636,7 @@ class Builder(object):
 			for root, dirs, files in os.walk(topdir):
 				remove_ignored_dirs(dirs)
 				for d in dirs:
-					if d == "iphone" or d == "mobileweb":
+					if d == "iphone" or d == "mobileweb" or d == "blackberry":
 						dirs.remove(d)
 				for filename in files:
 					if filename.startswith("_"):

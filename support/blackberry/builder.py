@@ -45,12 +45,6 @@ class Builder(object):
 		
 		# Change current directory to do relative operations
 		os.chdir("%s" % self.buildDir)
-		# TODO Mac: Add corresponding parameters (ip, icon, bar_descriptor, etc...) to script in order to support:
-		# For now use simulator ip address, etc...
-		# For now use only for simulator
-		# TODO Mac: log each command that is executed to the build.log file,
-		# output might be interesting as well
-		# TODO Mac: See if we can reasonably launch the simulator from here and fetch the ip address
 		barPath = os.path.join(self.buildDir, self.cpu, self.variant, '%s.bar' % self.name)
 		savePath = os.path.join(self.buildDir, self.cpu, self.variant, self.name)
 		retCode = self.ndk.package(barPath, savePath, self.name, self.type)
@@ -81,7 +75,7 @@ def error(msg):
 if __name__ == "__main__":
 
 	# Setup script usage 
-	parser = argparse.ArgumentParser(usage='<command> -t TYPE -d PROJECT_PATH -p NDK_PATH')
+	parser = argparse.ArgumentParser()
 	
 	parsers = parser.add_subparsers(dest='subparser_name')
 	buildParser = parsers.add_parser('build')
@@ -111,7 +105,7 @@ if __name__ == "__main__":
 	builder = Builder(args.project_path.decode('utf-8'), args.type.decode('utf-8'), bbndk)
 
 	retCode = 1
-	if (args.command == 'build'):
+	if (args.subparser_name == 'build'):
 		retCode = builder.build()
 	elif (args.subparser_name == 'run'):
 		retCode = builder.run(args.ip_address.decode('utf-8'), args.device_password.decode('utf-8') if args.device_password != None else None)
