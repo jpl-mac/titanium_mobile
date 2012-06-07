@@ -46,12 +46,6 @@ class Builder(object):
 		
 		# Change current directory to do relative operations
 		os.chdir("%s" % self.buildDir)
-		# TODO Mac: Add corresponding parameters (ip, icon, bar_descriptor, etc...) to script in order to support:
-		# For now use simulator ip address, etc...
-		# For now use only for simulator
-		# TODO Mac: log each command that is executed to the build.log file,
-		# output might be interesting as well
-		# TODO Mac: See if we can reasonably launch the simulator from here and fetch the ip address
 		barPath = os.path.join(self.buildDir, self.cpu, self.variant, '%s.bar' % self.name)
 		savePath = os.path.join(self.buildDir, self.cpu, self.variant, self.name)
 		retCode = self.ndk.package(barPath, savePath, self.name, self.type)

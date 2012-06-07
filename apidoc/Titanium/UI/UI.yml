@@ -123,6 +123,7 @@ methods:
         optional: true
     returns:
         type: Titanium.UI.2DMatrix
+    platforms: [android, iphone, ipad, mobileweb]
   - name: convertUnits
     summary: Converts one type of unit to another using the metrics of the main Display.
     parameters:
@@ -138,6 +139,7 @@ methods:
         type: Number
         description: Returns the converted amount in the units of convertToUnits. If percentages are passed in, 0 is returned.
     since: "2.0.0"
+    platforms: [android, iphone, ipad, mobileweb]
 properties:
   - name: ANIMATION_CURVE_EASE_IN
     summary: Use the animation curve constants in <Titanium.UI.iOS> instead.
@@ -411,16 +413,19 @@ properties:
     summary: Constant value for face-down orientation.
     type: Number
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: FACE_UP
     summary: Constant value for face-up orientation.
     type: Number
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: FILL
     summary: FILL behavior for UI layout.
     since: "2.0.0"
     type: String
     description: The FILL behavior means the view will grow its size to fill its parent.
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: INPUT_BORDERSTYLE_BEZEL
     summary: Use a bezel-style border on the input field.
     platforms: [android, iphone, ipad]
@@ -479,12 +484,14 @@ properties:
     summary: Use the default keyboard.
     type: Number
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: KEYBOARD_EMAIL
     summary: Use a keyboard suitable for composing email.
     description: |
         Note: on MobileWeb, if you enable `passwordType`, the `keyboardType` value will be overridden with `KEYBOARD_DEFAULT`.
     type: Number
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: KEYBOARD_NAMEPHONE_PAD
     summary: Use a keyboard suitable for entering names and phone numbers.
     platforms: [android, iphone, ipad]
@@ -501,22 +508,26 @@ properties:
         Note: on MobileWeb, if you enable `passwordType`, the `keyboardType` value will be overridden with `KEYBOARD_DEFAULT`.
     type: Number
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: KEYBOARD_PHONE_PAD
     summary: Use a keyboard with a phone-style number pad.
     description: |
         Note: on MobileWeb, if you enable `passwordType`, the `keyboardType` value will be overridden with `KEYBOARD_DEFAULT`.
     type: Number
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: KEYBOARD_URL
     summary: Use an keyboard optimized for entering URLs.
     description: |
         Note: on MobileWeb, if you enable `passwordType`, the `keyboardType` value will be overridden with `KEYBOARD_DEFAULT`.
     type: Number
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: LANDSCAPE_LEFT
     summary: Standard landscape orientation (home button on left).
     type: Number
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: LANDSCAPE_RIGHT
     summary: Reverse landscape orientation (home button on right).
     platforms: [android, iphone, ipad]
@@ -544,22 +555,27 @@ properties:
     summary: Use a date picker.
     type: Number
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: PICKER_TYPE_DATE_AND_TIME
     summary: Use a date and time picker.
     type: Number
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: PICKER_TYPE_PLAIN
     summary: Use a plain picker (for values other than date or time).
     type: Number
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: PICKER_TYPE_TIME
     summary: Use a time picker.
     type: Number
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: PORTRAIT
     summary: Orientation constant for portrait mode orientation.
     type: Number
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: RETURNKEY_DEFAULT
     summary: Use the default return key on the virtual keyboard.
     description: |
@@ -567,6 +583,7 @@ properties:
         on iOS devices, the default label is "return"; on Android devices it is "Go".
     type: Number
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: RETURNKEY_DONE
     summary: Set the return key text to "Done".
     platforms: [android, iphone, ipad]
@@ -581,6 +598,7 @@ properties:
     summary: Set the return key text to "Go".
     type: Number
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: RETURNKEY_GOOGLE
     summary: Set the return key text to "Google".
     description: |
@@ -588,6 +606,7 @@ properties:
         on iOS devices, the default label is "return"; on Android devices it is "Go".
     type: Number
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: RETURNKEY_JOIN
     summary: Set the return key text to "Join".
     platforms: [android, iphone, ipad]
@@ -610,6 +629,7 @@ properties:
         on iOS devices, the default label is "return"; on Android devices it is "Go".
     type: Number
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: RETURNKEY_SEND
     summary: Set the return key text to "Send".
     platforms: [android, iphone, ipad]
@@ -622,89 +642,104 @@ properties:
         on iOS devices, the default label is "return"; on Android devices it is "Go".
     type: Number
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: SIZE
     summary: SIZE behavior for UI layout.
     since: "2.0.0"
     type: String
     description: The SIZE behavior means the view will constrain its size fit its contents.
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: TEXT_ALIGNMENT_CENTER
     summary: Center align text.
     type: [Number, String]
-    description: This constant is a string on android, and a number on iOS and mobileweb.
+    description: This constant is a string on android, and a number on iOS, mobileweb and BlackBerry.
     permission: read-only
   - name: TEXT_ALIGNMENT_LEFT
     summary: Left align text.
     type: [Number, String]
-    description: This constant is a string on android, and a number on iOS and mobileweb.
+    description: This constant is a string on android, and a number on iOS, mobileweb and BlackBerry.
     permission: read-only
   - name: TEXT_ALIGNMENT_RIGHT
     summary: Right align text.
     type: [Number, String]
-    description: This constant is a string on android, and a number on iOS and mobileweb.
+    description: This constant is a string on android, and a number on iOS, mobileweb and BlackBerry.
     permission: read-only
   - name: TEXT_AUTOCAPITALIZATION_ALL
     summary: Auto-capitalize all text in the input field.
     type: Number
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: TEXT_AUTOCAPITALIZATION_NONE
     summary: Do not auto-capitalize.
     type: Number
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: TEXT_AUTOCAPITALIZATION_SENTENCES
     summary: Use sentence-style auto-capitalization in the input field.
     type: Number
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: TEXT_AUTOCAPITALIZATION_WORDS
     summary: Auto-capitalize the first letter of each word in the input field.
     description: |
         Mobile Web does not support this because it would interfere with the native capitalization of the mobile browser.
     type: Number
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: TEXT_VERTICAL_ALIGNMENT_BOTTOM
     summary: Align text to the bottom of the view.
     type: [Number, String]
     description: This constant is a string on android, and a number on iOS and mobileweb.
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: TEXT_VERTICAL_ALIGNMENT_CENTER
     summary: Vertically align text to the center of the view.
     type: [Number, String]
     description: This constant is a string on android, and a number on iOS and mobileweb.
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: TEXT_VERTICAL_ALIGNMENT_TOP
     summary: Align text to the top of the view.
     type: [Number, String]
     description: This constant is a string on android, and a number on iOS and mobileweb.
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: UNIT_CM
     summary: Unit constant representing units in centimeters.
     since: "2.0.0"
     type: String
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: UNIT_DIP
     summary: Unit constant representing units in density-independent pixels.
     since: "2.0.0"
     type: String
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: UNIT_IN
     summary: Unit constant representing units in inches.
     since: "2.0.0"
     type: String
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: UNIT_MM
     summary: Unit constant representing units in millimeters.
     since: "2.0.0"
     type: String
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: UNIT_PX
     summary: Unit constant representing units in pixels.
     since: "2.0.0"
     type: String
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: UNKNOWN
     summary: Orientation constant representing an unknown orientation.
     type: Number
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: UPSIDE_PORTRAIT
     summary: Orientation constant for inverted portait orientation.
     type: Number
@@ -717,21 +752,25 @@ properties:
         windows.
     type: String
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: backgroundImage
     summary: Local path or URL to an image file for setting a background for the master view (when there are no windows or other top-level controls displayed).
     description: |
         The default background image may also show through if you use semi-transparent 
         windows.
     type: String
+    platforms: [android, iphone, ipad, mobileweb]
   - name: currentTab
     summary: The currently active tab, if a tab group is open.
     description: |
         If no tab group is open, this value is undefined.
     type: Titanium.UI.Tab
+    platforms: [android, iphone, ipad, mobileweb]
   - name: currentWindow
     summary: The active window associated with the executing JavaScript context.
     type: Titanium.UI.Window
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
   - name: orientation
     deprecated: {since: "1.7.2"}
     summary: Use <Titanium.UI.Window.orientationModes> instead.
