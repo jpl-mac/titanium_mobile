@@ -75,32 +75,32 @@ def error(msg):
 	
 if __name__ == "__main__":
 
-	# Setup script usage using argparse
-	parser = OptionParser(usage='<command: build | run> -t TYPE -d PROJECT_PATH -n NDK_PATH -i IP_ADDRESS [-p DEVICE_PASSWORD]')
+	# Setup script usage using optparse
+	parser = OptionParser(usage='<command: build | run> -t TYPE -d PROJECT_PATH [-p NDK_PATH] [-i IP_ADDRESS] [-s DEVICE_PASSWORD]')
 	
 	commonGroup = parser.add_option_group('Common options')
 	commonGroup.add_option('-t', '--type', choices=['simulator', 'device', 'deploy'], help='simulator | device | deploy', dest='type')
 	commonGroup.add_option('-d', '--project_path', help='project directory path', dest='project_path')
-	commonGroup.add_option('-n', '--ndk_path', help='blackberry ndk path', dest='ndk_path')
+	commonGroup.add_option('-p', '--ndk_path', help='blackberry ndk path', dest='ndk_path')
 	
 	runGroup = parser.add_option_group('Run/Deploy options')
 	runGroup.add_option('-i', '--ip_address', help='(simulator | device) ip address', dest='ip_address')
-	runGroup.add_option('-p', '--device_password', help='(simulator | device) protection password', dest='device_password')
+	runGroup.add_option('-s', '--device_password', help='(simulator | device) protection password', dest='device_password')
 
 	(options, args) = parser.parse_args()
 	if len(args) != 1:
 		print parser.get_usage()
 		sys.exit(1)
 
-	buildUsage = 'Usage: build -t TYPE -d PROJECT_PATH -n NDK_PATH'
-	runUsage = 'Usage: run -t TYPE -d PROJECT_PATH -n NDK_PATH -i IP_ADDRESS [-p DEVICE_PASSWORD]'
+	buildUsage = 'Usage: %s build -t TYPE -d PROJECT_PATH [-p NDK_PATH]' %os.path.basename(sys.argv[0])
+	runUsage = 'Usage: %s run -t TYPE -d PROJECT_PATH [-p NDK_PATH] -i IP_ADDRESS [-s DEVICE_PASSWORD]' %os.path.basename(sys.argv[0])
 
 	if args[0] == 'build':
-		if options.type == None or options.project_path == None or options.ndk_path == None:
+		if options.type == None or options.project_path == None:
 			parser.error(buildUsage)
 			sys.exit(1)
 	elif args[0] == 'run':
-		if options.type == None or options.project_path == None or options.ndk_path == None or options.ip_address == None:
+		if options.type == None or options.project_path == None or options.ip_address == None:
 			parser.error(runUsage)
 			sys.exit(1)
 	else:
