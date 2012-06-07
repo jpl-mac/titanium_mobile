@@ -17,23 +17,24 @@ methods:
 events:
   - name: blur
     summary: Fired when the field loses focus.
+    platforms: [android, iphone, ipad, mobileweb]
     properties:
       - name: value
         summary: Value of the field at the time of the event.
-    platforms: [android, iphone, ipad, mobileweb]
 
   - name: change
     summary: Fired when the field value changes.
+    platforms: [android, iphone, ipad, mobileweb]
     properties:
       - name: value
         summary: New value of the field.
 
   - name: focus
     summary: Fired when the field gains focus.
+    platforms: [android, iphone, ipad, mobileweb]
     properties:
       - name: value
         summary: Value of the field at the time of the event.
-    platforms: [android, iphone, ipad, mobileweb]
 
   - name: return
     summary: Fired when the return key is pressed on the keyboard.

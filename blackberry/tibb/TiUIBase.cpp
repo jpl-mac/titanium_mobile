@@ -42,6 +42,31 @@ const static TiProperty g_tiProperties[] =
     },
 
     {
+        "font", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        N_PROP_FONT
+    },
+
+    {
+        "height", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        N_PROP_HEIGHT
+    },
+
+    {
+        "hintText", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        N_PROP_HINT_TEXT
+    },
+
+    {
+        "image", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        N_PROP_IMAGE
+    },
+
+    {
+        "data", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        N_PROP_DATA
+    },
+
+    {
         "label", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
         N_PROP_LABEL
     },
@@ -54,6 +79,16 @@ const static TiProperty g_tiProperties[] =
     {
         "min", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
         N_PROP_MIN
+    },
+
+    {
+        "options", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        N_PROP_OPTIONS
+    },
+
+    {
+        "selectedIndex", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        N_PROP_SELECTED_INDEX
     },
 
     {
@@ -87,18 +122,8 @@ const static TiProperty g_tiProperties[] =
     },
 
     {
-        "options", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
-        N_PROP_OPTIONS
-    },
-
-    {
-        "selectedIndex", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
-        N_PROP_SELECTED_INDEX
-    },
-
-    {
-        "image", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
-        N_PROP_IMAGE
+        "width", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        N_PROP_WIDTH
     }
 };
 
