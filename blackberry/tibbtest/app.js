@@ -12,9 +12,8 @@ var label1 = Ti.UI.createLabel({
 	textAlign : 'center',
 	text:'Hello, world!',
 	color:'green',
+	top: 200
 });
-
-label1.text='Test';
 
 win1.add(label1);
 
