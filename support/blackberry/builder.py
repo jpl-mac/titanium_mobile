@@ -94,23 +94,27 @@ if __name__ == "__main__":
 		sys.exit(1)
 
 	buildUsage = 'Usage: %s build -t TYPE -d PROJECT_PATH [-p NDK_PATH]' %os.path.basename(sys.argv[0])
-	runUsage = 'Usage: %s run -t TYPE -d PROJECT_PATH [-p NDK_PATH] -i IP_ADDRESS [-s DEVICE_PASSWORD]' %os.path.basename(sys.argv[0])
+	runUsage = 'Usage: %s run -t TYPE -d PROJECT_PATH [-p NDK_PATH] -i IP_ADDRESS [-s DEVICE_PASSWORD] [--debug_token DEBUG_TOKEN]' %os.path.basename(sys.argv[0])
 
+	type = options.type and options.type.decode('utf-8')
+	projectPath = options.project_path and options.project_path.decode('utf-8')
+	ndkPath = options.ndk_path and options.ndk_path.decode('utf-8')
+	ipAddress = options.ip_address and options.ip_address.decode('utf-8')
+	devicePassword = options.device_password and options.device_password.decode('utf-8')
+	debugToken = options.debug_token and options.debug_token.decode('utf-8')
 	if args[0] == 'build':
 		if options.type == None or options.project_path == None:
 			parser.error(buildUsage)
 			sys.exit(1)
 	elif args[0] == 'run':
-		if options.type == None or options.project_path == None or options.ip_address == None:
+		if options.type == None or options.project_path == None or options.ip_address == None or (type == 'device' and debugToken == None):
+			if type == 'device' and debugToken == None:
+				print "--debug_token is required for --type device"
 			parser.error(runUsage)
 			sys.exit(1)
 	else:
 		print parser.get_usage()
 		sys.exit(1)
-
-	type = options.type.decode('utf-8')
-	projectPath = options.project_path.decode('utf-8')
-	ndkPath = options.ndk_path and options.ndk_path.decode('utf-8')
 
 	log = TiLogger(os.path.join(os.path.abspath(os.path.expanduser(projectPath)), 'build_blackberry.log'))
 	log.debug(" ".join(sys.argv))
@@ -126,12 +130,5 @@ if __name__ == "__main__":
 	if (args[0] == 'build'):
 		retCode = builder.build()
 	elif (args[0] == 'run'):
-		ipAddress = options.ip_address.decode('utf-8')
-		devicePassword = options.device_password and options.device_password.decode('utf-8')
-		debugToken = options.debug_token and options.debug_token.decode('utf-8')
-		if type == 'device' and debugToken == None:
-			print "--debug_token is required for --type device"
-			parser.error(runUsage)
-			sys.exit(1)
 		retCode = builder.run(ipAddress, devicePassword, debugToken)
 	sys.exit(retCode)
