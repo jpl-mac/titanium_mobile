@@ -6,7 +6,7 @@
 #          spaces for the tools to work correctly
 
 import os, sys, platform, subprocess, pprint, shutil
-from argparse import ArgumentParser
+from optparse import OptionParser
 
 class Device:
 	''' TODO Mac: Look at how qde works with sim for this class '''
@@ -344,19 +344,25 @@ def __runUnitTests(ipAddress = None):
 
 
 if __name__ == "__main__":
-	parser = ArgumentParser(description = 'Prints the NDK directory and version')
-	parser.add_argument('ndk_path', help = 'path to the blackberry ndk', nargs='?')
-	parser.add_argument('-t', '--test', help = 'run unit tests', action = 'store_true')
-	parser.add_argument('--ip_address', help='simulator IP address for unit tests')
-	args = parser.parse_args()
+
+	# Setup script usage using optparse
+	parser = OptionParser(usage='[ndk_path] [-t] [--ip_address IP ADDRESS]', description='Prints the NDK directory and version')
+
+	parser.add_option('-t', '--test', help='run unit tests', action='store_true', dest='test')
+	parser.add_option('--ip_address', help='simulator IP address for unit tests', dest='ip_address')
+	(options, args) = parser.parse_args()
+
+	if len(args) > 1:
+		print parser.get_usage()
+		sys.exit(1)
 
 	try:
-		ndk = BlackberryNDK(args.ndk_path)
+		ndk = BlackberryNDK(args[0].decode('utf-8') if len(args) != 0 else None)
 		print "BLACKBERRY_NDK=%s" % ndk.getBlackberryNdk()
 		print "BLACKBERRY_NDK_VERSION=%s" % ndk.getVersion()
 	except Exception, e:
 		print >>sys.stderr, e
 		sys.exit(1)
 
-	if args.test:
-		__runUnitTests(args.ip_address.decode('utf-8') if args.ip_address != None else None)
+	if options.test:
+		__runUnitTests(options.ip_address.decode('utf-8') if options.ip_address != None else None)

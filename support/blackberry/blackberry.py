@@ -11,7 +11,7 @@
 
 import os, sys, shutil
 from blackberryndk import BlackberryNDK
-from argparse import ArgumentParser
+from optparse import OptionParser
 
 template_dir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
 top_support_dir = os.path.dirname(template_dir)
@@ -148,8 +148,7 @@ def __unitTestTraceback():
 
 def __runUnitTests():
 	from tiunittest import UnitTest
-
-	ndk = None if args.test == True else args.test
+	ndk = None if options.test == True else options.test
 
 	bbndk = BlackberryNDK(ndk)
 	bb = Blackberry('TemplateTest', 'com.macadamian.template', bbndk)
@@ -165,30 +164,30 @@ def __runUnitTests():
 	print '\nFinished Running Unit Tests'
 	UnitTest.printDetails()
 
-
 if __name__ == '__main__':
 	# This script is only meant to be invoked from project.py
-	# Setup script usage
-	parser = ArgumentParser(description = 'Creates blackberry project')
-	parser.add_argument('name', help = 'Blackberry project name', nargs = '?')
-	parser.add_argument('id', help = 'Blackberry project id', nargs = '?')
-	parser.add_argument('dir', help = 'Blackberry project directory', nargs = '?')
-	parser.add_argument('ndk', help = 'Blackberry NDK path', nargs = '?')
-	parser.add_argument('-t', '--test', help = 'run unit tests', metavar = 'ndk_location', nargs = '?', const = True)
-	args = parser.parse_args()
+	# Setup script usage using optparse
+	print sys.argv
+	parser = OptionParser(usage='--name name --id id --dir dir [--ndk ndk] [-t [ndk_location]]', description='Creates blackberry project')
+	parser.add_option('--name', help='Blackberry project name', dest='name')
+	parser.add_option('--id', help='Blackberry project id', dest='id')
+	parser.add_option('--dir', help='Blackberry project directory', dest='dir')
+	parser.add_option('--ndk', help='Blackberry NDK path', dest='ndk')
+	parser.add_option('-t', '--test', help='run unit tests', metavar='ndk_location', action='store_const', const=True, dest='test')
+	(options, args) = parser.parse_args()
 
-	if args.test:
+	if options.test:
 		__runUnitTests()
 		sys.exit(0)
 	else:
-		if args.name == None or args.id == None or args.dir == None or args.ndk == None:
+		if options.name == None or options.id == None or options.dir == None:
 			parser.print_usage()
 			sys.exit(1)
 
 	try:
-		bbndk = BlackberryNDK(args.ndk.decode("utf-8"))
-		bb = Blackberry(args.name.decode("utf-8"), args.id.decode("utf-8"), bbndk)
-		bb.create(args.dir.decode("utf-8"))
+		bbndk = BlackberryNDK(options.ndk.decode("utf-8") if options.ndk != None else None)
+		bb = Blackberry(options.name.decode("utf-8"), options.id.decode("utf-8"), bbndk)
+		bb.create(options.dir.decode("utf-8"))
 	except Exception, e:
 		print >>sys.stderr, e
 		sys.exit(1)
