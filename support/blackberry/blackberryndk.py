@@ -63,7 +63,6 @@ class BlackberryNDK:
 				return None
 
 		if platform.system() == 'Windows':
-			# TODO Mac: find out where the NDK installs on windows
 			default_dirs = ['C:\\bbndk-10.0.4-beta']
 		else:
 			default_dirs = ['/Developer/SDKs/bbndk-10.0.4-beta', '/opt/bbndk-10.0.4-beta', '~/bbndk-10.0.4-beta', '~/opt/bbndk-10.0.4-beta']
@@ -88,7 +87,6 @@ class BlackberryNDK:
 		return None
 
 	def _sourceEnvironment(self):
-		# TODO Mac: Validate the following on windows
 		if platform.system() == 'Windows':
 			envFile = os.path.join(self.blackberryNdk, 'bbndk-env.bat')
 			command = '%s ' % envFile + '&& set'
@@ -172,24 +170,48 @@ class BlackberryNDK:
 		os.chdir(oldPath)
 		return retCode
 
-	def package(self, package, appFile, projectName, type):
-		# TODO Mac: Copy all needed resources to assets (images, sounds,
-		# etc.). For now copy app.js and content of Resources/blackberry to assets
+	def package(self, package, appFile, projectName, type, isUnitTest = False):
+		# Copy all needed resources to assets
 		buildDir = os.path.abspath(os.path.join(appFile, '..', '..', '..'))
 		projectDir = os.path.abspath(os.path.join(buildDir, '..', '..', '..'))
 		assetsDir = os.path.join(buildDir, 'assets')
+		resourcesDir = os.path.join(projectDir, 'Resources')
+		blackberryResourcesDir = os.path.join(resourcesDir, 'blackberry')
 		if os.path.exists(assetsDir):
 			shutil.rmtree(assetsDir)
-		shutil.copytree(os.path.join(projectDir, 'Resources', 'blackberry'), assetsDir)
-		shutil.copy2(os.path.join(projectDir, 'Resources', 'app.js'), assetsDir)
+		os.makedirs(assetsDir)
+		if os.path.exists(resourcesDir):
+			for entry in os.listdir(resourcesDir):
+				fullEntry = os.path.join(resourcesDir, entry)
+				if os.path.isdir(fullEntry):
+					if entry != "android" and entry != "iphone" and entry != "mobileweb" and entry != "blackberry":
+						shutil.copytree(fullEntry, os.path.join(assetsDir, entry))
+				else:
+					shutil.copy2(fullEntry, os.path.join(assetsDir, entry))
+
+		# copy the blackberry dir after so it will overwrite, if necessary
+		if os.path.exists(blackberryResourcesDir):
+			for root, dirs, files in os.walk(blackberryResourcesDir):
+				destRoot = root.replace(blackberryResourcesDir, assetsDir, 1)
+				if not os.path.exists(destRoot):
+					os.makedirs(destRoot)
+				for filename in files:
+					fullFilenameSrc = os.path.join(root, filename)
+					fullFilenameDest = fullFilenameSrc.replace(blackberryResourcesDir, assetsDir, 1)
+					shutil.copy2(fullFilenameSrc, fullFilenameDest)
 
 		command = [self.packagerProgram, '-package', package, 'bar-descriptor.xml', '-e', appFile, projectName, 'assets']
+		if isUnitTest:
+			command.append('icon.png')
 		if type != 'deploy':
 			command.append('-devMode')
 		return self._run(command)
 
-	def deploy(self, deviceIP, package):
+	def deploy(self, deviceIP, package, password = None):
 		command = [self.deployProgram, '-installApp', '-launchApp', '-device', deviceIP, '-package', package]
+		if password != None:
+			command.append('-password')
+			command.append(password)
 		return self._run(command)
 
 	def terminateApp(self, deviceIP, package):
@@ -238,7 +260,7 @@ class BlackberryNDK:
 		os.chdir(oldPath)
 		return retCode
 
-def __runUnitTests():
+def __runUnitTests(ipAddress = None):
 	# on windows the double dirname need to be done on 2 lines
 	baseDir = os.path.abspath(os.path.dirname(sys.argv[0]))
 	baseDir = os.path.dirname(baseDir)
@@ -294,16 +316,21 @@ def __runUnitTests():
 		assert os.path.exists(os.path.join(project, 'x86', 'o', projectName))
 		assert os.path.exists(os.path.join(project, 'x86', 'o-g', projectName))
 
-	# TODO Mac: Complete the following unit tests
-	# These tests don't work at the moment, we need to figure out how to generate the bar file fisrt
-#	with UnitTest('Test package project..'):
-#		barPath = os.path.join(project, variant, '%s.bar' % projectName)
-#		savePath = os.path.join(project, variant, projectName)
-#		ndk.package(barPath, savePath, os.path.basename(project))
-#
-#	with UnitTest('Test deploy project to simulator (hard-coded ip)..'):
-#		ndk.deploy('192.168.135.129', )
-#
+	oldDir = os.getcwd()
+	os.chdir(project)
+	with UnitTest('Test package project..'):
+		cpu = 'x86'
+		variant = 'o-g'
+		barPath = os.path.join(project, cpu, variant, '%s.bar' % projectName)
+		savePath = os.path.join(project, cpu, variant, projectName)
+		assert 0 == ndk.package(barPath, savePath, os.path.basename(project), 'simulator', isUnitTest = True)
+		assert os.path.exists(barPath)
+	os.chdir(oldDir)
+
+	if ipAddress != None:
+		with UnitTest('Test deploy project to simulator..'):
+			assert 0 == ndk.deploy(ipAddress, barPath)
+
 	with UnitTest('Test build project (arm)..'):
 		cpu = 'arm'
 		ndk.build(project, cpu)
@@ -320,6 +347,7 @@ if __name__ == "__main__":
 	parser = ArgumentParser(description = 'Prints the NDK directory and version')
 	parser.add_argument('ndk_path', help = 'path to the blackberry ndk', nargs='?')
 	parser.add_argument('-t', '--test', help = 'run unit tests', action = 'store_true')
+	parser.add_argument('--ip_address', help='simulator IP address for unit tests')
 	args = parser.parse_args()
 
 	try:
@@ -331,4 +359,4 @@ if __name__ == "__main__":
 		sys.exit(1)
 
 	if args.test:
-		__runUnitTests()
+		__runUnitTests(args.ip_address.decode('utf-8') if args.ip_address != None else None)
