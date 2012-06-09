@@ -9,7 +9,8 @@
 # General builder script for staging, packaging, deploying,
 # and debugging Titanium Mobile applications on Blackberry
 #
-import os, sys, argparse
+import os, sys
+from optparse import OptionParser
 
 template_dir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
 top_support_dir = os.path.dirname(template_dir) 
@@ -74,39 +75,51 @@ def error(msg):
 	
 if __name__ == "__main__":
 
-	# Setup script usage 
-	parser = argparse.ArgumentParser()
+	# Setup script usage using optparse
+	parser = OptionParser(usage='<command: build | run> -t TYPE -d PROJECT_PATH [-p NDK_PATH] [-i IP_ADDRESS] [-s DEVICE_PASSWORD]')
 	
-	parsers = parser.add_subparsers(dest='subparser_name')
-	buildParser = parsers.add_parser('build')
-	runParser = parsers.add_parser('run')
-
-	buildParser.add_argument('-t', '--type', choices=['simulator', 'device', 'deploy'], help='simulator | device | deploy', required=True)
-	buildParser.add_argument('-d', '--project_path', help='project directory path', required=True)
-	buildParser.add_argument('-n', '--ndk_path', help='blackberry ndk path')
-
-	runParser.add_argument('-t', '--type', choices=['simulator', 'device', 'deploy'], help='simulator | device | deploy', required=True)
-	runParser.add_argument('-i', '--ip_address', help='(simulator | device) ip address', required=True)
-	runParser.add_argument('-p', '--device_password', help='(simulator | device) protection password')
-	runParser.add_argument('-d', '--project_path', help='project directory path', required=True)
-	runParser.add_argument('-n', '--ndk_path', help='blackberry ndk path')
+	commonGroup = parser.add_option_group('Common options')
+	commonGroup.add_option('-t', '--type', choices=['simulator', 'device', 'deploy'], help='simulator | device | deploy', dest='type')
+	commonGroup.add_option('-d', '--project_path', help='project directory path', dest='project_path')
+	commonGroup.add_option('-p', '--ndk_path', help='blackberry ndk path', dest='ndk_path')
 	
-	# Parse input and call apropriate function
-	args = parser.parse_args()
+	runGroup = parser.add_option_group('Run/Deploy options')
+	runGroup.add_option('-i', '--ip_address', help='(simulator | device) ip address', dest='ip_address')
+	runGroup.add_option('-s', '--device_password', help='(simulator | device) protection password', dest='device_password')
 
-	log = TiLogger(os.path.join(os.path.abspath(os.path.expanduser(args.project_path)), 'build_blackberry.log'))
+	(options, args) = parser.parse_args()
+	if len(args) != 1:
+		print parser.get_usage()
+		sys.exit(1)
+
+	buildUsage = 'Usage: %s build -t TYPE -d PROJECT_PATH [-p NDK_PATH]' %os.path.basename(sys.argv[0])
+	runUsage = 'Usage: %s run -t TYPE -d PROJECT_PATH [-p NDK_PATH] -i IP_ADDRESS [-s DEVICE_PASSWORD]' %os.path.basename(sys.argv[0])
+
+	if args[0] == 'build':
+		if options.type == None or options.project_path == None:
+			parser.error(buildUsage)
+			sys.exit(1)
+	elif args[0] == 'run':
+		if options.type == None or options.project_path == None or options.ip_address == None:
+			parser.error(runUsage)
+			sys.exit(1)
+	else:
+		print parser.get_usage()
+		sys.exit(1)
+
+	log = TiLogger(os.path.join(os.path.abspath(os.path.expanduser(options.project_path)), 'build_blackberry.log'))
 	log.debug(" ".join(sys.argv))
 	try:
-		bbndk = BlackberryNDK(args.ndk_path and args.ndk_path.decode('utf-8'), log = log)
+		bbndk = BlackberryNDK(options.ndk_path and options.ndk_path.decode('utf-8'), log = log)
 	except Exception, e:
 		print >>sys.stderr, e
 		sys.exit(1)
 
-	builder = Builder(args.project_path.decode('utf-8'), args.type.decode('utf-8'), bbndk)
+	builder = Builder(options.project_path.decode('utf-8'), options.type.decode('utf-8'), bbndk)
 
 	retCode = 1
-	if (args.subparser_name == 'build'):
+	if (args[0] == 'build'):
 		retCode = builder.build()
-	elif (args.subparser_name == 'run'):
-		retCode = builder.run(args.ip_address.decode('utf-8'), args.device_password.decode('utf-8') if args.device_password != None else None)
+	elif (args[0] == 'run'):
+		retCode = builder.run(options.ip_address.decode('utf-8'), options.device_password.decode('utf-8') if options.device_password != None else None)
 	sys.exit(retCode)
