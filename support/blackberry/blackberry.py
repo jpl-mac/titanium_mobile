@@ -148,7 +148,7 @@ def __unitTestTraceback():
 
 def __runUnitTests():
 	from tiunittest import UnitTest
-	ndk = None if options.test == True else options.test
+	ndk = options.test
 
 	bbndk = BlackberryNDK(ndk)
 	bb = Blackberry('TemplateTest', 'com.macadamian.template', bbndk)
@@ -167,13 +167,12 @@ def __runUnitTests():
 if __name__ == '__main__':
 	# This script is only meant to be invoked from project.py
 	# Setup script usage using optparse
-	print sys.argv
-	parser = OptionParser(usage='--name name --id id --dir dir [--ndk ndk] [-t [ndk_location]]', description='Creates blackberry project')
+	parser = OptionParser(usage='--name name --id id --dir dir [--ndk ndk] [-t ndk]', description='Creates blackberry project')
 	parser.add_option('--name', help='Blackberry project name', dest='name')
 	parser.add_option('--id', help='Blackberry project id', dest='id')
 	parser.add_option('--dir', help='Blackberry project directory', dest='dir')
 	parser.add_option('--ndk', help='Blackberry NDK path', dest='ndk')
-	parser.add_option('-t', '--test', help='run unit tests', metavar='ndk_location', action='store_const', const=True, dest='test')
+	parser.add_option('-t', '--test', help='run unit tests', dest='test')
 	(options, args) = parser.parse_args()
 
 	if options.test:

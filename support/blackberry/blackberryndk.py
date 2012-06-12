@@ -352,10 +352,6 @@ if __name__ == "__main__":
 	parser.add_option('--ip_address', help='simulator IP address for unit tests', dest='ip_address')
 	(options, args) = parser.parse_args()
 
-	if len(args) > 1:
-		print parser.get_usage()
-		sys.exit(1)
-
 	try:
 		ndk = BlackberryNDK(args[0].decode('utf-8') if len(args) != 0 else None)
 		print "BLACKBERRY_NDK=%s" % ndk.getBlackberryNdk()
