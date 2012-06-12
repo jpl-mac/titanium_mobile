@@ -36,7 +36,7 @@ class Builder(object):
 		self.name = tiappxml.properties['name']
 		self.buildDir = os.path.join(self.top_dir, 'build', 'blackberry', self.name)
 		
-	def run(self, ipAddress, password = None):
+	def run(self, ipAddress, password = None, debugToken = None):
 		# TODO Mac: V8 runtime should be added and possibly a lot of other stuff
 		
 		retCode = self.build()
@@ -48,7 +48,7 @@ class Builder(object):
 		os.chdir("%s" % self.buildDir)
 		barPath = os.path.join(self.buildDir, self.cpu, self.variant, '%s.bar' % self.name)
 		savePath = os.path.join(self.buildDir, self.cpu, self.variant, self.name)
-		retCode = self.ndk.package(barPath, savePath, self.name, self.type)
+		retCode = self.ndk.package(barPath, savePath, self.name, self.type, debugToken)
 		if retCode != 0:
 			return retCode
 		retCode = self.ndk.deploy(ipAddress, barPath, password)
@@ -86,6 +86,7 @@ if __name__ == "__main__":
 	runGroup = parser.add_option_group('Run/Deploy options')
 	runGroup.add_option('-i', '--ip_address', help='(simulator | device) ip address', dest='ip_address')
 	runGroup.add_option('-s', '--device_password', help='(simulator | device) protection password', dest='device_password')
+	runGroup.add_option('--debug_token', help='path to debug token file (required for --type device)')
 
 	(options, args) = parser.parse_args()
 	if len(args) != 1:
@@ -93,33 +94,41 @@ if __name__ == "__main__":
 		sys.exit(1)
 
 	buildUsage = 'Usage: %s build -t TYPE -d PROJECT_PATH [-p NDK_PATH]' %os.path.basename(sys.argv[0])
-	runUsage = 'Usage: %s run -t TYPE -d PROJECT_PATH [-p NDK_PATH] -i IP_ADDRESS [-s DEVICE_PASSWORD]' %os.path.basename(sys.argv[0])
+	runUsage = 'Usage: %s run -t TYPE -d PROJECT_PATH [-p NDK_PATH] -i IP_ADDRESS [-s DEVICE_PASSWORD] [--debug_token DEBUG_TOKEN]' %os.path.basename(sys.argv[0])
 
+	type = options.type and options.type.decode('utf-8')
+	projectPath = options.project_path and options.project_path.decode('utf-8')
+	ndkPath = options.ndk_path and options.ndk_path.decode('utf-8')
+	ipAddress = options.ip_address and options.ip_address.decode('utf-8')
+	devicePassword = options.device_password and options.device_password.decode('utf-8')
+	debugToken = options.debug_token and options.debug_token.decode('utf-8')
 	if args[0] == 'build':
 		if options.type == None or options.project_path == None:
 			parser.error(buildUsage)
 			sys.exit(1)
 	elif args[0] == 'run':
-		if options.type == None or options.project_path == None or options.ip_address == None:
+		if options.type == None or options.project_path == None or options.ip_address == None or (type == 'device' and debugToken == None):
+			if type == 'device' and debugToken == None:
+				print "--debug_token is required for --type device"
 			parser.error(runUsage)
 			sys.exit(1)
 	else:
 		print parser.get_usage()
 		sys.exit(1)
 
-	log = TiLogger(os.path.join(os.path.abspath(os.path.expanduser(options.project_path)), 'build_blackberry.log'))
+	log = TiLogger(os.path.join(os.path.abspath(os.path.expanduser(projectPath)), 'build_blackberry.log'))
 	log.debug(" ".join(sys.argv))
 	try:
-		bbndk = BlackberryNDK(options.ndk_path and options.ndk_path.decode('utf-8'), log = log)
+		bbndk = BlackberryNDK(ndkPath, log = log)
 	except Exception, e:
 		print >>sys.stderr, e
 		sys.exit(1)
 
-	builder = Builder(options.project_path.decode('utf-8'), options.type.decode('utf-8'), bbndk)
+	builder = Builder(projectPath, type, bbndk)
 
 	retCode = 1
 	if (args[0] == 'build'):
 		retCode = builder.build()
 	elif (args[0] == 'run'):
-		retCode = builder.run(options.ip_address.decode('utf-8'), options.device_password.decode('utf-8') if options.device_password != None else None)
+		retCode = builder.run(ipAddress, devicePassword, debugToken)
 	sys.exit(retCode)
