@@ -46,6 +46,8 @@ methods:
         only one alert dialog will be visible and modal at a time.
         
         Be aware that this method may be removed in the future.
+
+        On BlackBerry: NYI
     parameters:
       - name: message
         summary: Alert message.
@@ -54,6 +56,8 @@ methods:
         
   - name: clearInterval
     summary: Cancels an interval timer.
+    description: |
+        On BlackBerry: NYI
     parameters:
       - name: timerId
         summary: Unique timer identifier returned by [setInterval](Global.setInterval).
@@ -61,6 +65,8 @@ methods:
         
   - name: clearTimeout
     summary: Cancels a one-time timer.
+    description: |
+        On BlackBerry: NYI
     parameters:
       - name: timerId
         summary: Unique timer identifier returned by [setTimeout](Global.setTimeout).
@@ -74,6 +80,8 @@ methods:
         For more information, see the MDN website for 
         [encodeURIComponent](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/encodeURIComponent) 
         and [decodeURIComponent](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/decodeURIComponent).
+
+        On BlackBerry: NYI
     returns:
         summary: Decoded string.
         type: String
@@ -90,6 +98,8 @@ methods:
         For more information, see the MDN website for 
         [encodeURIComponent](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/encodeURIComponent) 
         and [decodeURIComponent](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/decodeURIComponent).
+
+        On BlackBerry: NYI
     returns:
         summary: Encoded string.
         type: String
@@ -100,6 +110,8 @@ methods:
         
   - name: L
     summary: An alias for <Titanium.Locale.getString>.
+    description: |
+        On BlackBerry: NYI
     returns:
         summary: Localized string defined by `key`, or value of `hint` otherwise.
         type: String
@@ -161,6 +173,9 @@ methods:
             
                 require('../myModule/module.js')
                 require ('/myModule/module.js')
+
+        #### BlackBerry
+            NYI
     returns:
         summary: Exported `exports` object of the required module.
         type: Object
@@ -196,6 +211,8 @@ methods:
         
         For more information, see the MDN website for 
         [setInterval](https://developer.mozilla.org/en/DOM/window.setInterval).
+
+        On BlackBerry: NYI
     returns:
         summary: Unique timer identifier.
         type: Number
@@ -231,6 +248,8 @@ methods:
         
         For more information, see the MDN website for 
         [setTimeout](https://developer.mozilla.org/en/DOM/window.setTimeout).
+
+        On BlackBerry: NYI
     returns:
         summary: Unique timer identifier.
         type: Number

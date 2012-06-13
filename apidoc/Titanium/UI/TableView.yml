@@ -199,7 +199,7 @@ events:
     summary: Fired when a table row is clicked by the user.
     platforms: [android, iphone, ipad, mobileweb, blackberry]
     description: |
-        For now, Blackberry supports only 'index' property of this event
+        For now, BlackBerry supports only 'index' property of this event
     properties:
       - name: index
         summary: Row index.
