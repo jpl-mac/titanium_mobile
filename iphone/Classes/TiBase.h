@@ -26,6 +26,18 @@ extern "C" {
 #define __IPHONE_4_2 40200
 #endif
 
+#ifndef __IPHONE_4_3
+#define __IPHONE_4_3 40300
+#endif
+    
+#ifndef __IPHONE_5_0
+#define __IPHONE_5_0 50000
+#endif
+    
+#ifndef __IPHONE_5_1
+#define __IPHONE_5_1 50100
+#endif
+    
 #ifdef DEBUG
 	// Kroll memory debugging
 	#define KROLLBRIDGE_MEMORY_DEBUG MEMORY_DEBUG
@@ -264,7 +276,7 @@ __typeof__(minX) __minX = (minX);	\
 __typeof__(maxX) __maxX = (maxX);	\
 if ((__x<__minX) || (__x>__maxX)) \
 { \
-[self throwException:TiExceptionRangeError subreason:[NSString stringWithFormat:@"%d was not > %d and < %d",__x,__maxX,__minX] location:CODELOCATION]; \
+[self throwException:TiExceptionRangeError subreason:[NSString stringWithFormat:@"%d was not >= %d and <= %d",__x,__maxX,__minX] location:CODELOCATION]; \
 }\
 }
 
@@ -310,17 +322,24 @@ void TiExceptionThrowWithNameAndReason(NSString * exceptionName, NSString * mess
 return [NSNumber numberWithInt:map];\
 }\
 
-#define MAKE_SYSTEM_PROP_DEPRECATED(name,map,api,in,removed,newapi) \
+#define MAKE_SYSTEM_PROP_DEPRECATED_REPLACED(name,map,api,in,newapi) \
 -(NSNumber*)name \
 {\
-DEPRECATED_REPLACED(api,in,removed,newapi)\
+DEPRECATED_REPLACED(api,in,newapi)\
+return [NSNumber numberWithInt:map];\
+}\
+
+#define MAKE_SYSTEM_PROP_DEPRECATED_REPLACED_REMOVED(name,map,api,in,removed,newapi) \
+-(NSNumber*)name \
+{\
+DEPRECATED_REPLACED_REMOVED(api,in,removed,newapi)\
 return [NSNumber numberWithInt:map];\
 }\
 
 #define MAKE_SYSTEM_PROP_DEPRECATED_REMOVED(name,map,api,in,removed) \
 -(NSNumber*)name \
 {\
-DEPRECATED(api,in,removed)\
+DEPRECATED_REMOVED(api,in,removed)\
 return [NSNumber numberWithInt:map];\
 }\
 
@@ -348,12 +367,15 @@ return [NSNumber numberWithUnsignedInt:map];\
 return map;\
 }\
 
-#define DEPRECATED(api,in,removed) \
-NSLog(@"[WARN] Ti%@.%@ DEPRECATED in %@: REMOVED in %@",@"tanium",api,in,removed);
+#define DEPRECATED_REMOVED(api,in,removed) \
+DebugLog(@"[WARN] Ti%@.%@ DEPRECATED in %@: REMOVED in %@",@"tanium",api,in,removed);
     
-#define DEPRECATED_REPLACED(api,in,removed,newapi) \
-NSLog(@"[WARN] Ti%@.%@ DEPRECATED in %@, in favor of %@: REMOVED in %@",@"tanium",api,in,newapi,removed);
+#define DEPRECATED_REPLACED_REMOVED(api,in,removed,newapi) \
+DebugLog(@"[WARN] Ti%@.%@ DEPRECATED in %@, in favor of %@: REMOVED in %@",@"tanium",api,in,newapi,removed);
 
+#define DEPRECATED_REPLACED(api,in,newapi) \
+DebugLog(@"[WARN] Ti%@.%@ DEPRECATED in %@, in favor of %@.",@"tanium",api,in,newapi);
+    
 #define NUMBOOL(x) \
 [NSNumber numberWithBool:x]\
 
@@ -458,15 +480,23 @@ return value;\
 //#define VERBOSE
 
 #ifdef VERBOSE
-
 #define VerboseLog(...)	{NSLog(__VA_ARGS__);}
-
 #else
-
 #define VerboseLog(...)	{}
-
 #endif
 
+#ifdef DEVELOPER
+#define DeveloperLog(...) { NSLog(__VA_ARGS__); }
+#else
+#define DeveloperLog(...) {}
+#endif
+    
+#if defined(DEBUG) || defined(DEVELOPER)
+#define DebugLog(...) { NSLog(__VA_ARGS__); }
+#else
+#define DebugLog(...) {}
+#endif
+    
 #define VAL_OR_NSNULL(foo)	(((foo) != nil)?((id)foo):[NSNull null])
 
 
@@ -515,6 +545,7 @@ extern NSString * const kTiContextShutdownNotification;
 extern NSString * const kTiWillShutdownNotification;
 extern NSString * const kTiShutdownNotification;
 extern NSString * const kTiSuspendNotification;
+extern NSString * const kTiPausedNotification;
 extern NSString * const kTiResumeNotification;
 extern NSString * const kTiResumedNotification;
 extern NSString * const kTiAnalyticsNotification;
@@ -546,8 +577,14 @@ extern NSString* const kTiUnitPercent;
 	#define REACHABILITY_20_API 1
 #endif
 
-#include "TiThreading.h"
 
+    
+#include "TiThreading.h"
+//Counter to keep track of KrollContext
+extern int krollContextCounter;
+void incrementKrollCounter();	
+void decrementKrollCounter();
+    
 /**
  *	TiThreadPerformOnMainThread should replace all Titanium instances of
  *	performSelectorOnMainThread, ESPECIALLY if wait is to be yes. That way,

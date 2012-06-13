@@ -3,55 +3,68 @@
 #
 # Unified Titanium Mobile Project Script
 #
-import os, sys, subprocess, shutil, codecs, argparse
+import os, sys, subprocess, shutil, codecs, optparse
+
+usage="""
+%s <name> <id> <directory> [iphone,android,mobileweb,blackberry] [android_sdk] [--blackberry_ndk BLACKBERRY_NDK] [--update-platforms]
+""" % os.path.basename(__file__)
+
+parser = optparse.OptionParser(usage=usage)
+parser.add_option('--blackberry_ndk', help='BlackBerry NDK home')
+parser.add_option('-u', '--update-platforms', dest='update_platforms',
+		help='Initialize project for any missing platforms. Use this to add a platform to the project without overwriting tiapp.xml and app.js.',
+		action='store_true', default=False)
 
 def run(args):
 	return subprocess.Popen(args, stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()
 
-def main():
-	parser = argparse.ArgumentParser(description='Unified Titanium Mobile Project Script')
-	parser.add_argument('name', help='project name')
-	parser.add_argument('id', help='app id')
-	parser.add_argument('directory', help='location')
-	parser.add_argument('platforms', help='deployment targets space separated {iphone | android | mobileweb | blackberry}', nargs='+')
-	# Added to show up in the usage string as we need to special handle it
-	parser.add_argument(metavar='android_sdk', help='android SDK home (if android in platforms)', nargs='?', dest='notUsed')
-	# Included for future support as it is not currently used by Ti Studio
-	parser.add_argument('--android_sdk', help='android SDK home (if android in platforms)')
-	parser.add_argument('--blackberry_ndk', help='blackberry NDK home')
-	args = parser.parse_args()
+def main(args, options):
+	argc = len(args)
+	if argc < 5 or args[1]=='--help':
+		parser.print_help()
+		sys.exit(1)
 
-	name = args.name.decode("utf-8")
-	appid = args.id.decode("utf-8")
-	directory = os.path.abspath(os.path.expanduser(args.directory.decode("utf-8")))
-	iphone = 'iphone' in args.platforms
-	android = 'android' in args.platforms
-	mobileweb = 'mobileweb' in args.platforms
-	blackberry = 'blackberry' in args.platforms
+	name = args[1].decode("utf-8")
+	appid = args[2].decode("utf-8")
+	directory = os.path.abspath(os.path.expanduser(args[3].decode("utf-8")))
+	iphone = False
+	android = False
 	android_sdk = None
+	sdk = None
+	mobileweb = False
+	blackberry = False
 	blackberry_ndk = None
 
+	platformCount = 0;
+	if args[4] == 'iphone' or (argc > 5 and args[5] == 'iphone') or (argc > 6 and args[6] == 'iphone') or (argc > 7 and args[7] == 'iphone'):
+		iphone = True
+		platformCount += 1
+	if args[4] == 'android' or (argc > 5 and args[5] == 'android') or (argc > 6 and args[6] == 'android') or (argc > 7 and args[7] == 'android'):
+		android = True
+		platformCount += 1
+	if args[4] == 'mobileweb' or (argc > 5 and args[5] == 'mobileweb') or (argc > 6 and args[6] == 'mobileweb') or (argc > 7 and args[7] == 'mobileweb'):
+		mobileweb = True
+		platformCount += 1
+	if args[4] == 'blackberry' or (argc > 5 and args[5] == 'blackberry') or (argc > 6 and args[6] == 'blackberry') or (argc > 7 and args[7] == 'blackberry'):
+		blackberry = True
+		platformCount += 1
+
 	if android:
-		sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), "android"))
+		sys.path.append(os.path.join(os.path.dirname(args[0]), "android"))
 		from androidsdk import AndroidSDK
-		# android_sdk is a special case as it's positional and optional
-		# and there can be any number of platforms listed before it, it
-		# is parsed alongside the platforms.
-		# Added --android_sdk for the future, but as current Studio
-		# doesn't use it we need to look at the last item of platforms
-		# if --android_sdk is not used.
-		android_sdk = args.android_sdk or args.platforms[-1]
-		android_sdk = android_sdk.decode("utf-8")
+		# android_sdk is after the platforms
+		if argc > (4 + platformCount):
+			android_sdk = args[4 + platformCount].decode("utf-8")
 		try:
-			AndroidSDK(android_sdk)
+			sdk = AndroidSDK(android_sdk)
 		except Exception, e:
 			print >>sys.stderr, e
 			sys.exit(1)
 
 	if blackberry:
-		sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), "blackberry"))
+		sys.path.append(os.path.join(os.path.dirname(args[0]), "blackberry"))
 		from blackberryndk import BlackberryNDK
-		blackberry_ndk = args.blackberry_ndk and args.blackberry_ndk.decode("utf-8")
+		blackberry_ndk = options.blackberry_ndk and options.blackberry_ndk.decode("utf-8")
 		try:
 			bbndk = BlackberryNDK(blackberry_ndk)
 			if blackberry_ndk is None:
@@ -59,6 +72,9 @@ def main():
 		except Exception, e:
 			print >>sys.stderr, e
 			sys.exit(1)
+
+	if not os.path.exists(directory):
+		os.makedirs(directory)
 
 	project_dir = os.path.join(directory,name)
 	
@@ -71,14 +87,17 @@ def main():
 	if not os.path.exists(all_dir):
 		all_dir = template_dir
 
-	tiapp = codecs.open(os.path.join(all_dir,'tiapp.xml'),'r','utf-8','replace').read()
-	tiapp = tiapp.replace('__PROJECT_ID__',appid)
-	tiapp = tiapp.replace('__PROJECT_NAME__',name)
-	tiapp = tiapp.replace('__PROJECT_VERSION__','1.0')
+	tiapp_file_out = os.path.join(project_dir, 'tiapp.xml')
+	update_platforms = options.update_platforms
+	if not update_platforms or not os.path.exists(tiapp_file_out):
+		tiapp = codecs.open(os.path.join(all_dir,'tiapp.xml'),'r','utf-8','replace').read()
+		tiapp = tiapp.replace('__PROJECT_ID__',appid)
+		tiapp = tiapp.replace('__PROJECT_NAME__',name)
+		tiapp = tiapp.replace('__PROJECT_VERSION__','1.0')
 
-	tiapp_file = codecs.open(os.path.join(project_dir,'tiapp.xml'),'w+','utf-8','replace')
-	tiapp_file.write(tiapp)
-	tiapp_file.close()
+		tiapp_file = codecs.open(os.path.join(project_dir,'tiapp.xml'),'w+','utf-8','replace')
+		tiapp_file.write(tiapp)
+		tiapp_file.close()
 
 	# create the titanium resources
 	resources_dir = os.path.join(project_dir,'Resources')
@@ -91,40 +110,58 @@ def main():
 	gitignore.write("tmp\n")
 	gitignore.close()
 
-	if iphone:
-		iphone_resources = os.path.join(resources_dir,'iphone')
-		if not os.path.exists(iphone_resources): os.makedirs(iphone_resources)
+	iphone_resources = os.path.join(resources_dir,'iphone')
+	if iphone and (not update_platforms or not os.path.exists(iphone_resources)):
+		if not os.path.exists(iphone_resources):
+			os.makedirs(iphone_resources)
 		iphone_gen = os.path.join(template_dir,'iphone','iphone.py')
-		run([sys.executable, iphone_gen, name, appid, directory])
+		run_args = [sys.executable, iphone_gen, name, appid, directory]
+		run(run_args)
 
-	if android:
-		android_resources = os.path.join(resources_dir,'android')
-		if not os.path.exists(android_resources): os.makedirs(android_resources)
+	android_resources = os.path.join(resources_dir,'android')
+	if android and (not update_platforms or not os.path.exists(android_resources)):
+		if not os.path.exists(android_resources):
+			os.makedirs(android_resources)
 		android_gen = os.path.join(template_dir,'android','android.py')
-		run([sys.executable, android_gen, name, appid, directory, android_sdk])
+		run_args = [sys.executable, android_gen, name, appid, directory, android_sdk]
+		run(run_args)
 
-	if mobileweb:
-		mobileweb_resources = os.path.join(resources_dir,'mobileweb')
-		if not os.path.exists(mobileweb_resources): os.makedirs(mobileweb_resources)
+	mobileweb_resources = os.path.join(resources_dir,'mobileweb')
+	if mobileweb and (not update_platforms or not os.path.exists(mobileweb_resources)):
+		if not os.path.exists(mobileweb_resources):
+			os.makedirs(mobileweb_resources)
 		mobileweb_gen = os.path.join(template_dir,'mobileweb','mobileweb.py')
-		run([sys.executable, mobileweb_gen, name, appid, directory])
+		run_args = [sys.executable, mobileweb_gen, name, appid, directory]
+		run(run_args)
 
-	if blackberry:
+	blackberry_resources = os.path.join(resources_dir, 'blackberry')
+	if blackberry and (not update_platforms or not os.path.exists(blackberry_resources)):
+		if not os.path.exists(blackberry_resources):
+			os.makedirs(blackberry_resources)
 		blackberry_gen = os.path.join(template_dir,'blackberry','blackberry.py')
-		run([sys.executable, blackberry_gen, '--name', name, '--id', appid, '--dir', directory, '--ndk', blackberry_ndk])
+		run_args = [sys.executable, blackberry_gen, '--name', name, '--id', appid, '--dir', directory, '--ndk', blackberry_ndk]
+		run(run_args)
 
-	# copy LICENSE and README
-	for file in ['LICENSE','README']:
-		shutil.copy(os.path.join(all_dir,file),os.path.join(project_dir,file))
+	if not update_platforms:
+		# copy LICENSE and README
+		for file in ['LICENSE','README']:
+			out_path = os.path.join(project_dir, file)
+			shutil.copy(os.path.join(all_dir, file), out_path)
+		# copy IMAGES
+		for file in ['KS_nav_ui.png', 'KS_nav_views.png']:
+			out_path = os.path.join(resources_dir, file)
+			shutil.copy(os.path.join(all_dir, file), out_path)
 
-	# copy RESOURCES
-	for file in ['app.js']:
-		shutil.copy(os.path.join(all_dir,file),os.path.join(resources_dir,file))
-
-	# copy IMAGES
-	for file in ['KS_nav_ui.png', 'KS_nav_views.png']:
-		shutil.copy(os.path.join(all_dir,file),os.path.join(resources_dir,file))
+	app_js_out = os.path.join(resources_dir, 'app.js')
+	if not update_platforms or not os.path.exists(app_js_out):
+		# copy APP.JS
+		shutil.copy(os.path.join(all_dir, 'app.js'), app_js_out)
 
 if __name__ == '__main__':
-	main()
+	(options, args) = parser.parse_args()
+
+	# To mimic sys.argv, put the script name at position 0 in args
+	args.insert(0, __file__)
+
+	main(args, options)
 

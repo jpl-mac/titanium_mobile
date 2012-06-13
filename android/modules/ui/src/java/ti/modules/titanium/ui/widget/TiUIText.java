@@ -20,6 +20,7 @@ import org.appcelerator.titanium.view.TiUIView;
 
 import android.content.Context;
 import android.graphics.Rect;
+import android.os.Build;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils.TruncateAt;
@@ -290,9 +291,14 @@ public class TiUIText extends TiUIView
 		if (DBG) {
 			Log.d(LCAT, "ActionID: " + actionId + " KeyEvent: " + (keyEvent != null ? keyEvent.getKeyCode() : null));
 		}
-		//This is to prevent 'return' event from being fired twice when return key is hit. In other words, when return key is clicked
-		//this callback is triggered twice: the first time with actionId = EditorInfo.IME_NULL, the 2nd time with the corresponding return key actionId.
-		if (actionId != EditorInfo.IME_NULL) {
+		
+		//This is to prevent 'return' event from being fired twice when return key is hit. In other words, when return key is clicked,
+		//this callback is triggered twice (except for keys that are mapped to EditorInfo.IME_ACTION_NEXT or EditorInfo.IME_ACTION_DONE). The first check is to deal with those keys - filter out
+		//one of the two callbacks, and the next checks deal with 'Next' and 'Done' callbacks, respectively.
+		//Refer to TiUIText.handleReturnKeyType(int) for a list of return keys that are mapped to EditorInfo.IME_ACTION_NEXT and EditorInfo.IME_ACTION_DONE.
+		if ((actionId == EditorInfo.IME_NULL && keyEvent != null) || 
+				actionId == EditorInfo.IME_ACTION_NEXT || 
+				actionId == EditorInfo.IME_ACTION_DONE ) {
 			proxy.fireEvent("return", data);
 		}
 
@@ -319,15 +325,11 @@ public class TiUIText extends TiUIView
 		int type = KEYBOARD_ASCII;
 		boolean passwordMask = false;
 		boolean editable = true;
-		int autocorrect = InputType.TYPE_TEXT_FLAG_AUTO_CORRECT | InputType.TYPE_TEXT_FLAG_AUTO_CORRECT;
+		int autocorrect = InputType.TYPE_TEXT_FLAG_AUTO_CORRECT;
 		int autoCapValue = 0;
 
-		if (d.containsKey(TiC.PROPERTY_AUTOCORRECT)) {
-			if(TiConvert.toBoolean(d, TiC.PROPERTY_AUTOCORRECT)) {
-				autocorrect = InputType.TYPE_TEXT_FLAG_AUTO_CORRECT | InputType.TYPE_TEXT_FLAG_AUTO_CORRECT;
-			} else {
-				autocorrect = InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
-			}
+		if (d.containsKey(TiC.PROPERTY_AUTOCORRECT) && !TiConvert.toBoolean(d, TiC.PROPERTY_AUTOCORRECT)) {
+			autocorrect = InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
 		}
 
 		if (d.containsKey(TiC.PROPERTY_EDITABLE)) {
@@ -369,10 +371,9 @@ public class TiUIText extends TiUIView
 
 		int typeModifiers = autocorrect | autoCapValue;
 		int textTypeAndClass = typeModifiers;
-		// For some reason you can't set both TYPE_CLASS_TEXT and
-		// TYPE_TEXT_FLAG_NO_SUGGESTIONS together.
-		if (autocorrect != InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS) {
-			// Go ahead and tack on text class
+		// For some reason you can't set both TYPE_CLASS_TEXT and TYPE_TEXT_FLAG_NO_SUGGESTIONS together.
+		// Also, we need TYPE_CLASS_TEXT for passwords.
+		if (autocorrect != InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS || passwordMask) {
 			textTypeAndClass = textTypeAndClass | InputType.TYPE_CLASS_TEXT;
 		}
 		tv.setCursorVisible(true);
@@ -425,6 +426,11 @@ public class TiUIText extends TiUIView
 		if (passwordMask) {
 			tv.setTransformationMethod(PasswordTransformationMethod.getInstance());
 			textTypeAndClass |= InputType.TYPE_TEXT_VARIATION_PASSWORD;
+			//turn off text UI in landscape mode b/c Android numeric passwords are not masked correctly in landscape mode.
+			if (type == KEYBOARD_NUMBERS_PUNCTUATION || type == KEYBOARD_DECIMAL_PAD || type == KEYBOARD_NUMBER_PAD) {
+				tv.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
+			}
+
 		} else {
 			if (tv.getTransformationMethod() instanceof PasswordTransformationMethod) {
 				tv.setTransformationMethod(null);

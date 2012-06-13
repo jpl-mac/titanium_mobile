@@ -6,6 +6,7 @@
  */
 #import "TiProxy.h"
 #import "TiUIView.h"
+#import "TiRect.h"
 #import <pthread.h>
 
 /**
@@ -20,6 +21,12 @@
  @param args Unused.
  */
 - (void)focus:(id)args;
+
+/**
+ Tells the view to stop generating focus/blur events. This should not be
+ JS-accessable, and is meant to handle tableview and layout issues.
+ */
+@property(nonatomic,readwrite,assign)	BOOL suppressFocusEvents;
 
 /**
  Tells the view to blur.
@@ -38,6 +45,16 @@
  Returns keyboard accessory height.
  */
 @property(nonatomic,readonly) CGFloat keyboardAccessoryHeight;
+
+@end
+
+/*
+ This Protocol will be implemented by objects that want to
+ monitor views not in the normal view heirarchy. 
+*/
+@protocol TiProxyObserver
+@optional
+-(void)proxyDidRelayout:(id)sender;
 
 @end
 
@@ -119,10 +136,14 @@ enum
     BOOL allowLayoutUpdate;
     
     NSMutableDictionary *layoutPropDictionary;
+    
+    id observer;
 }
 
 #pragma mark public API
 
+@property(nonatomic,readonly) TiRect * size;
+@property(nonatomic,readonly) TiRect * rect;
 /*
  Provides access to z-index value.
  */
@@ -143,6 +164,7 @@ enum
 -(void)setTempProperty:(id)propVal forKey:(id)propName;
 -(void)processTempProperties:(NSDictionary*)arg;
 
+-(void)setProxyObserver:(id)arg;
 
 /**
  Tells the view proxy to add a child proxy.
@@ -233,6 +255,14 @@ enum
 -(NSMutableDictionary*)langConversionTable;
 
 #pragma mark Methods subclasses should override for behavior changes
+
+/**
+ Whether or not the view proxy can have non Ti-Views which have to be pushed to the bottom when adding children.
+ **This method is only meant for legacy classes. New classes must implement the proper wrapperView code**
+ Subclasses may override.
+ @return _NO_ if the view proxy can have non Ti-Views in its view heirarchy
+ */
+-(BOOL)optimizeSubviewInsertion;
 
 /**
  Whether or not the view proxy needs to suppress relayout.
@@ -337,10 +367,29 @@ enum
  @see viewWillDetach
  */
 -(void)viewDidDetach;
+/**
+ Tells the view proxy that parent will appear 
+ @see UIViewController viewWillAppear.
+ */
+-(void)parentWillAppear:(id)args;
+/**
+ Tells the view proxy that parent did appear 
+ @see UIViewController viewDidAppear.
+ */
+-(void)parentDidAppear:(id)args;
+/**
+ Tells the view proxy that parent will disappear 
+ @see UIViewController viewWillDisappear.
+ */
+-(void)parentWillDisappear:(id)args;
+/**
+ Tells the view proxy that parent did appear 
+ @see UIViewController viewDidDisappear.
+ */
+-(void)parentDidDisappear:(id)args;
 
 #pragma mark Housecleaning state accessors
 //TODO: Sounds like the redundancy department of redundancy was here.
-
 /**
  Whether or not a view is attached to the view proxy.
  @return _YES_ if the view proxy has a view attached to it, _NO_ otherwise.
@@ -513,7 +562,8 @@ enum
  */
 -(void)layoutChildrenIfNeeded;
 
--(void)layoutChild:(TiViewProxy*)child optimize:(BOOL)optimize;
+-(void)layoutChild:(TiViewProxy*)child optimize:(BOOL)optimize withMeasuredBounds:(CGRect)bounds;
+-(NSArray*)measureChildren:(NSArray*)childArray;
 -(CGRect)computeChildSandbox:(TiViewProxy*)child withBounds:(CGRect)bounds;
 
 /**
@@ -521,7 +571,6 @@ enum
  */
 -(void)relayout;
 
--(void)insertIntoView:(UIView*)view bounds:(CGRect)bounds;
 -(void)reposition;	//Todo: Replace
 
 -(BOOL)willBeRelaying;	//Todo: Replace
