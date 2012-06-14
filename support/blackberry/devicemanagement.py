@@ -28,10 +28,10 @@ class DeviceManagement(object):
 if __name__ == "__main__":
 
 	# Setup script usage
-	parser = OptionParser()
+	parser = OptionParser(usage='Usage: %s [--device DEVICE] [--device-password DEVICE_PASSWORD] [--ndk-path NDK_PATH]' % os.path.basename(sys.argv[0]))
 
 	commonGroup = parser.add_option_group('Common options')
-	commonGroup.add_option('--device', help = 'hostname or the IP address of the target device or simulator', required = True)
+	commonGroup.add_option('--device', help = 'hostname or the IP address of the target device or simulator')
 	commonGroup.add_option('--device-password', help = 'password for device')
 	commonGroup.add_option('-p', '--ndk-path', help = 'blackberry ndk path')
 
