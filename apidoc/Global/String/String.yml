@@ -28,7 +28,7 @@ methods:
         Supported length modifiers are `ll` for integer specifiers and `L` for double specifiers.
         `j`, `t` and `L` (for integer) are not supported, others have no effect.
 
-        Numbered arguments `%n$` are NYI
+        '*' and '*m$' for width and precision are not supported.  If they are used the behaviour is undefined.
     returns:
         type: String
         summary: Formatted string.
