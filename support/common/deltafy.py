@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # deltafy
 # - a simple library that keeps track of modified/created/removed files and directories in a file tree
-# 
+#
 # Author: Marshall Culpepper
 # Licensed under the Apache Public License v2 (see LICENSE.txt)
 
@@ -30,10 +30,10 @@ class Delta:
 		self.path = path
 		self.timestamp = timestamp
 		self.status = status
-	
+
 	def __str__(self):
 		return "%s [%s] @ %s" % (self.get_status_str(), self.get_path(), self.get_timestamp())
-	
+
 	def get_path(self):
 		return self.path
 
@@ -103,14 +103,14 @@ class Deltafy:
 		self.include_callback = include_callback
 		if not os.path.exists(self.db_home):
 			os.makedirs(self.db_home)
-	
+
 		self.conn = sqlite3.connect(self.db_path, detect_types=sqlite3.PARSE_DECLTYPES)
 		self.conn.execute('create table if not exists timestamps (path text, modified timestamp)')
-	
+
 	def clear_state(self):
 		self.conn.execute('delete from timestamps')
 		self.conn.commit()
-	
+
 	def get_timestamp(self, path):
 		c = self.conn.cursor()
 		c.execute('select modified from timestamps where path = ?', (path,))
@@ -120,7 +120,7 @@ class Deltafy:
 			timestamp = row[0]
 		c.close()
 		return timestamp
-	
+
 	def insert_timestamp(self, path, path_stat):
 		timestamp = datetime.fromtimestamp(path_stat.st_mtime)
 		self.conn.execute('insert into timestamps(path, modified) values (?, ?)', (path, timestamp))
@@ -158,10 +158,10 @@ class Deltafy:
 
 	def scan(self):
 		deltas = DeltaList()
-		
+
 		# first pass against the filesystem
 		self.scan_path(self.dir, deltas)
-		
+
 		# second pass check again paths in db
 		# to find deleted paths in the filesystem
 		for path in self.get_paths():
@@ -171,7 +171,7 @@ class Deltafy:
 					include_path = self.include_callback(path, True)
 				if not include_path:
 					continue
-				
+
 				if not os.path.exists(path):
 					self.delete_timestamp(path)
 					deltas.append(Delta(path, 0, Delta.DELETED))
@@ -179,7 +179,7 @@ class Deltafy:
 
 	def scan_single_file(self, file):
 		return self.check_delta(file, os.stat(file))
-	
+
 	def scan_path(self, path, deltas):
 		for file in os.listdir(path):
 			absolute_path = os.path.join(path, file)
@@ -191,7 +191,7 @@ class Deltafy:
 					include_dir = self.include_callback(absolute_path, False)
 				if not include_dir:
 					continue
-				
+
 				self.scan_path(absolute_path, deltas)
 			else:
 				include_file = True
@@ -199,16 +199,16 @@ class Deltafy:
 					include_file = self.include_callback(absolute_path, True)
 				if not include_file:
 					continue
-				
+
 				file_delta = self.check_delta(absolute_path, path_stat)
 				if file_delta is not None:
 					deltas.append(file_delta)
-	
+
 if __name__ == "__main__":
 	if len(sys.argv) == 1:
 		print "Usage: %s <dir>" % sys.argv[0]
 		sys.exit(-1)
-	
+
 	deltafy = Deltafy(sys.argv[1])
 	sys.stdout.write("Initial scan...")
 	deltafy.scan()
