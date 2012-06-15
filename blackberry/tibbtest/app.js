@@ -15,6 +15,8 @@ var label1 = Ti.UI.createLabel({
 	top: 200
 });
 
+label1.text=new Date();
+
 win1.add(label1);
 
 var mybutton=Ti.UI.createButton
