@@ -33,9 +33,9 @@ class Blackberry(object):
 			'id':self.id,
 			'appname':self.name,
 			'platformversion':self.ndk.version,
-			'description':None,
+			'description':'not specified',
 			'version':'1.0',
-			'author':'Appcelerator Titanium Mobile', # TODO MAC: Find out how validate the author
+			'author':'not specified',
 			'category':'core.games',                 # TODO MAC: Find out how validate the category
 			'icon':'assets/appicon.png',
 			'splashscreen':'assets/default.png'
@@ -97,6 +97,24 @@ class Blackberry(object):
 		#blackberry_resources_dir = os.path.join(build_dir,'Resources')
 		#if not os.path.exists(blackberry_resources_dir):
 		#	os.makedirs(blackberry_resources_dir)
+
+	def regenerateBarDescriptor(template, properties):
+		try:
+			newConfig = {
+			'id':properties['id'],
+			'appname':properties['name'],
+			'platformversion':BlackberryNDK().version,
+			'description':properties['description'],
+			'version':properties['version'],
+			'author':properties['publisher'],
+			'category':'core.games',
+			'icon':'assets/%s' %properties['icon'],
+			'splashscreen':'assets/default.png'
+			}
+			_renderTemplate(template, newConfig)
+		except Exception, e:
+			print >>sys.stderr, e
+			sys.exit(1)
 
 def _renderTemplate(template, config):
 	tmpl = _loadTemplate(template)

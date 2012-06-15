@@ -20,7 +20,7 @@ sys.path.append(os.path.join(top_support_dir, 'common'))
 from tilogger import TiLogger
 from tiapp import TiAppXML
 from blackberryndk import BlackberryNDK
-from blackberry import _renderTemplate
+from blackberry import Blackberry
 from deltafy import Deltafy, Delta
 
 class Builder(object):
@@ -37,6 +37,7 @@ class Builder(object):
 		self.tiappxml = TiAppXML(self.project_tiappxml)
 		self.name = self.tiappxml.properties['name']
 		self.buildDir = os.path.join(self.top_dir, 'build', 'blackberry', self.name)
+		self.project_deltafy = Deltafy(self.top_dir)
 		
 	def run(self, ipAddress, password = None, debugToken = None):
 		# TODO Mac: V8 runtime should be added and possibly a lot of other stuff
@@ -47,27 +48,15 @@ class Builder(object):
 		info('Running')
 		
 		# Check if tiapp.xml changed during last build
-		self.project_deltafy = Deltafy(self.top_dir)
 		tiapp_delta = self.project_deltafy.scan_single_file(self.project_tiappxml)
-		self.tiapp_changed = tiapp_delta is not None
+		tiapp_changed = tiapp_delta is not None
 
-		if (self.tiapp_changed):
+		if (tiapp_changed):
 			# regenerate bar-descriptor.xml
 			# TODO MAC: Add blackberry specific properties. Needs update in tiapp.py script
-			configDescriptor = {
-			'id':self.tiappxml.properties['id'],
-			'appname':self.tiappxml.properties['name'],
-			'platformversion':self.ndk.version,
-			'description':self.tiappxml.properties['description'],
-			'version':self.tiappxml.properties['version'],
-			'author':self.tiappxml.properties['publisher'],
-			'category':'core.games',
-			'icon':'assets/%s' %self.tiappxml.properties['icon'],
-			'splashscreen':'assets/default.png'
-			}
 			templates = os.path.join(template_dir,'templates')
 			shutil.copy2(os.path.join(templates,'bar-descriptor.xml'), self.buildDir)
-			_renderTemplate(os.path.join(self.buildDir,'bar-descriptor.xml'), configDescriptor)
+			Blackberry.regenerateBarDescriptor(os.path.join(self.buildDir,'bar-descriptor.xml'), self.tiappxml.properties)
 
 		# Change current directory to do relative operations
 		os.chdir("%s" % self.buildDir)
