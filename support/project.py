@@ -136,8 +136,6 @@ def main(args, options):
 
 	blackberry_resources = os.path.join(resources_dir, 'blackberry')
 	if blackberry and (not update_platforms or not os.path.exists(blackberry_resources)):
-		if not os.path.exists(blackberry_resources):
-			os.makedirs(blackberry_resources)
 		blackberry_gen = os.path.join(template_dir,'blackberry','blackberry.py')
 		run_args = [sys.executable, blackberry_gen, '--name', name, '--id', appid, '--dir', directory, '--ndk', blackberry_ndk]
 		run(run_args)

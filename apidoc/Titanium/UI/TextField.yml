@@ -139,6 +139,7 @@ properties:
         automatically enabled as soon as the user types any text in the field.
     type: Boolean
     default: false
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: font
     summary: Font to use for text.

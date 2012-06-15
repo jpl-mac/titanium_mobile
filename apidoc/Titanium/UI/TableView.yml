@@ -104,7 +104,7 @@ events:
     summary: Fired when a table row is clicked by the user.
     platforms: [android, iphone, ipad, mobileweb, blackberry]
     description: |
-        For now, Blackberry supports only 'index' property of this event
+        For now, BlackBerry supports only 'index' property of this event
     properties:
       - name: detail
         summary: |
@@ -431,6 +431,7 @@ events:
         
   - name: swipe
     summary: Fired when the device detects a swipe gesture (left or right) against the view.
+    platforms: [android, iphone, ipad, mobileweb]
     since: { android: "2.1.0", iphone: "2.1.0", ipad: "2.1.0", mobileweb: "1.8.2" } 
     properties:
       - name: direction
