@@ -26,27 +26,6 @@ class Blackberry(object):
 		self.id = appid
 		self.ndk = bbndk
 
-		# TODO MAC: the bar-descriptor likely needs to be regenerated at
-		# 	build time to capture changes to tiapp.xml
-		# Configuration for the bar-descriptor.xml file
-		self.configDescriptor = {
-			'id':self.id,
-			'appname':self.name,
-			'platformversion':self.ndk.version,
-			'description':'not specified',
-			'version':'1.0',
-			'author':'not specified',
-			'category':'core.games',                 # TODO MAC: Find out how validate the category
-			'icon':'assets/appicon.png',
-			'splashscreen':'assets/default.png'
-		}
-
-		# Configuration for the project file
-		self.configProject = {
-			'appname':self.name,
-			'buildlocation':None # TODO MAC: Find out how specify the build location
-		}
-
 	def create(self, dir):
 		project_dir = os.path.join(dir, self.name)
 		# Creates directory named as project name.
@@ -80,14 +59,33 @@ class Blackberry(object):
 				print >> sys.stderr, e
 				sys.exit(1)
 
+		# Configuration for the bar-descriptor.xml file
+		configDescriptor = {
+			'id':self.id,
+			'appname':self.name,
+			'platformversion':self.ndk.version,
+			'description':'not specified',
+			'version':'1.0',
+			'author':'not specified',
+			'category':'core.games',                 # TODO MAC: Find out how validate the category
+			'icon':'assets/appicon.png',
+			'splashscreen':'assets/default.png'
+		}
+
+		# Configuration for the project file
+		configProject = {
+			'appname':self.name,
+			'buildlocation':None # TODO MAC: Find out how specify the build location
+		}
+
 		# add replaced templates: bar-descriptor.xml, .project files
 		templates = os.path.join(template_dir,'templates')
 		# copy bar-descriptor.xml
 		shutil.copy2(os.path.join(templates,'bar-descriptor.xml'), build_dir)
-		_renderTemplate(os.path.join(build_dir,'bar-descriptor.xml'), self.configDescriptor)
+		self.renderTemplate(os.path.join(build_dir,'bar-descriptor.xml'), configDescriptor)
 		# copy project file
 		shutil.copy2(os.path.join(templates,'project'), os.path.join(build_dir, '.project'))
-		_renderTemplate(os.path.join(build_dir,'.project'), self.configProject)
+		self.renderTemplate(os.path.join(build_dir,'.project'), configProject)
 
 		# import project into workspace so it can be built with mkbuild
 		self.ndk.importProject(build_dir)
@@ -98,36 +96,18 @@ class Blackberry(object):
 		#if not os.path.exists(blackberry_resources_dir):
 		#	os.makedirs(blackberry_resources_dir)
 
-	def regenerateBarDescriptor(template, properties):
+	def renderTemplate(self, template, config):
+		tmpl = _loadTemplate(template)
+		f = None
 		try:
-			newConfig = {
-			'id':properties['id'],
-			'appname':properties['name'],
-			'platformversion':BlackberryNDK().version,
-			'description':properties['description'],
-			'version':properties['version'],
-			'author':properties['publisher'],
-			'category':'core.games',
-			'icon':'assets/%s' %properties['icon'],
-			'splashscreen':'assets/default.png'
-			}
-			_renderTemplate(template, newConfig)
+			f = open(template, "w")
+			f.write(tmpl.render(config = config))
 		except Exception, e:
 			print >>sys.stderr, e
 			sys.exit(1)
-
-def _renderTemplate(template, config):
-	tmpl = _loadTemplate(template)
-	f = None
-	try:
-		f = open(template, "w")
-		f.write(tmpl.render(config = config))
-	except Exception, e:
-		print >>sys.stderr, e
-		sys.exit(1)
-	finally:
-		if f != None:
-			f.close
+		finally:
+			if f != None:
+				f.close
 
 def _loadTemplate(template):
 	return Template(filename=template, output_encoding='utf-8', encoding_errors='replace')
@@ -171,12 +151,30 @@ def __runUnitTests():
 	bbndk = BlackberryNDK(ndk)
 	bb = Blackberry('TemplateTest', 'com.macadamian.template', bbndk)
 
+	configDescriptor = {
+		'id':bb.id,
+		'appname':bb.name,
+		'platformversion':bb.ndk.version,
+		'description':'not specified',
+		'version':'1.0',
+		'author':'not specified',
+		'category':'core.games',                 # TODO MAC: Find out how validate the category
+		'icon':'assets/appicon.png',
+		'splashscreen':'assets/default.png'
+	}
+
+	# Configuration for the project file
+	configProject = {
+		'appname':bb.name,
+		'buildlocation':None # TODO MAC: Find out how specify the build location
+	}
+
 	with UnitTest('Test template replacing on bar-descriptor.xml file..'):
-		passed =__runTemplatingDescriptorTest(bb.configDescriptor)
+		passed =__runTemplatingDescriptorTest(configDescriptor)
 		assert passed
 
 	with UnitTest('Test template replacing on .project file..'):
-		passed = __runTemplatingProjectTest(bb.configProject)
+		passed = __runTemplatingProjectTest(configProject)
 		assert passed
 
 	print '\nFinished Running Unit Tests'
