@@ -111,7 +111,7 @@ def main():
 
 	if blackberry:
 		blackberry_gen = os.path.join(template_dir,'blackberry','blackberry.py')
-		run([sys.executable, blackberry_gen, name, appid, directory, blackberry_ndk])
+		run([sys.executable, blackberry_gen, '--name', name, '--id', appid, '--dir', directory, '--ndk', blackberry_ndk])
 
 	# copy LICENSE and README
 	for file in ['LICENSE','README']:
