@@ -12,7 +12,7 @@
 int main(int argc, char** argv)
 {
     FILE* fp;
-    fp = fopen("app/native/app.js", "r");
+    fp = fopen("app/native/assets/app.js", "r");
     if (fp == NULL)
     {
         return -1;
