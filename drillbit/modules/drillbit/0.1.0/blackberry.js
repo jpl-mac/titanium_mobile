@@ -10,8 +10,11 @@ function BlackBerrySimulator(drillbit, blackberryNdk) {
 	this.blackberryNdk = blackberryNdk;
 
 	this.device = 'emulator';
-	if ('blackberryDevice' in drillbit.argv) {
-		this.device = drillbit.argv.blackberryDevice;
+	this.blackberryDevice = drillbit.argv.blackberryDevice;
+	this.blackberryDeviceCommandArgs = ['--ip_address', this.blackberryDevice];
+	if ('blackberryPassword' in drillbit.argv) {
+		this.blackberryPassword = drillbit.argv.blackberryPassword;
+		this.blackberryDeviceCommandArgs = this.blackberryDeviceCommandArgs.concat(['--device_password', this.blackberryPassword]);
 	}
 
 	this.runtime = 'v8';
@@ -26,11 +29,10 @@ BlackBerrySimulator.prototype.createDeviceManagementProcess = function(command, 
 	var procArgs =
 	[
 		this.blackberryDeviceManagement,
-		'-t', 'simulator', // FIXME: need the actual type
-		'-d', this.drillbit.testHarnessDir,
-		'-p', this.blackberryNdk,
 		command,
+		'-p', this.blackberryNdk,
 	];
+	procArgs = procArgs.concat(this.blackberryDeviceCommandArgs);
 
 	if (args) {
 		procArgs = procArgs.concat(args);
@@ -57,7 +59,7 @@ BlackBerrySimulator.prototype.createTestHarnessBuilderProcess = function(command
 BlackBerrySimulator.prototype.isTestHarnessRunning = function() {
 	var retVal = false;
 	var command = 'isAppRunning';
-	var process = this.createDeviceManagementProcess(command);
+	var process = this.createTestHarnessBuilderProcess(command, this.blackberryDeviceCommandArgs);
 
 	var self = this;
 	process.setOnReadLine(function(data) {
@@ -135,7 +137,8 @@ BlackBerrySimulator.prototype.pushTestJS = function(testScript) {
 	// TODO Mac: check
 	var deviceFile = 'app/native/assets/test.js';
 	var commandArgs = [testJSFile.nativePath(), deviceFile];
-	var process = this.createDeviceManagementProcess(command, commandArgs);
+	commandArgs = commandArgs.concat(this.blackberryDeviceCommandArgs);
+	var process = this.createTestHarnessBuilderProcess(command, commandArgs);
 
 	var self = this;
 	process.setOnReadLine(function(data) {
@@ -166,7 +169,7 @@ BlackBerrySimulator.prototype.installTestHarness = function(launch, suite) {
 BlackBerrySimulator.prototype.launchTestHarness = function(suite) {
 	// TODO Mac: need to separate install from launch
 	var command = 'run';
-	var process = this.createTestHarnessBuilderProcess(command);
+	var process = this.createTestHarnessBuilderProcess(command, this.blackberryDeviceCommandArgs);
 
 	var self = this;
 	process.setOnReadLine(function(data) {
@@ -182,7 +185,7 @@ BlackBerrySimulator.prototype.launchTestHarness = function(suite) {
 		}
 		self.testHarnessRunning = true;
 		self.needsBuild = false;
-		var logProcess = self.createDeviceManagementProcess('appLog');
+		var logProcess = self.createTestHarnessBuilderProcess('appLog', self.blackberryDeviceCommandArgs);
 		logProcess.setOnReadLine(self.readLineCb);
 		logProcess.setOnExit(function(e) {
 			if (logProcess.getExitCode() !== 0) {
@@ -190,7 +193,7 @@ BlackBerrySimulator.prototype.launchTestHarness = function(suite) {
 				return;
 			}
 
-			var exitCodeProcess = self.createDeviceManagementProcess('printExitCode');
+			var exitCodeProcess = self.createTestHarnessBuilderProcess('printExitCode', self.blackberryDeviceCommandArgs);
 			var lastLine = "";
 			exitCodeProcess.setOnReadLine(function(data) {
 				var lines = data.split("\n");
@@ -212,7 +215,7 @@ BlackBerrySimulator.prototype.launchTestHarness = function(suite) {
 BlackBerrySimulator.prototype.killTestHarness = function() {
 	var retVal = false;
 	var command = 'terminateApp';
-	var process = this.createDeviceManagementProcess(command);
+	var process = this.createTestHarnessBuilderProcess(command, this.blackberryDeviceCommandArgs);
 
 	var self = this;
 	process.setOnReadLine(function(data) {

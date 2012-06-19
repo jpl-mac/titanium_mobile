@@ -129,7 +129,8 @@ def usage():
     --android-runtime=RUNTIME       The Android runtime to run tests with (default: v8)
 
     BlackBerry Specific Arguments
-    TODO Mac
+    --blackberry-device=DEVICE      The hostname or the IP address of the target simulator (mandatory)
+    --blackberry-password=PASSWORD  The password for the simulator (if password-protected)
 """ % sys.argv[0]
 	sys.exit(1)
 
