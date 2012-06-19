@@ -6,8 +6,13 @@ define({
 		}
 	},
 	off: function(handles) {
-		require.each(require.is(handles, "Array") ? handles : [handles], function(h) {
-			h && h();
-		});
+		var handles = require.is(handles, "Array") ? handles : [handles],
+			h,
+			i = 0,
+			l = handles.length;
+		while (i < l) {
+			(h = handles[i++]) && h();
+		}
+		handles.splice(0);
 	}
 });

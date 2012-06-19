@@ -2,6 +2,7 @@ var require = {
 	app: {
 		analytics: ${app_analytics | jsQuoteEscapeFilter},
 		copyright: "${app_copyright | jsQuoteEscapeFilter}",
+		deployType: "${deploy_type | jsQuoteEscapeFilter}",
 		description: "${app_description | jsQuoteEscapeFilter}",
 		guid: "${app_guid | jsQuoteEscapeFilter}",
 		id: "${app_name | jsQuoteEscapeFilter}",
@@ -11,9 +12,7 @@ var require = {
 		url: "${app_url | jsQuoteEscapeFilter}",
 		version: "${app_version | jsQuoteEscapeFilter}"
 	},
-	deployType: "${deploy_type | jsQuoteEscapeFilter}",
 	has: {
-		"analytics-use-xhr": false,
 		"declare-property-methods": true,
 		"js-btoa": function(g) {
 			return "btoa" in g;
@@ -32,7 +31,12 @@ var require = {
 				} catch (e) {}
 			}(Object.defineProperty, {}));
 		},
-		"opera": typeof opera === "undefined" || opera.toString() != "[object Opera]"
+		"opera": typeof opera === "undefined" || opera.toString() != "[object Opera]",
+		"ti-analytics-use-xhr": ${has_analytics_use_xhr | jsQuoteEscapeFilter},
+		"ti-show-errors": ${has_show_errors | jsQuoteEscapeFilter},
+		"ti-instrumentation": function(g) {
+				return ${has_instrumentation | jsQuoteEscapeFilter} && g.instrumentation;
+		}
 	},
 	locales: ${locales},
 	packages: ${packages},
@@ -46,6 +50,7 @@ var require = {
 		filesystem: {
 			registry: "${ti_fs_registry}"
 		},
+		theme: "${ti_theme | jsQuoteEscapeFilter}",
 		version: "${ti_version | jsQuoteEscapeFilter}"
 	},
 	vendorPrefixes: {
