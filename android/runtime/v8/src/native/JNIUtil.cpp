@@ -15,6 +15,9 @@
 namespace titanium {
 
 JavaVM* JNIUtil::javaVm = NULL;
+
+jobject JNIUtil::undefinedObject = NULL;
+
 jclass JNIUtil::classClass = NULL;
 jclass JNIUtil::objectClass = NULL;
 jclass JNIUtil::stringClass = NULL;
@@ -48,8 +51,8 @@ jclass JNIUtil::krollObjectClass = NULL;
 jclass JNIUtil::krollProxyClass = NULL;
 jclass JNIUtil::krollAssetHelperClass = NULL;
 jclass JNIUtil::krollLoggingClass = NULL;
-
 jclass JNIUtil::tiJsErrorDialogClass = NULL;
+jclass JNIUtil::referenceTableClass = NULL;
 
 jmethodID JNIUtil::classGetNameMethod = NULL;
 jmethodID JNIUtil::arrayListInitMethod = NULL;
@@ -75,6 +78,12 @@ jmethodID JNIUtil::throwableGetMessageMethod = NULL;
 jfieldID JNIUtil::v8ObjectPtrField = NULL;
 jmethodID JNIUtil::v8ObjectInitMethod = NULL;
 jmethodID JNIUtil::v8FunctionInitMethod = NULL;
+
+jmethodID JNIUtil::referenceTableCreateReferenceMethod = NULL;
+jmethodID JNIUtil::referenceTableDestroyReferenceMethod = NULL;
+jmethodID JNIUtil::referenceTableMakeWeakReferenceMethod = NULL;
+jmethodID JNIUtil::referenceTableClearWeakReferenceMethod = NULL;
+jmethodID JNIUtil::referenceTableGetReferenceMethod = NULL;
 
 jint JNIUtil::krollRuntimeDontIntercept = -1;
 jmethodID JNIUtil::krollInvocationInitMethod = NULL;
@@ -249,6 +258,7 @@ void JNIUtil::initCache()
 	LOG_TIMER(TAG, "initializing JNI cache");
 
 	JNIEnv *env = JNIScope::getEnv();
+
 	classClass = findClass("java/lang/Class");
 	objectClass = findClass("java/lang/Object");
 	numberClass = findClass("java/lang/Number");
@@ -283,6 +293,7 @@ void JNIUtil::initCache()
 	krollAssetHelperClass = findClass("org/appcelerator/kroll/util/KrollAssetHelper");
 	krollLoggingClass = findClass("org/appcelerator/kroll/KrollLogging");
 	tiJsErrorDialogClass = findClass("org/appcelerator/kroll/common/TiJSErrorDialog");
+	referenceTableClass = findClass("org/appcelerator/kroll/runtime/v8/ReferenceTable");
 
 	classGetNameMethod = getMethodID(classClass, "getName", "()Ljava/lang/String;", false);
 	arrayListInitMethod = getMethodID(arrayListClass, "<init>", "()V", false);
@@ -313,6 +324,12 @@ void JNIUtil::initCache()
 	v8ObjectInitMethod = getMethodID(v8ObjectClass, "<init>", "(J)V", false);
 	v8FunctionInitMethod = getMethodID(v8FunctionClass, "<init>", "(J)V", false);
 
+	referenceTableCreateReferenceMethod = getMethodID(referenceTableClass, "createReference", "(Ljava/lang/Object;)I", true);
+	referenceTableDestroyReferenceMethod = getMethodID(referenceTableClass, "destroyReference", "(I)V", true);
+	referenceTableMakeWeakReferenceMethod = getMethodID(referenceTableClass, "makeWeakReference", "(I)V", true);
+	referenceTableClearWeakReferenceMethod = getMethodID(referenceTableClass, "clearWeakReference", "(I)Ljava/lang/Object;", true);
+	referenceTableGetReferenceMethod = getMethodID(referenceTableClass, "getReference", "(I)Ljava/lang/Object;", true);
+
 	jfieldID dontInterceptField = env->GetStaticFieldID(krollRuntimeClass, "DONT_INTERCEPT", "I");
 	krollRuntimeDontIntercept = env->GetStaticIntField(krollRuntimeClass, dontInterceptField);
 
@@ -339,6 +356,9 @@ void JNIUtil::initCache()
 	krollAssetHelperFileExistsMethod = getMethodID(krollAssetHelperClass, "fileExists", "(Ljava/lang/String;)Z", true);
 
 	krollLoggingLogWithDefaultLoggerMethod = getMethodID(krollLoggingClass, "logWithDefaultLogger", "(ILjava/lang/String;)V", true);
+
+	jfieldID undefinedObjectField = env->GetStaticFieldID(krollRuntimeClass, "UNDEFINED", "Ljava/lang/Object;");
+	undefinedObject = env->NewGlobalRef(env->GetStaticObjectField(krollRuntimeClass, undefinedObjectField));
 }
 
 } // namespace titanium

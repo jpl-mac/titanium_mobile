@@ -11,6 +11,8 @@
 #import "TiFile.h"
 #import "TiBuffer.h"
 
+bool Base64AllocAndEncodeData(const void *inInputData, size_t inInputDataSize, char **outOutputDataPtr, size_t *outOutputDataSize);
+
 typedef enum {
     BAD_DEST_OFFSET = -1,
     BAD_SRC_OFFSET = -2,
@@ -505,7 +507,7 @@ typedef enum {
  */
 +(NSString*)convertToHex:(unsigned char*)input length:(size_t)length;
 
-+(NSString*)uniqueIdentifier;
++(NSString*)appIdentifier;
 
 +(NSString*)getResponseHeader:(NSString*)header fromHeaders:(NSDictionary*)responseHeaders;
 
