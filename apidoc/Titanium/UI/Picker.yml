@@ -30,6 +30,7 @@ methods:
         type: Number
     returns: 
       - type: Titanium.UI.PickerRow
+    platforms: [iphone, ipad, android, Mobile Web]
     
   - name: reloadColumn
     summary: Repopulates values for a column.
@@ -57,13 +58,14 @@ methods:
         type: Boolean
         default: true
         optional: true
+    platforms: [iphone, ipad, android, Mobile Web]
 
   - name: setValue
     summary: Sets the date and time value property for Date pickers.
     description: |
         Applicable to the <Titanium.UI.PICKER_TYPE_DATE> and <Titanium.UI.PICKER_TYPE_DATE_AND_TIME> 
         picker types.
-    platforms: [iphone, ipad]
+    platforms: [iphone, ipad, blackberry]
     parameters:
       - name: date
         summary: A Javascript `Date` object.
@@ -149,6 +151,7 @@ properties:
   - name: columns
     summary: Columns used for this picker, as an array of <Titanium.UI.PickerColumn> objects.
     type: Array<Titanium.UI.PickerColumn>
+    platforms: [iphone, ipad, android, Mobile Web]
     
   - name: countDownDuration
     summary: Duration in milliseconds used for a Countdown Timer picker.
