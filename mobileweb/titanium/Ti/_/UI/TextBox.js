@@ -1,21 +1,30 @@
 define(
 	["Ti/_/declare", "Ti/_/dom", "Ti/_/event", "Ti/_/style", "Ti/_/lang", "Ti/_/UI/FontWidget", "Ti/UI"],
 	function(declare, dom, event, style, lang, FontWidget, UI) {
+		
+	var on = require.on,
+		setStyle = style.set;
 
 	return declare("Ti._.UI.TextBox", FontWidget, {
 
-		_field: null,
-		
+		constructor: function(){
+			this._addEventModifier(["click", "singletap", "blur", "change", "focus", "return"], function(data) {
+				data.value = this.value;
+			});
+		},
+
 		_preventDefaultTouchEvent: false,
 
 		_initTextBox: function() {
 			// wire up events
 			var field = this._field,
-				form = this._form = dom.create("form", null, this.domNode);
+				form = this._form = dom.create("form", null, this.domNode),
+				updateInterval = null,
+				previousText = "";
 
 			this._addStyleableDomNode(this._setFocusNode(field));
 
-			require.on(field, "keydown", this, function(e) {
+			on(field, "keydown", this, function(e) {
 				if (this.editable) {
 					if (e.keyCode === 13) {
 						if (this.suppressReturn) {
@@ -28,29 +37,26 @@ define(
 					event.stop(e);
 				}
 			});
-			require.on(field, "keypress", this, function() {
+
+			on(field, "keypress", this, function() {
 				this._capitalize();
 			});
-			
-			var updateInterval = null,
-				previousText = "";
-			require.on(field, "focus", this, function(){
-				updateInterval = setInterval(lang.hitch(this,function(){
-					var value = field.value,
-						newData = false;
-					if (previousText.length != value.length) {
-						newData = true;
-					} else if(previousText != value) {
-						newData = true;
-					}
-					if (newData) {
+
+			on(field, "focus", this, function(){
+				this.fireEvent("focus");
+
+				updateInterval = setInterval(lang.hitch(this, function(){
+					var value = field.value;
+					if (previousText.length !== value.length || previousText !== value) {
 						this.fireEvent("change");
 						previousText = value;
 					}
-				}),200);
+				}), 200);
 			});
-			require.on(field, "blur", this, function(){
+
+			on(field, "blur", this, function(){
 				clearInterval(updateInterval);
+				this.fireEvent("blur");
 			});
 		},
 
@@ -69,12 +75,10 @@ define(
 
 		blur: function() {
 			this._field.blur();
-			this.fireEvent("blur");
 		},
 
 		focus: function() {
 			this._field.focus();
-			this.fireEvent("focus");
 		},
 
 		hasText: function() {
@@ -104,13 +108,16 @@ define(
 				value: UI.RETURNKEY_DEFAULT,
 				set: function(value) {
 					var title = "",
-						dest = this.domNode;
+						dest = this.domNode,
+						disp = "none";
 					if (value !== UI.RETURNKEY_DEFAULT) {
-						deset = this._form;
+						dest = this._form;
+						disp = "inherit";
 						~[4,8,10].indexOf(value) && (title = "Search");
 					}
+					setStyle(this._form, "display", disp);
 					this._field.title = title;
-					dom.place(this._field, dest);
+					dom.place(this._fieldWrapper, dest);
 					return value;
 				}
 			},
@@ -119,7 +126,7 @@ define(
 
 			textAlign: {
 				set: function(value) {
-					style.set(this._field, "text-align", value === UI.TEXT_ALIGNMENT_RIGHT ? "right" : value === UI.TEXT_ALIGNMENT_CENTER ? "center" : "left");
+					setStyle(this._field, "textAlign", /(center|right)/.test(value) ? value : "left");
 					return value;
 				}
 			},
