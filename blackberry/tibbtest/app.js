@@ -10,63 +10,14 @@ var win1 = Titanium.UI.createWindow({
 
 var label1 = Ti.UI.createLabel({
 	textAlign : 'center',
-	text:'Hello, world!',
+	font: {fontSize:12},
 	color:'green',
 	top: 200
 });
 
-label1.text=new Date();
+label1.text= String.formatTime(new Date(), new String('long'));
 
 win1.add(label1);
-
-var mybutton=Ti.UI.createButton
-(
-	{title: 'Push Me'}
-);
-
-mybutton.addEventListener
-(
-	'click',
-	function(e)
-	{
-		e.source.title='Pushed!';
-		e.source.setVisible(false);
-	}
-);
-
-win1.add(mybutton);
-
-var slider1=Ti.UI.createSlider
-(
-	{
-		top: 0,
-		min: 0,
-		max: 100,
-		value: 50,
-	}
-);
-
-slider1.addEventListener
-(
-	'change',
-	function(e)
-	{
-		progress1.value=e.value;
-		label1.text='Slider value: '+e.value;
-		label1.top=200.0+e.value;
-	}
-);
-
-
-win1.add(slider1);
-
-var progress1=Ti.UI.createProgressBar({
-	value:0,
-	min: 0,
-	max: 100,
-});
-
-win1.add(progress1);
 
 // open window
 win1.open();
