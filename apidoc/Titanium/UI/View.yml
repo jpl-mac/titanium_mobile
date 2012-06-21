@@ -609,7 +609,7 @@ properties:
         
         See the "Using an anchorPoint" example in <Titanium.UI.Animation> for a demonstration.
     type: Point
-    platforms: [iphone, ipad]
+    platforms: [iphone, ipad, blackberry]
     
   - name: animatedCenterPoint
     summary: Current position of the view during an animation.
@@ -628,7 +628,7 @@ properties:
     description: |
         For information about color values, see the "Colors" section of <Titanium.UI>. 
     type: String
-    platforms: [android]
+    platforms: [android, blackberry]
     
   - name: backgroundDisabledImage
     summary: Disabled background image for the view, specified as a local file path or URL.
