@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.appcelerator.kroll.KrollApplication;
 import org.appcelerator.kroll.KrollDict;
@@ -57,6 +59,7 @@ import android.util.DisplayMetrics;
  */
 public abstract class TiApplication extends Application implements Handler.Callback, KrollApplication
 {
+	private static final String SYSTEM_UNIT = "system";
 	private static final String LCAT = "TiApplication";
 	private static final boolean DBG = TiConfig.LOGD;
 	private static final long STATS_WAIT = 300000;
@@ -92,6 +95,7 @@ public abstract class TiApplication extends Application implements Handler.Callb
 	private boolean needsStartEvent;
 	private boolean needsEnrollEvent;
 	private String buildVersion = "", buildTimestamp = "", buildHash = "";
+	private String defaultUnit;
 	private TiResponseCache responseCache;
 	private BroadcastReceiver externalStorageReceiver;
 
@@ -180,6 +184,29 @@ public abstract class TiApplication extends Application implements Handler.Callb
 		activityStack.remove(activity);
 	}
 
+	// Calls finish on the list of activities in the stack. This should only be called when we want to terminate the
+	// application (typically when the root activity is destroyed)
+	public static void terminateActivityStack()
+	{
+		if (activityStack == null || activityStack.size() == 0) {
+			return;
+		}
+
+		WeakReference<Activity> activityRef;
+		Activity currentActivity;
+
+		for (int i = activityStack.size() - 1; i >= 0; i--) {
+			activityRef = activityStack.get(i);
+			if (activityRef != null) {
+				currentActivity = activityRef.get();
+				if (currentActivity != null) {
+					currentActivity.finish();
+				}
+			}
+		}
+		activityStack.clear();
+	}
+
 	public boolean activityStackHasLaunchActivity()
 	{
 		if (activityStack == null || activityStack.size() == 0) {
@@ -236,10 +263,10 @@ public abstract class TiApplication extends Application implements Handler.Callb
 
 		while ((activityStackSize = activityStack.size()) > 0) {
 			Activity activity = (activityStack.get(activityStackSize - 1)).get();
-			if (activity == null) {
-				Log.i(LCAT, "activity reference is invalid, removing from activity stack");
-				activityStack.remove(activityStackSize -1);
 
+			// Skip and remove any activities which are dead or in the process of finishing.
+			if (activity == null || activity.isFinishing()) {
+				activityStack.remove(activityStackSize -1);
 				continue;
 			}
 
@@ -325,7 +352,7 @@ public abstract class TiApplication extends Application implements Handler.Callb
 		proxyMap = new HashMap<String, SoftReference<KrollProxy>>(5);
 
 		appProperties = new TiProperties(getApplicationContext(), APPLICATION_PREFERENCES_NAME, false);
-		systemProperties = new TiProperties(getApplicationContext(), "system", true);
+		systemProperties = new TiProperties(getApplicationContext(), SYSTEM_UNIT, true);
 
 		if (getDeployType().equals(DEPLOY_TYPE_DEVELOPMENT)) {
 			deployData = new TiDeployData(this);
@@ -434,6 +461,21 @@ public abstract class TiApplication extends Application implements Handler.Callb
 		}
 
 		return rootActivity.get();
+	}
+
+	/**
+	 * @return whether the root activity is available
+	 */
+	public boolean isRootActivityAvailable()
+	{
+		if (rootActivity != null) {
+			Activity activity = rootActivity.get();
+			if (activity != null) {
+				return !activity.isFinishing();
+			}
+		}
+
+		return false;
 	}
 
 	public void setCurrentActivity(Activity callingActivity, Activity newValue)
@@ -678,7 +720,16 @@ public abstract class TiApplication extends Application implements Handler.Callb
 
 	public String getDefaultUnit()
 	{
-		return getSystemProperties().getString(PROPERTY_DEFAULT_UNIT, "system");
+		if (defaultUnit == null) {
+			defaultUnit = getSystemProperties().getString(PROPERTY_DEFAULT_UNIT, SYSTEM_UNIT);
+			// Check to make sure default unit is valid, otherwise use system
+			Pattern unitPattern = Pattern.compile("system|px|dp|dip|mm|cm|in");
+			Matcher m = unitPattern.matcher(defaultUnit);
+			if (!m.matches()) {
+				defaultUnit = SYSTEM_UNIT;
+			}
+		}
+		return defaultUnit;
 	}
 
 	public int getThreadStackSize()

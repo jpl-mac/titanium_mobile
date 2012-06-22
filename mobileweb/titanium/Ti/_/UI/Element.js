@@ -1,13 +1,9 @@
 define(
 	["Ti/_/browser", "Ti/_/css", "Ti/_/declare", "Ti/_/dom", "Ti/_/event", "Ti/_/lang", "Ti/_/style", "Ti/_/Evented",
-	"Ti/UI", "Ti/_/Gestures/DoubleTap","Ti/_/Gestures/LongPress","Ti/_/Gestures/Pinch","Ti/_/Gestures/SingleTap",
-	"Ti/_/Gestures/Swipe","Ti/_/Gestures/TouchCancel","Ti/_/Gestures/TouchEnd","Ti/_/Gestures/TouchMove",
-	"Ti/_/Gestures/TouchStart","Ti/_/Gestures/TwoFingerTap"],
-	function(browser, css, declare, dom, event, lang, style, Evented, UI,
-		DoubleTap, LongPress, Pinch, SingleTap, Swipe, TouchCancel, TouchEnd,
-		TouchMove, TouchStart, TwoFingerTap) {
+	"Ti/UI", "Ti/_/Promise", "Ti/_/string"],
+	function(browser, css, declare, dom, event, lang, style, Evented, UI, Promise, string) {
 
-	var undef,
+	var global = window,
 		unitize = dom.unitize,
 		computeSize = dom.computeSize,
 		on = require.on,
@@ -15,6 +11,7 @@ define(
 		isDef = lang.isDef,
 		val = lang.val,
 		is = require.is,
+		has = require.has,
 		transitionEvents = {
 			webkit: "webkitTransitionEnd",
 			trident: "msTransitionEnd",
@@ -26,10 +23,28 @@ define(
 		postDoBackground = {
 			post: "_doBackground"
 		},
+		postLayoutPropFunction = function(value, oldValue) {
+			(value === null || (!is(value,"String") && !is(value,"Number"))) && (value = void 0);
+			value !== oldValue && !this._batchUpdateInProgress && this._triggerLayout();
+			return value;
+		},
 		postLayoutProp = {
-			post: function() {
-				this._parent && this._parent._triggerLayout();
-			}
+			set: postLayoutPropFunction
+		},
+		pixelUnits = "px",
+		gestureMapping = {
+			pinch: "Pinch",
+			swipe: "Swipe",
+			twofingertap: "TwoFingerTap",
+			doubletap: "DoubleTap",
+			longpress: "LongPress",
+			singletap: "SingleTap",
+			click: "SingleTap",
+			doubleclick: "DoubleTap",
+			touchstart: "TouchStart",
+			touchend: "TouchEnd",
+			touchmove: "TouchMove",
+			touchcancel: "TouchCancel"
 		};
 
 	return declare("Ti._.UI.Element", Evented, {
@@ -40,6 +55,7 @@ define(
 
 		constructor: function(args) {
 			var self = this,
+				touchMoveBlocked = false,
 
 				node = this.domNode = this._setFocusNode(dom.create(this.domType || "div", {
 					className: "TiUIElement " + css.clean(this.declaredClass),
@@ -47,40 +63,16 @@ define(
 				})),
 
 				// Handle click/touch/gestures
-				recognizers = this._gestureRecognizers = {
-					Pinch: new Pinch,
-					Swipe: new Swipe,
-					TwoFingerTap: new TwoFingerTap,
-					DoubleTap: new DoubleTap,
-					LongPress: new LongPress,
-					SingleTap: new SingleTap,
-					TouchStart: new TouchStart,
-					TouchEnd: new TouchEnd,
-					TouchMove: new TouchMove,
-					TouchCancel: new TouchCancel
-				},
+				recognizers = this._gestureRecognizers = {},
 
-				// Each event could require a slightly different precedence of execution, which is why we have these separate lists.
-				// For now they are the same, but I suspect they will be different once the android-iphone parity is determined.
-				touchRecognizers = {
-					Start: recognizers,
-					Move: recognizers,
-					End: recognizers,
-					Cancel: recognizers
-				},
-
-				useTouch = "ontouchstart" in window,
+				useTouch = "ontouchstart" in global,
 				bg = lang.hitch(this, "_doBackground");
-
-			require.has("devmode") && args && args._debug && dom.attr.set(node, "data-debug", args._debug);
 
 			function processTouchEvent(eventType, evt) {
 				var i,
-					gestureRecognizers = touchRecognizers[eventType],
-					eventType = "Touch" + eventType + "Event",
 					touches = evt.changedTouches;
 				if (this._preventDefaultTouchEvent) {
-					this._preventDefaultTouchEvent && evt.preventDefault && evt.preventDefault();
+					evt.preventDefault && evt.preventDefault();
 					for (i in touches) {
 						touches[i].preventDefault && touches[i].preventDefault();
 					}
@@ -90,40 +82,80 @@ define(
 					targetTouches: [],
 					changedTouches: [evt]
 				});
-				for (i in gestureRecognizers) {
-					gestureRecognizers[i]["process" + eventType](evt, self);
+				for (i in recognizers) {
+					recognizers[i].recognizer["process" + eventType](evt, self);
 				}
-				for (i in gestureRecognizers) {
-					gestureRecognizers[i]["finalize" + eventType]();
+				for (i in recognizers) {
+					recognizers[i].recognizer["finalize" + eventType]();
 				}
 			}
 
 			this._touching = false;
 
+			this._children = [];
+
 			on(this.domNode, useTouch ? "touchstart" : "mousedown", function(evt){
 				var handles = [
-					on(window, useTouch ? "touchmove" : "mousemove", function(evt){
-						(useTouch || self._touching) && processTouchEvent("Move", evt);
+					on(global, useTouch ? "touchmove" : "mousemove", function(evt){
+						if (!touchMoveBlocked) {
+							touchMoveBlocked = true;
+							(useTouch || self._touching) && processTouchEvent("TouchMoveEvent", evt);
+							setTimeout(function(){
+								touchMoveBlocked = false;
+							}, 30);
+						}
 					}),
-					on(window, useTouch ? "touchend" : "mouseup", function(evt){
+					on(global, useTouch ? "touchend" : "mouseup", function(evt){
 						self._touching = false;
-						processTouchEvent("End", evt);
+						processTouchEvent("TouchEndEvent", evt);
 						event.off(handles);
 					}),
-					useTouch && on(window, "touchcancel", function(evt){
-						processTouchEvent("Cancel", evt);
+					useTouch && on(global, "touchcancel", function(evt){
+						processTouchEvent("TouchCancelEvent", evt);
 						event.off(handles);
 					})
 				];
 				self._touching = true;
-				processTouchEvent("Start", evt);
+				processTouchEvent("TouchStartEvent", evt);
 			});
 
 			this.addEventListener("touchstart", bg);
 			this.addEventListener("touchend", bg);
 
-			// TODO: mixin JSS rules (http://jira.appcelerator.org/browse/TIMOB-6780)
 			var values = this.constants.__values__;
+			this._layoutCoefficients = {
+				width: {
+					x1: 0,
+					x2: 0,
+					x3: 0
+				},
+				sandboxWidth: {
+					x1: 0,
+					x2: 0,
+					x3: 0
+				},
+				height: {
+					x1: 0,
+					x2: 0,
+					x3: 0
+				},
+				sandboxHeight: {
+					x1: 0,
+					x2: 0,
+					x3: 0
+				},
+				left: {
+					x1: 0,
+					x2: 0,
+					x3: 0
+				},
+				top: {
+					x1: 0,
+					x2: 0,
+					x3: 0,
+					x4: 0
+				}
+			};
 			values.size = {
 				x: 0,
 				y: 0,
@@ -138,9 +170,89 @@ define(
 			};
 		},
 
+		addEventListener: function(name, handler) {
+			if (name in gestureMapping) {
+				var gestureRecognizers = this._gestureRecognizers,
+					gestureRecognizer;
+				
+				if (!(name in gestureRecognizers)) {
+					gestureRecognizers[name] = {
+						count: 0,
+						recognizer: new (require("Ti/_/Gestures/" + gestureMapping[name]))(name)
+					};
+				}
+				
+				gestureRecognizers[name].count++;
+			}
+			handler && Evented.addEventListener.apply(this, arguments);
+		},
+
+		removeEventListener: function(name) {
+			if (name in gestureMapping) {
+				var gestureRecognizers = this._gestureRecognizers;
+				if (name in gestureRecognizers && !(--gestureRecognizers[name].count)) {
+					delete gestureRecognizers[name];
+				}
+			}
+			Evented.removeEventListener.apply(this, arguments);
+		},
+
+		_setParent: function(view) {
+			this._parent = view;
+		},
+
+		_add: function(view, hidden) {
+
+			view._hidden = hidden;
+
+			view._setParent(this);
+
+			this._children.push(view);
+			this.containerNode.appendChild(view.domNode);
+
+			view._triggerLayout();
+		},
+
+		_insertAt: function(view,index, hidden) {
+			var children = this._children;
+			if (index > children.length || index < 0) {
+				return;
+			} else if (index === children.length) {
+				this._add(view, hidden);
+			} else {
+				view._parent = this;
+				this.containerNode.insertBefore(view.domNode, children[index].domNode);
+				children.splice(index,0,view);
+				this._triggerLayout();
+			}
+		},
+
+		_remove: function(view) {
+			var children = this._children,
+				p = children.indexOf(view);
+			if (p !== -1) {
+				children.splice(p, 1);
+				view._setParent();
+				dom.detach(view.domNode);
+				this._triggerLayout();
+			}
+		},
+
+		_removeAllChildren: function(view) {
+			var children = this._children;
+			while (children.length) {
+				this.remove(children[0]);
+			}
+			this._triggerLayout();
+		},
+
 		destroy: function() {
 			if (this._alive) {
-				this.parent && this.parent.remove(this);
+				var children = this._children;
+				while (children.length) {
+					children.splice(0, 1)[0].destroy();
+				}
+				this._parent && this._parent._remove(this);
 				if (this.domNode) {
 					dom.destroy(this.domNode);
 					this.domNode = null;
@@ -148,8 +260,6 @@ define(
 			}
 			Evented.destroy.apply(this, arguments);
 		},
-		
-		_markedForLayout: false,
 		
 		_isAttachedToActiveWin: function() {
 			// If this element is not attached to an active window, skip the calculation
@@ -165,383 +275,58 @@ define(
 			return isAttachedToActiveWin;
 		},
 		
-		_triggerLayout: function(force) {
-			
-			if (this._markedForLayout && !force) {
-				return;
-			}
-			
-			// If this element is not attached to an active window, skip the calculation
-			if (!this._isAttachedToActiveWin()) {
-				return;
-			}
-			
-			// Find the top most node that needs to be layed out.
-			var rootLayoutNode = this;
-			while(rootLayoutNode._parent != null && rootLayoutNode._hasSizeDimensions()) {
-				rootLayoutNode = rootLayoutNode._parent;
-			}
-			rootLayoutNode._markedForLayout = true;
-			
-			// Let the UI know that a layout needs to be performed if this is not part of a batch update
-			(!this._batchUpdateInProgress || force) && UI._triggerLayout(force);
-		},
+		_needsMeasuring: true,
 		
-		_triggerParentLayout: function() {
-			this._parent && this._parent._triggerLayout();
+		_triggerLayout: function(force) {
+			this._needsMeasuring = true;
+			this._isAttachedToActiveWin() && (!this._batchUpdateInProgress || force) && UI._triggerLayout(this, force);
 		},
 		
 		_hasSizeDimensions: function() {
-			return (this.width === UI.SIZE || (!isDef(this.width) && this._defaultWidth === UI.SIZE)) || 
-				(this.height === UI.SIZE || (!isDef(this.height) && this._defaultHeight === UI.SIZE));
+			return this._hasSizeWidth() || this._hasSizeHeight();
+		},
+		
+		_hasSizeHeight: function() {
+			return isNaN(this._layoutCoefficients.height.x1);
+		},
+		
+		_hasSizeWidth: function() {
+			return isNaN(this._layoutCoefficients.width.x1);
 		},
 		
 		startLayout: function() {
 			this._batchUpdateInProgress = true;
 		},
-		
+
 		finishLayout: function() {
 			this._batchUpdateInProgress = false;
-			UI._triggerLayout(true);
+			UI._triggerLayout(this, true);
 		},
-		
+
 		updateLayout: function(params) {
 			this.startLayout();
-			for(var i in params) {
+			var i = 0,
+				len = params.length;
+			for(; i < len; i++) {
 				this[i] = params[i];
 			}
 			this.finishLayout();
 		},
-		
-		_layoutParams: {
-		 	origin: {
-		 		x: 0,
-		 		y: 0
-		 	},
-		 	isParentSize: {
-		 		width: 0,
-		 		height: 0
-		 	},
-		 	boundingSize: {
-		 		width: 0,
-		 		height: 0
-		 	},
-		 	alignment: {
-		 		horizontal: "center",
-		 		vertical: "center"
-		 	}
-	 	},
 
-		_doLayout: function(params) {
-			
-			this._layoutParams = params;
-			
-			var dimensions = this._computeDimensions({
-					layoutParams: params,
-					position: {
-						left: this.left,
-						top: this.top,
-						right: this.right,
-						bottom: this.bottom,
-						center: this.center
-					},
-					size: {
-						width: this.width,
-						height: this.height
-					},
-					layoutChildren: params.layoutChildren
-				});
-				
-			if (params.positionElement) {
-				
-				// Set and store the dimensions
-				var styles = {
-						zIndex: this.zIndex | 0
-					},
-					rect  = this.rect,
-					size  = this.size;
-				rect.x = this._measuredLeft = dimensions.left;
-				isDef(this._measuredLeft) && (styles.left = unitize(this._measuredLeft));
-				rect.y = this._measuredTop = dimensions.top;
-				isDef(this._measuredTop) && (styles.top = unitize(this._measuredTop));
-				size.width = rect.width = this._measuredWidth = dimensions.width;
-				isDef(this._measuredWidth) && (styles.width = unitize(this._measuredWidth));
-				size.height = rect.height = this._measuredHeight = dimensions.height;
-				isDef(this._measuredHeight) && (styles.height = unitize(this._measuredHeight));
-				this._measuredRightPadding = dimensions.rightPadding;
-				this._measuredBottomPadding = dimensions.bottomPadding;
-				this._measuredBorderSize = dimensions.borderSize;
-				setStyle(this.domNode, styles);
-			
-				this._markedForLayout = false;
-				
-				// Run the post-layout animation, if needed
-				if (this._doAnimationAfterLayout) {
-					this._doAnimationAfterLayout = false;
-					this._doAnimation();
-				}
-				
-				// Recompute the gradient, if it exists
-				this.backgroundGradient && this._computeGradient();
-				
-				this.fireEvent("postlayout");
-			}
-			
-			return dimensions;
-		},
-
-		_computeDimensions: function(params) {
-			
-			var layoutParams = params.layoutParams,
-				boundingWidth = layoutParams.boundingSize.width,
-				boundingHeight = layoutParams.boundingSize.height,
-				position = params.position,
-				size  = params.size,
-				
-				// Compute as many sizes as possible, should be everything except SIZE values for width and height and undefined values
-				left = computeSize(position.left, boundingWidth, 1),
-				top = computeSize(position.top, boundingHeight, 1),
-				originalRight = computeSize(position.right, boundingWidth),
-				originalBottom = computeSize(position.bottom, boundingHeight),
-				centerX = position.center && computeSize(position.center.x, boundingWidth, 1),
-				centerY = position.center && computeSize(position.center.y, boundingHeight, 1),
-				width = computeSize(size.width, boundingWidth),
-				height = computeSize(size.height, boundingHeight),
-
-				// Convert right/bottom coordinates to be with respect to (0,0)
-				right = isDef(originalRight) ? (boundingWidth - originalRight) : undef,
-				bottom = isDef(originalBottom) ? (boundingHeight - originalBottom) : undef;
-			
-			is(width,"Number") && (width = Math.max(width,0));
-			is(height,"Number") && (height = Math.max(height,0));
-
-			// Unfortunately css precidence doesn't match the titanium, so we have to handle precedence and default setting ourselves
-			if (isDef(width)) {
-				if (isDef(left)) {
-					right = undef;
-				} else if (isDef(centerX)){
-					if (width === UI.SIZE) {
-						left = "calculateDefault";
-					} else {
-						left = centerX - width / 2;
-						right = undef;
-					}
-				} else if (isDef(right)) {
-					// Do nothing
-				} else {
-					// Set the default position
-					left = "calculateDefault";
-				}
-			} else {
-				if (isDef(centerX)) {
-					if (isDef(left)) {
-						width = (centerX - left) * 2;
-						right = undef;
-					} else if (isDef(right)) {
-						width = (right - centerX) * 2;
-					} else {
-						// Set the default width
-						width = computeSize(this._defaultWidth,boundingWidth);
-					}
-				} else {
-					if (isDef(left) && isDef(right)) {
-						// Do nothing
-					} else {
-						width = computeSize(this._defaultWidth,boundingWidth);
-						if(!isDef(left) && !isDef(right)) {
-							// Set the default position
-							left = "calculateDefault";
-						}
-					}
-				}
-			}
-			if (isDef(height)) {
-				if (isDef(top)) {
-					bottom = undef;
-				} else if (isDef(centerY)){
-					if(height === UI.SIZE) {
-						top = "calculateDefault";
-					} else {
-						top = centerY - height / 2;
-						bottom = undef;
-					}
-				} else if (isDef(bottom)) {
-					// Do nothing
-				} else {
-					// Set the default position
-					top = "calculateDefault";
-				}
-			} else {
-				if (isDef(centerY)) {
-					if (isDef(top)) {
-						height = (centerY - top) * 2;
-						bottom = undef;
-					} else if (isDef(bottom)) {
-						height = (bottom - centerY) * 2;
-					} else {
-						// Set the default height
-						height = computeSize(this._defaultHeight,boundingHeight);
-					}
-				} else {
-					if (isDef(top) && isDef(bottom)) {
-						// Do nothing
-					} else {
-						// Set the default height
-						height = computeSize(this._defaultHeight,boundingHeight);
-						if(!isDef(top) && !isDef(bottom)) {
-							// Set the default position
-							top = "calculateDefault";
-						}
-					}
-				}
-			}
-			
-			function getBorderSize() {
-				
-				function getValue(value) {
-					var value = parseInt(computedStyle[value]);
-					return isNaN(value) ? 0 : value;
-				}
-					
-				return {
-					left: getValue("border-left-width") + getValue("padding-left"),
-					top: getValue("border-top-width") + getValue("padding-top"),
-					right: getValue("border-right-width") + getValue("padding-right"),
-					bottom: getValue("border-bottom-width") + getValue("padding-bottom")
-				};
-			}
-			
-			// Calculate the border
-			var computedStyle = window.getComputedStyle(this.domNode),
-				borderSize = getBorderSize();
-
-			// Calculate the width/left properties if width is NOT SIZE
-			var calculateWidthAfterChildren = false,
-				calculateHeightAfterChildren = false;
-			if (width === UI.SIZE) {
-				calculateWidthAfterChildren = true;
-			} else {
-				if (width === UI.FILL) {
-					if (isDef(left)) {
-						left === "calculateDefault" && (left = 0);
-						width = boundingWidth - left;
-					} else if (isDef(right)) {
-						width = right;
-					}
-				} else if (isDef(right)) {
-					if (isDef(left)) {
-						width = right - left;
-					} else {
-						left = right - width;
-					}
-				}
-				width -= borderSize.left + borderSize.right;
-			}
-			if (height === UI.SIZE) {
-				calculateHeightAfterChildren = true;
-			} else {
-				if (height === UI.FILL) {
-					if (isDef(top)) {
-						top === "calculateDefault" && (top = 0);
-						height = boundingHeight - top;
-					} else if (isDef(bottom)) {
-						height = bottom;
-					}
-				} else if (isDef(bottom)) {
-					if (isDef(top)) {
-						height = bottom - top;
-					} else {
-						top = bottom - height;
-					}
-				}
-				height -= borderSize.top + borderSize.bottom;
-			}
-
-			if (this._getContentSize) {
-				var contentSize = this._getContentSize();
-				width === UI.SIZE && (width = contentSize.width);
-				height === UI.SIZE && (height = contentSize.height);
-			} else {
-				var computedSize;
-				if (params.layoutChildren) {
-					computedSize = this._layout._doLayout(this,is(width,"Number") ? width : boundingWidth,is(height,"Number") ? height : boundingHeight, !is(width,"Number"), !is(height,"Number"));
-				} else {
-					computedSize = this._layout._computedSize;
-				}
-				width === UI.SIZE && (width = computedSize.width);
-				height === UI.SIZE && (height = computedSize.height);
-			}
-			
-			if (calculateWidthAfterChildren) {
-				if (isDef(right) && !isDef(left)) {
-					left = right - width;
-				}
-			}
-			if (calculateHeightAfterChildren) {
-				if (isDef(bottom) && !isDef(top)) {
-					top = bottom - height;
-				}
-			}
-
-			// Set the default top/left if need be
-			if (left === "calculateDefault") {
-				if (!layoutParams.isParentSize.width) {
-					switch(layoutParams.alignment.horizontal) {
-						case "center": left = computeSize("50%",boundingWidth) - borderSize.left - (is(width,"Number") ? width : 0) / 2; break;
-						case "right": left = boundingWidth - borderSize.left - borderSize.right - (is(width,"Number") ? width : 0) / 2; break;
-						default: left = 0; // left
-					}
-				} else {
-					left = 0;
-				}
-			}
-			if (top === "calculateDefault") {
-				if (!layoutParams.isParentSize.height) {
-					switch(layoutParams.alignment.vertical) {
-						case "center": top = computeSize("50%",boundingHeight) - borderSize.top - (is(height,"Number") ? height : 0) / 2; break;
-						case "bottom": top = boundingWidth - borderSize.top - borderSize.bottom - (is(height,"Number") ? height : 0) / 2; break;
-						default: top = 0; // top
-					}
-				} else {
-					top = 0;
-				}
-			}
-			
-			// Calculate the "padding" and apply the origin
-			var leftPadding = left,
-				topPadding = top,
-				rightPadding = is(originalRight,"Number") ? originalRight : 0,
-				bottomPadding = is(originalBottom,"Number") ? originalBottom : 0,
-				origin = layoutParams.origin;
-			left += origin.x;
-			top += origin.y;
-
-			return {
-				left: Math.round(left),
-				top: Math.round(top),
-				rightPadding: Math.round(rightPadding),
-				bottomPadding: Math.round(bottomPadding),
-				width: Math.round(Math.max(width,0)),
-				height: Math.round(Math.max(height,0)),
-				borderSize: borderSize
-			};
-		},
-		
 		convertPointToView: function(point, destinationView) {
-			
 			// Make sure that both nodes are connected to the root
 			if (!this._isAttachedToActiveWin() || !destinationView._isAttachedToActiveWin()) {
 				return null;
 			}
-			
+
 			if (!point || !is(point.x,"Number") || !is(point.y,"Number")) {
 				throw new Error("Invalid point");
 			}
-			
+
 			if (!destinationView.domNode) {
 				throw new Error("Invalid destination view");
 			}
-			
+
 			function getAbsolutePosition(node, point, additive) {
 				var x = point.x,
 					y = point.y,
@@ -555,19 +340,18 @@ define(
 					
 				return {x: x, y: y};
 			}
-			
+
 			// Find this node's location relative to the root
-			return getAbsolutePosition(destinationView,getAbsolutePosition(this,point,true),false);
+			return getAbsolutePosition(destinationView, getAbsolutePosition(this,point,true),false);
 		},
 
 		// This method returns the offset of the content relative to the parent's location. 
 		// This is useful for controls like ScrollView that can move the children around relative to itself.
-		_getContentOffset: function(){
+		_getContentOffset: function() {
 			return {x: 0, y: 0};
 		},
-		
+
 		_computeGradient: function() {
-			
 			var backgroundGradient = this.backgroundGradient;
 				colors = backgroundGradient.colors,
 				type = backgroundGradient.type,
@@ -665,7 +449,7 @@ define(
 					if (!is(color.offset,"Number")) {
 						color.offset = i / (numColors - 1);
 					}
-					cssVal += "," + color.color + " " + Math.round(computeSize(100 * color.offset + "%", userGradientEnd - userGradientStart) + userGradientStart) + "px";
+					cssVal += "," + color.color + " " + Math.round(computeSize(100 * color.offset + "%", userGradientEnd - userGradientStart) + userGradientStart) + pixelUnits;
 				}
 				
 			} else if (type === "radial") {
@@ -698,7 +482,7 @@ define(
 					}
 				}
 				
-				cssVal += startPointX + "px " + startPointY + "px";
+				cssVal += startPointX + pixelUnits + " " + startPointY + pixelUnits;
 				
 				// Calculate the color stops
 				for (var i = 0; i < numColors; i++) {
@@ -712,23 +496,24 @@ define(
 					} else {
 						offset = mirrorGradient ? numColors % 2 === 1 && i === Math.floor(numColors / 2) ? color.offset : 1 - color.offset : color.offset;
 					}
-					cssVal += "," + color.color + " " + Math.round(computeSize(100 * offset + "%", endRadius - startRadius) + startRadius) + "px";
+					cssVal += "," + color.color + " " + Math.round(computeSize(100 * offset + "%", endRadius - startRadius) + startRadius) + pixelUnits;
 				}
 			}
 
-			cssVal += ")";
-
 			require.each(require.config.vendorPrefixes.css, lang.hitch(this,function(vendorPrefix) {
-				setStyle(this.domNode, "backgroundImage", vendorPrefix + cssVal);
+				setStyle(this.domNode, "backgroundImage", vendorPrefix + cssVal + ")");
 			}));
 		},
-		
+
 		_preventDefaultTouchEvent: true,
 
 		_isGestureBlocked: function(gesture) {
-			for (var recognizer in this._gestureRecognizers) {
-				var blockedGestures = this._gestureRecognizers[recognizer].blocking;
-				for (var blockedGesture in blockedGestures) {
+			var recognizer,
+				blockedGestures,
+				blockedGesture;
+			for (recognizer in this._gestureRecognizers) {
+				blockedGestures = this._gestureRecognizers[recognizer].blocking;
+				for (blockedGesture in blockedGestures) {
 					if (gesture === blockedGestures[blockedGesture]) {
 						return true;
 					}
@@ -738,52 +523,96 @@ define(
 		},
 
 		_handleTouchEvent: function(type, e) {
-			this.enabled && this.fireEvent(type, e);
+			if (this.enabled) {
+				// Normalize the location of the event.
+				var pt, x, y;
+				if (is(e.x, "Number") && is(e.y, "Number")) {
+					pt = UI._container.convertPointToView({
+						x: e.x,
+						y: e.y
+					}, e.source || this) || {};
+					x = pt.x;
+					y = pt.y;
+				}
+				e.x = x;
+				e.y = y;
+				this.fireEvent(type, e);
+			}
 		},
 		
-		_defaultBackgroundColor: undef,
+		_defaultBackgroundColor: void 0,
 		
-		_defaultBackgroundImage: undef,
+		_defaultBackgroundImage: void 0,
 		
-		_defaultBackgroundDisabledColor: undef,
+		_defaultBackgroundDisabledColor: void 0,
 		
-		_defaultBackgroundDisabledImage: undef,
+		_defaultBackgroundDisabledImage: void 0,
 		
-		_defaultBackgroundFocusedColor: undef,
+		_defaultBackgroundFocusedColor: void 0,
 		
-		_defaultBackgroundFocusedImage: undef,
+		_defaultBackgroundFocusedImage: void 0,
 		
-		_defaultBackgroundSelectedColor: undef,
+		_defaultBackgroundSelectedColor: void 0,
 		
-		_defaultBackgroundSelectedImage: undef,
+		_defaultBackgroundSelectedImage: void 0,
+		
+		_borderLeftWidth: 0,
+		
+		_borderRightWidth: 0,
+		
+		_borderTopWidth: 0,
+		
+		_borderBottomWidth: 0,
+		
+		_getBorderFromCSS: function() {
+			setTimeout(lang.hitch(this, function () {
+				var computedStyle = global.getComputedStyle(this.domNode),
+					left = parseInt(computedStyle["border-left-width"]),
+					right = parseInt(computedStyle["border-right-width"]),
+					top = parseInt(computedStyle["border-top-width"]),
+					bottom = parseInt(computedStyle["border-bottom-width"]);
+				
+				if (!(isNaN(left) || isNaN(right) || isNaN(top) || isNaN(bottom))) {
+						if (left === right && left === top && left === bottom) {
+							this.borderWidth = left;
+						} else {
+							this.borderWidth = [left, right, top, bottom];
+						}
+				}
+			}), 1);
+		},
 
 		_doBackground: function(evt) {
-			var evt = evt || {},
-				m = (evt.type || "").match(/mouse(over|out)/),
-				node = this._focus.node,
-				bi = this.backgroundImage || this._defaultBackgroundImage || "none",
-				bc = this.backgroundColor || this._defaultBackgroundColor;
+			if (!this.backgroundGradient) {
+				var evt = evt || {},
+					m = (evt.type || "").match(/mouse(over|out)/),
+					bi = this.backgroundImage || this._defaultBackgroundImage || "none",
+					bc = this.backgroundColor || this._defaultBackgroundColor,
+					repeat = this.backgroundRepeat;
 
-			if (this._touching) {
-				bc = this.backgroundSelectedColor || this._defaultBackgroundSelectedColor || bc;
-				bi = this.backgroundSelectedImage || this._defaultBackgroundSelectedImage || bi;
+				if (this._touching) {
+					bc = this.backgroundSelectedColor || this._defaultBackgroundSelectedColor || bc;
+					bi = this.backgroundSelectedImage || this._defaultBackgroundSelectedImage || bi;
+				}
+
+				m && (this._over = m[1] === "over");
+				if (!this._touching && this.focusable && this._over) {
+					bc = this.backgroundFocusedColor || this._defaultBackgroundFocusedColor || bc;
+					bi = this.backgroundFocusedImage || this._defaultBackgroundFocusedImage || bi;
+				}
+
+				if (!this.enabled) {
+					bc = this.backgroundDisabledColor || this._defaultBackgroundDisabledColor || bc;
+					bi = this.backgroundDisabledImage || this._defaultBackgroundDisabledImage || bi;
+				}
+
+				setStyle(this.domNode, {
+					backgroundColor: bc || (bi && bi !== "none" ? "transparent" : ""),
+					backgroundImage: style.url(bi),
+					backgroundRepeat: repeat ? "repeat" : "no-repeat",
+					backgroundSize: repeat ? "auto" : "100% 100%"
+				});
 			}
-
-			m && (this._over = m[1] === "over");
-			if (!this._touching && this.focusable && this._over) {
-				bc = this.backgroundFocusedColor || this._defaultBackgroundFocusedColor || bc;
-				bi = this.backgroundFocusedImage || this._defaultBackgroundFocusedImage || bi;
-			}
-
-			if (!this.enabled) {
-				bc = this.backgroundDisabledColor || this._defaultBackgroundDisabledColor || bc;
-				bi = this.backgroundDisabledImage || this._defaultBackgroundDisabledImage || bi;
-			}
-
-			!this.backgroundGradient && setStyle(node, {
-				backgroundColor: bc || (bi && bi !== "none" ? "transparent" : ""),
-				backgroundImage: style.url(bi)
-			});
 		},
 
 		_setFocusNode: function(node) {
@@ -824,114 +653,130 @@ define(
 		},
 
 		animate: function(anim, callback) {
-			this._animationData = anim;
-			this._animationCallback = callback;
-			
-			if (UI._layoutInProgress) {
-				this._doAnimationAfterLayout = true;
+			if (UI._layoutInProgress || !this._isAttachedToActiveWin()) {
+				on.once(UI,"postlayout", lang.hitch(this, function(){
+					this._doAnimation(anim, callback);
+				}));
 			} else {
-				this._doAnimation();
+				this._doAnimation(anim, callback);
 			}
 		},
-		
-		_doAnimation: function() {
-			
-			var anim = this._animationData || {},
-				callback = this._animationCallback;
-				curve = curves[anim.curve] || "ease",
-				fn = lang.hitch(this, function() {
+
+		_doAnimation: function(anim, callback) {
+			anim = anim || {};
+			var curve = curves[anim.curve] || "ease",
+				self = this,
+				fn = function() {
+
+					// It is possible for the asynchronicity of animations to leave us in a state where the element was removed from its parent mid-animation
+					if (!self._parent) {
+						return;
+					}
+
 					var transformCss = "";
 
 					// Set the color and opacity properties
-					anim.backgroundColor !== undef && (obj.backgroundColor = anim.backgroundColor);
-					anim.opacity !== undef && setStyle(this.domNode, "opacity", anim.opacity);
-					setStyle(this.domNode, "display", anim.visible !== undef && !anim.visible ? "none" : "");
-					
-					// TODO set border width here
+					anim.backgroundColor !== void 0 && (self.backgroundColor = anim.backgroundColor);
+					anim.opacity !== void 0 && setStyle(self.domNode, "opacity", anim.opacity);
+					setStyle(self.domNode, "display", anim.visible !== void 0 && !anim.visible ? "none" : "");
 
 					// Set the position and size properties
-					var dimensions = this._computeDimensions({
-						layoutParams: this._layoutParams,
-						position: {
-							left: val(anim.left, this.left),
-							top: val(anim.top, this.top),
-							right: val(anim.right, this.right),
-							bottom: val(anim.bottom, this.bottom),
-							center: anim.center || this.center
-						},
-						size: {
-							width: val(anim.width, this.width),
-							height: val(anim.height, this.height)
-						},
-						layoutChildren: false
-					});
-
-					setStyle(this.domNode, {
-						left: unitize(dimensions.left),
-						top: unitize(dimensions.top),
-						width: unitize(dimensions.width),
-						height: unitize(dimensions.height),
-						borderLeftWidth: unitize(dimensions.borderSize.left),
-						borderTopWidth: unitize(dimensions.borderSize.top),
-						borderRightWidth: unitize(dimensions.borderSize.right),
-						borderBottomWidth: unitize(dimensions.borderSize.bottom)
-					});
+					if (!["left", "top", "right", "bottom", "center", "width", "height", "borderWidth"].every(function(v) { return !isDef(anim[v]); })) {
+						self._parent._layout.calculateAnimation(self, anim); // Guaranteed a parent because of the _isAttachedToActiveWin check in animate()
+					}
 
 					// Set the z-order
-					!isDef(anim.zIndex) && setStyle(this.domNode, "zIndex", anim.zIndex);
+					!isDef(anim.zIndex) && setStyle(self.domNode, "zIndex", anim.zIndex);
 
 					// Set the transform properties
 					if (anim.transform) {
-						this._curTransform = this._curTransform ? this._curTransform.multiply(anim.transform) : anim.transform;
-						transformCss = this._curTransform.toCSS();
+						self._curTransform = self._curTransform ? self._curTransform.multiply(anim.transform) : anim.transform;
+						transformCss = self._curTransform.toCSS();
 					}
 
-					setStyle(this.domNode, "transform", transformCss);
-				});
+					setStyle(self.domNode, "transform", transformCss);
+				};
 
 			anim.duration = anim.duration || 0;
 			anim.delay = anim.delay || 0;
-			anim.transform && setStyle("transform", "");
+			anim.transform && setStyle(self.domNode, "transform", "");
 			anim.start && anim.start();
 
 			if (anim.duration > 0) {
-				// Create the transition, must be set before setting the other properties
-				setStyle(this.domNode, "transition", "all " + anim.duration + "ms " + curve + (anim.delay ? " " + anim.delay + "ms" : ""));
-				on.once(window, transitionEnd, lang.hitch(this, function(e) {
-					if (!this._destroyed) {
+				function completeAnimation(){
+					if (!self._destroyed) {
 						// Clear the transform so future modifications in these areas are not animated
-						setStyle(this.domNode, "transition", "");
+						setStyle(self.domNode, "transition", "");
 						is(anim.complete, "Function") && anim.complete();
-						is(callback, "Function") && callback();
+						is(callback, "Function") && callback.call(self);
 					}
-				}));
+				}
+				
+				// Create the transition, must be set before setting the other properties
+				if (style.supports("transition", self.domNode)) {
+					setStyle(self.domNode, "transition", "all " + anim.duration + "ms " + curve + (anim.delay ? " " + anim.delay + "ms" : ""));
+					on.once(global, transitionEnd, function(e) {
+						completeAnimation();
+					});
+				} else {
+					setTimeout(completeAnimation,anim.duration);
+				}
 				setTimeout(fn, 0);
 			} else {
 				fn();
 				is(anim.complete, "Function") && anim.complete();
-				is(callback, "Function") && callback();
+				is(callback, "Function") && callback.call(self);
 			}
 		},
 
 		_setTouchEnabled: function(value) {
+			var children = this._children,
+				i = 0,
+				len = children.length;
 			setStyle(this.domNode, "pointerEvents", value ? "auto" : "none");
 			if (!value) {
-				for (var i in this.children) {
-					this.children[i]._setTouchEnabled(value);
+				for (; i < len; i++) {
+					children[i]._setTouchEnabled(value);
 				}
 			}
 		},
-
+		
 		_measuredLeft: 0,
+		
 		_measuredTop: 0,
-		_measuredRightPadding: 0,
-		_measuredBottomPadding: 0,
+		
 		_measuredWidth: 0,
+		
 		_measuredHeight: 0,
 		
+		_measuredSandboxWidth: 0,
+		
+		_measuredSandboxHeight: 0,
+		
 		constants: {
-			size: undef,
-			rect: undef
+			size: {
+				get: function() {
+					return {
+						x: 0,
+						y: 0,
+						width: this._measuredWidth,
+						height: this._measuredHeight
+					};
+				}
+			},
+			rect: {
+				get: function() {
+					return {
+						x: this._measuredLeft,
+						y: this._measuredTop,
+						width: this._measuredWidth,
+						height: this._measuredHeight
+					};
+				}
+			},
+			parent: function() {
+				return this._parent;
+			}
 		},
 
 		properties: {
@@ -989,6 +834,8 @@ define(
 
 			backgroundImage: postDoBackground,
 
+			backgroundRepeat: postDoBackground,
+
 			backgroundSelectedColor: postDoBackground,
 
 			backgroundSelectedImage: postDoBackground,
@@ -1009,10 +856,29 @@ define(
 			},
 
 			borderWidth: {
-				set: function(value) {
-					setStyle(this.domNode, "borderWidth", unitize(value));
+				set: function(value, oldValue) {
+					
+					if (is(value,"Array")) {
+						if (value.length !== 4) {
+							return oldValue;
+						}
+						setStyle(this.domNode, {
+							borderLeftWidth: (this._borderLeftWidth = value[0]) + pixelUnits,
+							borderRightWidth: (this._borderRightWidth = value[1]) + pixelUnits,
+							borderTopWidth: (this._borderTopWidth = value[2]) + pixelUnits,
+							borderBottomWidth: (this._borderBottomWidth = value[3]) + pixelUnits
+						});
+						this._borderSet = true;
+					} else if(isNaN(value)) {
+						return oldValue;
+					} else {
+						setStyle(this.domNode, "borderWidth", value + pixelUnits);
+						this._borderLeftWidth = this._borderRightWidth = this._borderTopWidth = this._borderBottomWidth = value;
+						this._borderSet = true;
+					}
 					return value;
 				},
+				post: postLayoutPropFunction,
 				value: 0
 			},
 
@@ -1038,10 +904,14 @@ define(
 			focusable: {
 				value: false,
 				set: function(value) {
-					dom.attr[value ? "add" : "remove"](this._focus.node, "tabindex", 0);
+					dom.attr[value ? "set" : "remove"](this._focus.node, "tabindex", 0);
 					return value;
 				}
 			},
+
+			_minHeight: postLayoutProp,
+
+			_maxHeight: postLayoutProp,
 
 			height: postLayoutProp,
 
@@ -1082,6 +952,10 @@ define(
 					return this._curTransform = value;
 				}
 			},
+
+			_minWidth: postLayoutProp,
+
+			_maxWidth: postLayoutProp,
 
 			width: postLayoutProp,
 

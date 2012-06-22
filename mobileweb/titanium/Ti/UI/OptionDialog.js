@@ -1,36 +1,34 @@
-define(["Ti/_/declare", "Ti/_/Evented", "Ti/Locale", "Ti/UI", "Ti/_/css"], function(declare, Evented, Locale, UI, css) {
-
-	var undef;
+define(["Ti/_/declare", "Ti/_/lang", "Ti/_/Evented", "Ti/Locale", "Ti/UI", "Ti/_/css"],
+	function(declare, lang, Evented, Locale, UI, css) {
 
 	return declare("Ti.UI.OptionDialog", Evented, {
 
 		show: function() {
 			// Create the window and a background to dim the current view
-			var optionsWindow = this._optionsWindow = UI.createWindow();
-			var dimmingView = UI.createView({
-				backgroundColor: "black",
-				opacity: 0,
-				left: 0,
-				top: 0,
-				right: 0,
-				bottom: 0
-			});
-			optionsWindow.add(dimmingView);
-			
-			// Create the options dialog itself
-			var optionsDialog = UI.createView({
-				width: "100%",
-				height: UI.SIZE,
-				bottom: 0,
-				backgroundColor: "white",
-				layout: "vertical",
-				opacity: 0
-			});
-			optionsWindow.add(optionsDialog);
-			
+			var optionsWindow = this._optionsWindow = UI.createWindow(),
+				dimmingView = UI.createView({
+					backgroundColor: "black",
+					opacity: 0,
+					left: 0,
+					top: 0,
+					right: 0,
+					bottom: 0
+				}),
+				optionsDialog = UI.createView({
+					width: "100%",
+					height: UI.SIZE,
+					bottom: 0,
+					backgroundColor: "white",
+					layout: UI._LAYOUT_CONSTRAINING_VERTICAL,
+					opacity: 0
+				});
+
+			optionsWindow._add(dimmingView);
+			optionsWindow._add(optionsDialog);
+
 			// Add the title
-			optionsDialog.add(UI.createLabel({
-				text: this.title,
+			optionsDialog._add(UI.createLabel({
+				text: Locale._getString(this.titleid, this.title),
 				font: {fontWeight: "bold"},
 				left: 5,
 				right: 5,
@@ -38,84 +36,65 @@ define(["Ti/_/declare", "Ti/_/Evented", "Ti/Locale", "Ti/UI", "Ti/_/css"], funct
 				height: UI.SIZE,
 				textAlign: UI.TEXT_ALIGNMENT_CENTER
 			}));
-			
-			var self = this;
-			function addButton(title, index, bottom) {
+
+			// Create buttons
+			require.is(this.options, "Array") && this.options.forEach(function(opt, i, arr) {
 				var button = UI.createButton({
 					left: 5,
 					right: 5,
 					top: 5,
-					bottom: bottom,
+					bottom: i === arr.length - 1 ? 5 : 0,
 					height: UI.SIZE,
-					title: title,
-					index: index
+					title: opt,
+					index: i
 				});
-				if (index === self.destructive) {
+				if (i === this.destructive) {
 					css.add(button.domNode, "TiUIElementGradientDestructive");
-				} else if (index === self.cancel) {
+				} else if (i === this.cancel) {
 					css.add(button.domNode, "TiUIElementGradientCancel");
 				}
-				optionsDialog.add(button);
-				button.addEventListener("singletap",function(){
+				optionsDialog._add(button);
+				button.addEventListener("singletap", lang.hitch(this, function(){
 					optionsWindow.close();
-					self._optionsWindow = undef;
-					self.fireEvent("click",{
-						index: index,
-						cancel: self.cancel,
-						destructive: self.destructive
+					this._optionsWindow = void 0;
+					this.fireEvent("click", {
+						index: i,
+						cancel: this.cancel,
+						destructive: this.destructive
 					});
-				});
-			}
-			
-			// Add the buttons
-			var options = this.options,
-				i = 0;
-			if (require.is(options,"Array")) {
-				for (; i < options.length; i++) {
-					addButton(options[i], i, i === options.length - 1 ? 5 : 0);
-				}
-			}
-			
-			// Show the options dialog
-			optionsWindow.open();
-			
+				}));
+			}, this);
+
 			// Animate the background after waiting for the first layout to occur
-			setTimeout(function(){
-				optionsDialog.animate({
-					bottom: -optionsDialog._measuredHeight,
-					opacity: 1,
-					duration: 0
-				});
-				dimmingView.animate({
-					opacity: 0.5,
-					duration: 150
-				}, function(){
-					setTimeout(function(){
+			optionsDialog.addEventListener("postlayout", function() {
+				setTimeout(function(){ // We have to wait for the entire layout pass to complete and the CSS rules to be applied.
+					optionsDialog.animate({
+						bottom: -optionsDialog._measuredHeight,
+						opacity: 1,
+						duration: 0
+					});
+					dimmingView.animate({
+						opacity: 0.5,
+						duration: 200
+					}, function(){
 						optionsDialog.animate({
 							bottom: 0,
-							duration: 150
+							duration: 200
 						});
-					},0);
-				});
-			},30);
+					});
+				}, 0);
+			});
+
+			// Show the options dialog
+			optionsWindow.open();
 		},
-		
+
 		properties: {
-			
 			cancel: -1,
-			
 			destructive: -1,
-			
-			options: undef,
-			
-			title: "",
-			
-			titleid: {
-				set: function(value) {
-					this.title = Locale.getString(value);
-					return value;
-				}
-			}
+			options: void 0,
+			title: void 0,
+			titleid: void 0
 		}
 
 	});

@@ -152,7 +152,7 @@ static NSString * const kTitaniumJavascript = @"Ti.App={};Ti.API={};Ti.App._list
     [super frameSizeChanged:frame bounds:bounds];
 	if (webview!=nil)
 	{
-		[webview stringByEvaluatingJavaScriptFromString:[NSString stringWithFormat:@"document.body.style.minWidth='%fpx';document.body.style.minHeight='%fpx';",bounds.size.width-8,bounds.size.height-16]];
+		[self setViewportWidth:@"'device-width'"];
 		[TiUtils setView:webview positionRect:bounds];
 		
 		if (spinner!=nil)
@@ -160,6 +160,43 @@ static NSString * const kTitaniumJavascript = @"Ti.App={};Ti.API={};Ti.App._list
 			spinner.center = self.center;
 		}		
 	}
+}
+
+-(void) setViewportWidth:(NSString *)aWidth
+{
+    [webview stringByEvaluatingJavaScriptFromString:[NSString stringWithFormat:
+				@"(function ( inWidth ) { "
+				"var result = ''; "
+				"var viewport = null; "
+				"var content = 'width=' + inWidth + ';'; "
+				"var document_head = document.getElementsByTagName('head')[0]; "
+				"var child = document_head.firstChild; "
+				"while ( child ) { "
+				"if ( null == viewport && child.nodeType == 1 && child.nodeName == 'meta' && child.getAttribute( 'name' ) == 'viewport' ) { "
+				"viewport = child; "
+				"content = child.getAttribute( 'content' ); "
+				"if ( content.search( /width\\s=\\s[^,]+/ ) < 0 ) { "
+				"content = 'width = ' + inWidth + ';' + content; "
+				"} else { "
+				"content = content.replace( /width\\s=\\s[^,]+/ , 'width = ' + inWidth ); "
+				"} "
+				"} "
+				"child = child.nextSibling; "
+				"} "
+				"if ( null != content ) { "
+				"child = document.createElement( 'meta' ); "
+				"child.setAttribute( 'name' , 'viewport' ); "
+				"child.setAttribute( 'content' , content ); "
+				"if ( null == viewport ) { "
+				"document_head.appendChild( child ); "
+				"result = 'append viewport ' + content; "
+				"} else { "
+				"document_head.replaceChild( child , viewport ); "
+				"result = 'replace viewport ' + content; "
+				"} "
+				"} "
+				"return result; "
+				"})( %@ )" , aWidth]];
 }
 
 -(NSURL*)fileURLToAppURL:(NSURL*)url_
@@ -247,6 +284,23 @@ static NSString * const kTitaniumJavascript = @"Ti.App={};Ti.API={};Ti.App._list
 	{
 		[[self webview] setScalesPageToFit:NO];
 	}
+}
+
+-(UIScrollView*)scrollview
+{
+	UIWebView* webView = [self webview];
+	if ([webView respondsToSelector:@selector(scrollView)]) {
+		// as of iOS 5.0, we can return the scroll view
+		return [webView scrollView];
+	} else {
+		// in earlier versions, we need to find the scroll view
+		for (id subview in [webView subviews]) {
+			if ([subview isKindOfClass:[UIScrollView class]]) {
+				return (UIScrollView*)subview;
+			}
+		}
+	}
+	return nil;
 }
 
 
@@ -395,6 +449,18 @@ static NSString * const kTitaniumJavascript = @"Ti.App={};Ti.API={};Ti.App._list
 	[[self webview] setScalesPageToFit:scaling];
 }
 
+-(void)setDisableBounce_:(id)value
+{
+	BOOL bounces = ![TiUtils boolValue:value];
+	[[self scrollview] setBounces:bounces];
+}
+
+-(void)setScrollsToTop_:(id)value
+{
+	BOOL scrollsToTop = [TiUtils boolValue:value];
+	[[self scrollview] setScrollsToTop:scrollsToTop];
+}
+
 #ifndef USE_BASE_URL
 #define USE_BASE_URL	1
 #endif
@@ -451,7 +517,7 @@ static NSString * const kTitaniumJavascript = @"Ti.App={};Ti.API={};Ti.App._list
 				{
 					//step 3: try an appropriate legacy encoding (if one) -- what's that? Latin-1?
 					//at this point we're just going to fail
-					NSLog(@"[ERROR] Couldn't determine the proper encoding. Make sure this file: %@ is UTF-8 encoded.",[path lastPathComponent]);
+					DebugLog(@"[ERROR] Couldn't determine the proper encoding. Make sure this file: %@ is UTF-8 encoded.",[path lastPathComponent]);
 				}
 				else
 				{
@@ -489,7 +555,7 @@ static NSString * const kTitaniumJavascript = @"Ti.App={};Ti.API={};Ti.App._list
 				}
 				else 
 				{
-					NSLog(@"[WARN] I have no idea what the appropriate text encoding is for: %@. Please report this to Appcelerator support.",url);
+					DebugLog(@"[WARN] Could not determine correct text encoding for content: %@.",url);
 				}
 			}
 			if ((error!=nil && [error code]==261) || [mimeType isEqualToString:(NSString*)svgMimeType])
@@ -506,7 +572,7 @@ static NSString * const kTitaniumJavascript = @"Ti.App={};Ti.API={};Ti.App._list
 			}
 			else if (error!=nil)
 			{
-				NSLog(@"[ERROR] error loading file: %@. Message was: %@",path,error);
+				NSLog(@"[ERROR] Error loading file: %@. Message was: %@",path,error);
 				RELEASE_TO_NIL(url);
 			}
 		}
@@ -553,12 +619,10 @@ static NSString * const kTitaniumJavascript = @"Ti.App={};Ti.API={};Ti.App._list
 	NSString *toEncode = [NSString stringWithFormat:@"%@:%@",username,password];
 	const char *data = [toEncode UTF8String];
 	size_t len = [toEncode length];
-	
-	size_t outsize = EstimateBas64EncodedDataSize(len);
-	char *base64Result = malloc(sizeof(char)*outsize);
-    size_t theResultLength = outsize;
-	
-    bool result = Base64EncodeData(data, len, base64Result, &theResultLength);
+
+	char *base64Result;
+    size_t theResultLength;
+	bool result = Base64AllocAndEncodeData(data, len, &base64Result, &theResultLength);
 	if (result)
 	{
 		NSData *theData = [NSData dataWithBytes:base64Result length:theResultLength];
@@ -570,9 +634,7 @@ static NSString * const kTitaniumJavascript = @"Ti.App={};Ti.API={};Ti.App._list
 		{
 			[self setUrl_:[NSArray arrayWithObject:[url absoluteString]]];
 		}
-		return;
 	}    
-	free(base64Result);
 }
 
 -(NSString*)stringByEvaluatingJavaScriptFromString:(NSString *)code
@@ -611,14 +673,14 @@ static NSString * const kTitaniumJavascript = @"Ti.App={};Ti.API={};Ti.App._list
 
 	if ([self.proxy _hasListeners:@"beforeload"])
 	{
-		NSDictionary *event = newUrl == nil ? nil : [NSDictionary dictionaryWithObject:[newUrl absoluteString] forKey:@"url"];
+		NSDictionary *event = newUrl == nil ? nil : [NSDictionary dictionaryWithObjectsAndKeys:[newUrl absoluteString], @"url", NUMINT(navigationType), @"navigationType", nil];
 		[self.proxy fireEvent:@"beforeload" withObject:event];
 	}
 
 	NSString * scheme = [[newUrl scheme] lowercaseString];
 	if ([scheme hasPrefix:@"http"] || [scheme hasPrefix:@"app"] || [scheme hasPrefix:@"file"] || [scheme hasPrefix:@"ftp"])
 	{
-		NSLog(@"New scheme: %@",request);
+		DebugLog(@"[DEBUG] New scheme: %@",request);
 		if (ignoreNextRequest)
 		{
 			ignoreNextRequest = NO;

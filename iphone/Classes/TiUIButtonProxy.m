@@ -16,6 +16,7 @@
 -(void)_destroy
 {
 	RELEASE_TO_NIL(button);
+    toolbar = nil;
 	[super _destroy];
 }
 
@@ -106,7 +107,7 @@
 
 -(UIView *) parentViewForChild:(TiViewProxy *)child
 {
-	return [(TiUIButton *)[self view] button];
+	return [(TiUIButton *)[self view] viewGroupWrapper];
 }
 
 -(void)removeBarButtonView
@@ -121,13 +122,12 @@
 
 -(void)setToolbar:(id<TiToolbar>)toolbar_
 {
-	RELEASE_TO_NIL(toolbar);
-	toolbar = [toolbar_ retain];
+	toolbar = toolbar_;
 }
 
 -(id<TiToolbar>)toolbar
 {
-	return toolbar;
+	return [[toolbar retain] autorelease];
 }
 
 -(BOOL)attachedToToolbar
