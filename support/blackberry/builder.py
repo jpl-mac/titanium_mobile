@@ -83,8 +83,7 @@ class Builder(object):
 			'splashscreen':'assets/default.png'
 			}
 			try:
-				bb = Blackberry(self.tiappxml.properties['name'], self.tiappxml.properties['id'], self.ndk)
-				bb.renderTemplate(os.path.join(self.buildDir,'bar-descriptor.xml'), newConfig)
+				Blackberry.renderTemplate(os.path.join(self.buildDir,'bar-descriptor.xml'), newConfig)
 			except Exception, e:
 				print >>sys.stderr, e
 				sys.exit(1)

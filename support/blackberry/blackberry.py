@@ -82,10 +82,10 @@ class Blackberry(object):
 		templates = os.path.join(template_dir,'templates')
 		# copy bar-descriptor.xml
 		shutil.copy2(os.path.join(templates,'bar-descriptor.xml'), build_dir)
-		self.renderTemplate(os.path.join(build_dir,'bar-descriptor.xml'), configDescriptor)
+		renderTemplate(os.path.join(build_dir,'bar-descriptor.xml'), configDescriptor)
 		# copy project file
 		shutil.copy2(os.path.join(templates,'project'), os.path.join(build_dir, '.project'))
-		self.renderTemplate(os.path.join(build_dir,'.project'), configProject)
+		renderTemplate(os.path.join(build_dir,'.project'), configProject)
 
 		# import project into workspace so it can be built with mkbuild
 		self.ndk.importProject(build_dir)
@@ -96,18 +96,15 @@ class Blackberry(object):
 		#if not os.path.exists(blackberry_resources_dir):
 		#	os.makedirs(blackberry_resources_dir)
 
-	def renderTemplate(self, template, config):
+	@staticmethod
+	def renderTemplate(template, config):
 		tmpl = _loadTemplate(template)
-		f = None
 		try:
-			f = open(template, "w")
-			f.write(tmpl.render(config = config))
+			with open(template, 'w') as f:
+				f.write(tmpl.render(config = config))
 		except Exception, e:
 			print >>sys.stderr, e
 			sys.exit(1)
-		finally:
-			if f != None:
-				f.close
 
 def _loadTemplate(template):
 	return Template(filename=template, output_encoding='utf-8', encoding_errors='replace')
