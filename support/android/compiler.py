@@ -11,7 +11,6 @@ import jspacker
 from xml.sax.saxutils import escape
 from sgmllib import SGMLParser
 from csspacker import CSSPacker
-from deltafy import Deltafy
 import bindings
 
 ignoreFiles = ['.gitignore', '.cvsignore', '.DS_Store']
@@ -21,6 +20,7 @@ template_dir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filena
 sys.path.append(os.path.abspath(os.path.join(template_dir, "..", "common")))
 
 import simplejson
+from deltafy import Deltafy
 
 # class for extracting javascripts
 class ScriptProcessor(SGMLParser):
