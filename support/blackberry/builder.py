@@ -9,7 +9,7 @@
 # General builder script for staging, packaging, deploying,
 # and debugging Titanium Mobile applications on Blackberry
 #
-import os, sys
+import os, sys, shutil
 from optparse import OptionParser
 
 template_dir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
@@ -20,6 +20,8 @@ sys.path.append(os.path.join(top_support_dir, 'common'))
 from tilogger import TiLogger
 from tiapp import TiAppXML
 from blackberryndk import BlackberryNDK
+from blackberry import Blackberry
+from deltafy import Deltafy
 
 class Builder(object):
 	type2variantCpu = {'simulator' : ('o-g', 'x86'),
@@ -31,17 +33,22 @@ class Builder(object):
 		self.type = type
 		(self.variant, self.cpu) = Builder.type2variantCpu[type]
 		self.ndk = ndk 
-		project_tiappxml = os.path.join(self.top_dir, 'tiapp.xml')
+		self.project_tiappxml = os.path.join(self.top_dir, 'tiapp.xml')
+		self.tiappxml = TiAppXML(self.project_tiappxml)
+		self.name = self.tiappxml.properties['name']
+		self.buildDir = os.path.join(self.top_dir, 'build', 'blackberry', self.name)
+		self.project_deltafy = Deltafy(self.top_dir)
+
 		if useLogFile:
-			tiappxml = TiAppXML(project_tiappxml)
+			self.tiappxml = TiAppXML(self.project_tiappxml)
 		else:
 			# hide property output
 			with open(os.devnull, 'w') as nul:
 				oldStdout = sys.stdout
 				sys.stdout = nul
-				tiappxml = TiAppXML(project_tiappxml)
+				self.tiappxml = TiAppXML(self.project_tiappxml)
 				sys.stdout = oldStdout
-		self.name = tiappxml.properties['name']
+		self.name = self.tiappxml.properties['name']
 		self.buildDir = os.path.join(self.top_dir, 'build', 'blackberry', self.name)
 
 	def getPackage(self):
@@ -55,6 +62,32 @@ class Builder(object):
 			return retCode
 		info('Running')
 		
+		# Check if tiapp.xml changed since last run
+		tiapp_delta = self.project_deltafy.scan_single_file(self.project_tiappxml)
+		tiapp_changed = tiapp_delta is not None
+
+		if (tiapp_changed):
+			# regenerate bar-descriptor.xml
+			# TODO MAC: Add blackberry specific properties. Needs update in tiapp.py script
+			templates = os.path.join(template_dir,'templates')
+			shutil.copy2(os.path.join(templates,'bar-descriptor.xml'), self.buildDir)
+			newConfig = {
+			'id':self.tiappxml.properties['id'],
+			'appname':self.tiappxml.properties['name'],
+			'platformversion':self.ndk.version,
+			'description':(self.tiappxml.properties['description'] or 'not specified'),
+			'version':(self.tiappxml.properties['version'] or '1.0'),
+			'author':(self.tiappxml.properties['publisher'] or 'not specified'),
+			'category':'core.games',
+			'icon':'assets/%s' %(self.tiappxml.properties['icon'] or 'appicon.png'),
+			'splashscreen':'assets/default.png'
+			}
+			try:
+				Blackberry.renderTemplate(os.path.join(self.buildDir,'bar-descriptor.xml'), newConfig)
+			except Exception, e:
+				print >>sys.stderr, e
+				sys.exit(1)
+
 		# Change current directory to do relative operations
 		os.chdir("%s" % self.buildDir)
 		barPath = self.getPackage()
@@ -62,6 +95,7 @@ class Builder(object):
 		retCode = self.ndk.package(barPath, savePath, self.name, self.type, debugToken)
 		if retCode != 0:
 			return retCode
+
 		retCode = self.ndk.deploy(ipAddress, barPath, password)
 		return retCode
 	
