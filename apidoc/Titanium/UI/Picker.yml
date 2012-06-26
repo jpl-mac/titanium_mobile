@@ -30,7 +30,7 @@ methods:
         type: Number
     returns: 
       - type: Titanium.UI.PickerRow
-    platforms: [iphone, ipad, android, Mobile Web]
+    platforms: [iphone, ipad, android, mobileweb]
     
   - name: reloadColumn
     summary: Repopulates values for a column.
@@ -58,7 +58,7 @@ methods:
         type: Boolean
         default: true
         optional: true
-    platforms: [iphone, ipad, android, Mobile Web]
+    platforms: [iphone, ipad, android, mobileweb]
 
   - name: setValue
     summary: Sets the date and time value property for Date pickers.
@@ -112,6 +112,7 @@ methods:
 events:
   - name: change
     summary: Fired when the value of any column's row is changed.
+             For the BlackBerry only 'value' and 'type' properties are supporting.
     properties:
       - name: columnIndex
         summary: |
@@ -151,7 +152,7 @@ properties:
   - name: columns
     summary: Columns used for this picker, as an array of <Titanium.UI.PickerColumn> objects.
     type: Array<Titanium.UI.PickerColumn>
-    platforms: [iphone, ipad, android, Mobile Web]
+    platforms: [iphone, ipad, android, mobileweb]
     
   - name: countDownDuration
     summary: Duration in milliseconds used for a Countdown Timer picker.
