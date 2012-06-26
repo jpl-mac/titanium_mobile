@@ -842,7 +842,7 @@ properties:
     summary: Array of this view's child views.
     type: Array<Titanium.UI.View>
     permission: read-only
-    platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     
   - name: focusable
     summary: Whether view should be focusable while navigating with the trackball.
