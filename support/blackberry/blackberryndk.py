@@ -6,7 +6,7 @@
 #          spaces for the tools to work correctly
 
 import os, sys, platform, subprocess, pprint, shutil
-from argparse import ArgumentParser
+from optparse import OptionParser
 
 class Device:
 	''' TODO Mac: Look at how qde works with sim for this class '''
@@ -170,7 +170,7 @@ class BlackberryNDK:
 		os.chdir(oldPath)
 		return retCode
 
-	def package(self, package, appFile, projectName, type, isUnitTest = False):
+	def package(self, package, appFile, projectName, type, debugToken, isUnitTest = False):
 		# Copy all needed resources to assets
 		buildDir = os.path.abspath(os.path.join(appFile, '..', '..', '..'))
 		projectDir = os.path.abspath(os.path.join(buildDir, '..', '..', '..'))
@@ -205,6 +205,8 @@ class BlackberryNDK:
 			command.append('icon.png')
 		if type != 'deploy':
 			command.append('-devMode')
+		if debugToken != None:
+			command.extend(['-debugToken', debugToken])
 		return self._run(command)
 
 	def deploy(self, deviceIP, package, password = None):
@@ -323,7 +325,7 @@ def __runUnitTests(ipAddress = None):
 		variant = 'o-g'
 		barPath = os.path.join(project, cpu, variant, '%s.bar' % projectName)
 		savePath = os.path.join(project, cpu, variant, projectName)
-		assert 0 == ndk.package(barPath, savePath, os.path.basename(project), 'simulator', isUnitTest = True)
+		assert 0 == ndk.package(barPath, savePath, os.path.basename(project), 'simulator', None, isUnitTest = True)
 		assert os.path.exists(barPath)
 	os.chdir(oldDir)
 
@@ -344,19 +346,21 @@ def __runUnitTests(ipAddress = None):
 
 
 if __name__ == "__main__":
-	parser = ArgumentParser(description = 'Prints the NDK directory and version')
-	parser.add_argument('ndk_path', help = 'path to the blackberry ndk', nargs='?')
-	parser.add_argument('-t', '--test', help = 'run unit tests', action = 'store_true')
-	parser.add_argument('--ip_address', help='simulator IP address for unit tests')
-	args = parser.parse_args()
+
+	# Setup script usage using optparse
+	parser = OptionParser(usage='[ndk_path] [-t] [--ip_address IP ADDRESS]', description='Prints the NDK directory and version')
+
+	parser.add_option('-t', '--test', help='run unit tests', action='store_true', dest='test')
+	parser.add_option('--ip_address', help='simulator IP address for unit tests', dest='ip_address')
+	(options, args) = parser.parse_args()
 
 	try:
-		ndk = BlackberryNDK(args.ndk_path)
+		ndk = BlackberryNDK(args[0].decode('utf-8') if len(args) != 0 else None)
 		print "BLACKBERRY_NDK=%s" % ndk.getBlackberryNdk()
 		print "BLACKBERRY_NDK_VERSION=%s" % ndk.getVersion()
 	except Exception, e:
 		print >>sys.stderr, e
 		sys.exit(1)
 
-	if args.test:
-		__runUnitTests(args.ip_address.decode('utf-8') if args.ip_address != None else None)
+	if options.test:
+		__runUnitTests(options.ip_address.decode('utf-8') if options.ip_address != None else None)

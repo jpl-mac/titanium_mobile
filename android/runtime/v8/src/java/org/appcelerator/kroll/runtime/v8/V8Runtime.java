@@ -13,9 +13,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.appcelerator.kroll.KrollExternalModule;
 import org.appcelerator.kroll.KrollProxySupport;
 import org.appcelerator.kroll.KrollRuntime;
+import org.appcelerator.kroll.common.KrollSourceCodeProvider;
 import org.appcelerator.kroll.common.TiConfig;
 import org.appcelerator.kroll.common.TiDeployData;
 
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -33,6 +35,9 @@ public final class V8Runtime extends KrollRuntime implements Handler.Callback
 	private boolean libLoaded = false;
 
 	private HashMap<String, Class<? extends KrollExternalModule>> externalModules = new HashMap<String, Class<? extends KrollExternalModule>>();
+	private static HashMap<String, KrollSourceCodeProvider>
+		externalCommonJsModules = new HashMap<String, KrollSourceCodeProvider>();
+
 	private ArrayList<String> loadedLibs = new ArrayList<String>();
 	private AtomicBoolean shouldGC = new AtomicBoolean(false);
 	private long lastV8Idle;
@@ -43,16 +48,12 @@ public final class V8Runtime extends KrollRuntime implements Handler.Callback
 		boolean useGlobalRefs = true;
 		TiDeployData deployData = getKrollApplication().getDeployData();
 
-		/* TODO: Disabling this workaround for emulator to resolve issues
-		 *       seen in TIMOB-7779. Once it has been determined this workaround
-		 *       will never be needed it should be removed (TIMOB-7706).
 		if (Build.PRODUCT.equals("sdk") || Build.PRODUCT.equals("google_sdk") || Build.FINGERPRINT.startsWith("generic")) {
 			if (DBG) {
 				Log.d(TAG, "Emulator detected, storing global references in a global Map");
 			}
 			useGlobalRefs = false;
 		}
-		*/
 
 		if (!libLoaded) {
 			System.loadLibrary("stlport_shared");
@@ -71,8 +72,9 @@ public final class V8Runtime extends KrollRuntime implements Handler.Callback
 		if (deployData.isDebuggerEnabled()) {
 			dispatchDebugMessages();
 		}
-		
+
 		loadExternalModules();
+		loadExternalCommonJsModules();
 
 		Looper.myQueue().addIdleHandler(new IdleHandler() {
 			@Override
@@ -122,6 +124,13 @@ public final class V8Runtime extends KrollRuntime implements Handler.Callback
 			} catch (InstantiationException e) {
 				Log.e(TAG, "Error bootstrapping external module: " + e.getMessage(), e);
 			}
+		}
+	}
+
+	private void loadExternalCommonJsModules()
+	{
+		for (String moduleName : externalCommonJsModules.keySet()) {
+			nativeAddExternalCommonJsModule(moduleName,externalCommonJsModules.get(moduleName));
 		}
 	}
 
@@ -179,6 +188,17 @@ public final class V8Runtime extends KrollRuntime implements Handler.Callback
 		externalModules.put(libName, moduleClass);
 	}
 
+	public static void addExternalCommonJsModule(String id, Class<? extends KrollSourceCodeProvider> jsSourceProvider)
+	{
+		KrollSourceCodeProvider providerInstance;
+		try {
+			providerInstance = jsSourceProvider.newInstance();
+			externalCommonJsModules.put(id, providerInstance);
+		} catch (Exception e) {
+			Log.e(TAG, "Cannot load external CommonJS module " + id, e);
+		}
+	}
+
 	@Override
 	public void setGCFlag()
 	{
@@ -192,5 +212,6 @@ public final class V8Runtime extends KrollRuntime implements Handler.Callback
 	private native void nativeProcessDebugMessages();
 	private native boolean nativeIdle();
 	private native void nativeDispose();
+	private native void nativeAddExternalCommonJsModule(String moduleName, KrollSourceCodeProvider sourceProvider);
 }
 

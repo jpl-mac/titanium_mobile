@@ -44,13 +44,24 @@ description: |
     Use the <Titanium.Map.createAnnotation> method to create an annotation.
 extends: Titanium.Proxy
 since: "0.9"
-platforms: [android, iphone, ipad]
+platforms: [android, iphone, ipad, mobileweb]
 
 properties:
 
   - name: animate
     summary: Boolean to indicate whether the pin should animate when dropped.
+    description: |
+        Must be set before the annotation is added to the map view.
     type: Boolean
+
+  - name: draggable
+    summary: Determines whether the pin can be dragged by the user.
+    description: |
+        Must be set before the annotation is added to the map view.
+    type: Boolean
+    default: false
+    platforms: [iphone, ipad]
+    since: "2.1.0"
 
   - name: image
     summary: Image to use for the the pin.
@@ -75,7 +86,7 @@ properties:
         On iOS, you can specify a system button icon using one of the
         [SystemButton](Titanium.UI.iPhone.SystemButton) constants:
             
-            myAnnotation.leftButton = Titanium.UI.iPhone.systemButton.INFO_LIGHT;
+            myAnnotation.leftButton = Titanium.UI.iPhone.SystemButton.INFO_LIGHT;
 
         Mutually exclusive with `leftView`.
     type: [Number,String]
@@ -85,6 +96,7 @@ properties:
     description: |
         Mutually exclusive with `leftButton`.
     type: Titanium.UI.View
+    platforms: [android, iphone, ipad]
 
   - name: pinImage
     summary: Use <Titanium.Map.Annotation.image> property instead.
@@ -117,6 +129,7 @@ properties:
     description: |
         Mutually exclusive with `rightButton`.
     type: Titanium.UI.View
+    platforms: [android, iphone, ipad]
 
   - name: subtitle
     summary: Secondary title of the annotation view.
@@ -125,7 +138,6 @@ properties:
   - name: subtitleid
     summary: Key in the locale file to use for the subtitle property.
     type: String
-    platforms: [iphone, ipad]
 
   - name: title
     summary: Primary title of the annotation view.
@@ -134,7 +146,6 @@ properties:
   - name: titleid
     summary: Key in the locale file to use for the title property.
     type: String
-    platforms: [iphone, ipad]
 
 events:
   - name: click
@@ -163,7 +174,7 @@ events:
         `title`, or `subtitle`. If the user deselects the annotation by clicking elsewhere
         in the map view, `clicksource` is `null`.
 
-    platforms: [iphone, ipad]
+    platforms: [iphone, ipad, mobileweb]
 
     properties:
 

@@ -39,15 +39,17 @@ Object.defineProperty(EventEmitter.prototype, "callHandler", {
 			return;
 		}
 
-		if (data instanceof Object) {
-			data.type = type;
-		} else if (!data) {
-			data = { type: type };
+		// Create event object, copy any custom event data,
+		// and setting the "type" and "source" properties.
+		var event = { type: type, source: this };
+		if (Object.prototype.toString.call(data) === "[object Object]") {
+			kroll.extend(event, data);
 		}
-		if (handler.self && (data.source == handler.self.view)) {
-			data.source = handler.self;
+
+		if (handler.self && (event.source == handler.self.view)) {
+			event.source = handler.self;
 		}
-		handler.listener.call(this, data);
+		handler.listener.call(this, event);
 	},
 	enumerable: false
 });
@@ -69,9 +71,9 @@ Object.defineProperty(EventEmitter.prototype, "emit", {
 			}
 		}*/
 
-        if (this._hasJavaListener) {
-            this._onEventFired( type,  arguments[1] || {});
-        }
+		if (this._hasJavaListener) {
+			this._onEventFired( type,  arguments[1] || {});
+		}
 
 		if (!this._events) {
 			//kroll.log(TAG, "no events for " + type + ", not emitting");
@@ -156,12 +158,11 @@ Object.defineProperty(EventEmitter.prototype, "addListener", {
 		var listenerWrapper = {};
 		listenerWrapper.listener = listener;
 		listenerWrapper.self = view;
-        
+
 		if (!this._events[type]) {
 			// Optimize the case of one listener. Don't need the extra array object.
 			this._events[type] = listenerWrapper;
 		} else if (isArray(this._events[type])) {
-
 			// If we've already got an array, just append.
 			this._events[type].push(listenerWrapper);
 		} else {
@@ -227,6 +228,7 @@ Object.defineProperty(EventEmitter.prototype, "removeListener", {
 
 		var list = this._events[type];
 		var count = 0;
+		
 		if (isArray(list)) {
 			var position = -1;
 			// Also support listener indexes / ids
@@ -237,8 +239,7 @@ Object.defineProperty(EventEmitter.prototype, "removeListener", {
 				}
 			} else {
 				for (var i = 0, length = list.length; i < length; i++) {
-					if (list.listener[i] === listener ||
-						(list.listener[i].listener && list.listener[i].listener === listener))
+					if (list[i].listener === listener)
 					{
 						position = i;
 						break;
@@ -246,17 +247,25 @@ Object.defineProperty(EventEmitter.prototype, "removeListener", {
 				}
 			}
 
-			if (position < 0) return this;
+			if (position < 0) {
+				return this;
+			}
+			
 			list.splice(position, 1);
-			if (list.length == 0)
+			
+			if (list.length == 0) {
 				delete this._events[type];
+			}
+			
 			count = list.length;
-		} else if (list.listener === listener ||
-			(list.listener.listener && list.listener.listener === listener) ||
-			listener == 0)
-		{
+			
+		} else if (list.listener === listener || listener == 0) {
 			delete this._events[type];
+			
+		} else {
+			return this;
 		}
+		
 		if (count == 0) {
 			this._hasListenersForEventType(type, false);
 		}

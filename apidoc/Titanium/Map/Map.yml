@@ -3,8 +3,54 @@ name: Titanium.Map
 summary: The top level Map module.  The Map module is used for creating in-application native maps.
 extends: Titanium.Module
 since: "0.8"
-platforms: [android, iphone, ipad]
+platforms: [android, iphone, ipad, mobileweb]
 properties:
+
+  - name: ANNOTATION_DRAG_STATE_NONE
+    summary: |
+        Used in the [pinchangedragstate](Titanium.Map.View.pinchangedragstate) event 
+        to indicate that the annotation is not being dragged.
+    type: Number
+    permission: read-only
+    platforms: [iphone, ipad]
+    since: "2.1.0"
+
+  - name: ANNOTATION_DRAG_STATE_START
+    summary: |
+        Used in the [pinchangedragstate](Titanium.Map.View.pinchangedragstate) event 
+        to indicate that the user started dragging the annotation.
+    type: Number
+    permission: read-only
+    platforms: [iphone, ipad]
+    since: "2.1.0"
+
+  - name: ANNOTATION_DRAG_STATE_DRAG
+    summary: |
+        Used in the [pinchangedragstate](Titanium.Map.View.pinchangedragstate) event 
+        to indicate that the user moved the annotation.
+    type: Number
+    permission: read-only
+    platforms: [iphone, ipad]
+    since: "2.1.0"
+
+  - name: ANNOTATION_DRAG_STATE_CANCEL
+    summary: |
+        Used in the [pinchangedragstate](Titanium.Map.View.pinchangedragstate) event 
+        to indicate that the user canceled the drag action.
+    type: Number
+    permission: read-only
+    platforms: [iphone, ipad]
+    since: "2.1.0"
+
+  - name: ANNOTATION_DRAG_STATE_END
+    summary: |
+        Used in the [pinchangedragstate](Titanium.Map.View.pinchangedragstate) event 
+        to indicate that the user finished moving the annotation.
+    type: Number
+    permission: read-only
+    platforms: [iphone, ipad]
+    since: "2.1.0"
+
   - name: ANNOTATION_GREEN
     summary: |
         Color constant used to set a map annotation to green via the 
@@ -40,6 +86,12 @@ properties:
     summary: Used with [mapType](Titanium.Map.View.mapType) to display a street map that shows the position of all roads and some road names.
     type: Number
     permission: read-only
+    
+  - name: TERRAIN_TYPE
+    summary: Used with [mapType](Titanium.Map.View.mapType) to display the terrain that shows the position of all roads and some road names.
+    type: Number
+    permission: read-only
+    platforms: [mobileweb]
     
 examples:
   - title: Map Example
