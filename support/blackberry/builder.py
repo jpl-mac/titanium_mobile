@@ -38,7 +38,7 @@ class Builder(object):
 		self.name = self.tiappxml.properties['name']
 		self.buildDir = os.path.join(self.top_dir, 'build', 'blackberry', self.name)
 		self.project_deltafy = Deltafy(self.top_dir)
-		
+
 		if useLogFile:
 			self.tiappxml = TiAppXML(self.project_tiappxml)
 		else:

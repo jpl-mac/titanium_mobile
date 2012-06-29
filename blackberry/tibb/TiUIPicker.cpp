@@ -40,4 +40,3 @@ void TiUIPicker::onCreateStaticMembers()
 {
     TiUIBase::onCreateStaticMembers();
 }
-
