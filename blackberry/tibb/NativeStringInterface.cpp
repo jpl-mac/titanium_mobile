@@ -7,7 +7,8 @@
 
 #include "NativeStringInterface.h"
 
-#include "TiMessageStrings.h"
+#include "NativeMessageStrings.h"
+
 #include <QRegExp>
 #include <QString>
 #include <QTextStream>
@@ -37,7 +38,7 @@ Handle<Value> NativeStringInterface::format(const Arguments& args)
 {
     if (args.Length() < 1)
     {
-        ThrowException(String::New(Ti::Msg::Expected_argument_of_type_string));
+        ThrowException(String::New(Native::Msg::Expected_argument_of_type_string));
         return Undefined();
     }
 
@@ -70,12 +71,12 @@ Handle<Value> NativeStringInterface::format(const Arguments& args)
             argN = rx.cap(2).toInt(&ok);
             if (!ok)
             {
-                ThrowException(String::New(Ti::Msg::An_error_occurred_converting_to_int));
+                ThrowException(String::New(Native::Msg::An_error_occurred_converting_to_int));
                 return Undefined();
             }
             if (argN >= args.Length() || argN <= 0)
             {
-                ThrowException(String::New(Ti::Msg::Numbered_argument_exceeds_the_length_of_provided_arguments));
+                ThrowException(String::New(Native::Msg::Numbered_argument_exceeds_the_length_of_provided_arguments));
                 return Undefined();
             }
 
@@ -140,7 +141,7 @@ Handle<Value> NativeStringInterface::format(const Arguments& args)
             break;
 
         default:
-            ThrowException(String::New(Ti::Msg::INTERNAL__An_error_occurred_while_parsing_the_format_string));
+            ThrowException(String::New(Native::Msg::INTERNAL__An_error_occurred_while_parsing_the_format_string));
             break;
         }
         start = end;
@@ -200,7 +201,7 @@ static QString formatInt(QString s, Local<Value> arg)
         int v = arg->Int32Value();
         return s.sprintf(s.toLatin1().constData(), v);
     }
-    ThrowException(String::New(Ti::Msg::Expected_argument_of_type_integer));
+    ThrowException(String::New(Native::Msg::Expected_argument_of_type_integer));
     return QString();
 }
 
@@ -216,7 +217,7 @@ static QString formatUInt(QString s, Local<Value> arg)
         unsigned int v = arg->Uint32Value();
         return s.sprintf(s.toLatin1().constData(), v);
     }
-    ThrowException(String::New(Ti::Msg::Expected_argument_of_type_unsigned_integer));
+    ThrowException(String::New(Native::Msg::Expected_argument_of_type_unsigned_integer));
     return QString();
 }
 
@@ -233,7 +234,7 @@ static QString formatDouble(QString s, Local<Value> arg)
         double v = arg->NumberValue();
         return s.sprintf(s.toLatin1().constData(), v);
     }
-    ThrowException(String::New(Ti::Msg::Expected_argument_of_type_double));
+    ThrowException(String::New(Native::Msg::Expected_argument_of_type_double));
     return QString();
 }
 
@@ -270,6 +271,6 @@ static QString formatPointer(QString s, Local<Value> arg)
     {
         return s.sprintf(s.toLatin1().constData(), External::Unwrap(arg));
     }
-    ThrowException(String::New(Ti::Msg::Expected_argument_of_type_object_or_external));
+    ThrowException(String::New(Native::Msg::Expected_argument_of_type_object_or_external));
     return QString();
 }

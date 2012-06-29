@@ -10,6 +10,7 @@
 #include "NativeStringInterface.h"
 #include "TiGenericFunctionObject.h"
 #include "TiMessageStrings.h"
+#include "TiLogger.h"
 #include "TiTitaniumObject.h"
 #include "TiV8EventContainerFactory.h"
 
@@ -100,15 +101,14 @@ int TiRootObject::executeScript(NativeObjectFactory* objectFactory, const char* 
     if (compiledScript.IsEmpty())
     {
         String::Utf8Value error(tryCatch.Exception());
-        printf("%s\n", *error);
-        // TODO: log
+        TiLogger::getInstance().log(string(*error) + "\n");
         return -1;
     }
     Handle<Value>result = compiledScript->Run();
     if (result.IsEmpty())
     {
         String::Utf8Value error(tryCatch.Exception());
-        printf("%s\n", *error);
+        TiLogger::getInstance().log(string(*error) + "\n");
         return -1;
     }
     onStartMessagePump();
