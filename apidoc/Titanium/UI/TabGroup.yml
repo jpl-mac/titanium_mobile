@@ -68,6 +68,7 @@ events:
             Previous active tab. On iOS, a value of `undefined` indicates that the **More** tab was 
             the previous tab.
         type: Titanium.UI.Tab
+    platforms: [iphone, android, ipad, mobileweb]
         
   - name: close
     summary: Fired when the tab group is closed.
@@ -93,6 +94,7 @@ events:
       - name: previousTab
         summary: Previous active tab.
         type: Titanium.UI.Tab
+    platforms: [iphone, android, ipad, mobileweb]
         
   - name: open
     summary: Fired when the tab group is opened.
@@ -107,11 +109,13 @@ methods:
         
   - name: close
     summary: Closes the tab group and removes it from the UI.
+    platforms: [iphone, android, ipad, mobileweb]
 
   - name: getActiveTab
     summary: Gets the currently-active tab.
     returns:
         type: Titanium.UI.Tab
+    platforms: [iphone, android, ipad, mobileweb]
         
   - name: open
     summary: Opens the tab group and makes it visible.
@@ -123,6 +127,7 @@ methods:
       - name: tab
         summary: Tab to remove.
         type: Titanium.UI.Tab
+    platforms: [iphone, android, ipad, mobileweb]
         
   - name: setActiveTab
     summary: Selects the currently active tab in a tab group.
@@ -135,11 +140,13 @@ methods:
     summary: Gets all tabs that are managed by the tab group.
     returns: 
         type: Array<Titanium.UI.Tab>
+    platforms: [iphone, android, ipad, mobileweb]
 
 properties:
   - name: activeTab
     summary: Active tab.
     type: Titanium.UI.Tab
+    platforms: [iphone, android, ipad, mobileweb]
     
   - name: allowUserCustomization
     summary: |
@@ -169,6 +176,7 @@ properties:
     summary: |
         Tabs managed by the tab group.
     type: Array<Titanium.UI.Tab>
+    platforms: [iphone, android, ipad, mobileweb]
     
   - name: windowSoftInputMode
     summary: |
