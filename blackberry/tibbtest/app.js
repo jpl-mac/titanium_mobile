@@ -32,6 +32,7 @@ mybutton.addEventListener
 		e.source.title='Pushed!';
 		slider1.backgroundColor='#00F';
 		progress1.backgroundColor='#0F0';
+		e.source.title='Children:'+win1.children.length;
 	}
 );
 
