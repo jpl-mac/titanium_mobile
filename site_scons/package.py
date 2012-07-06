@@ -316,7 +316,7 @@ def zip_blackberry(zf,basepath,version):
 	def zipBlackberryDir(dir):
 		for root, dirs, files in os.walk(dir):
 			for file in files:
-				if not file.endswith('.a'):
+				if not (file.endswith('.a') or file.endswith('.js')):
 					continue
 				from_ = os.path.join(root, file)
 				to_ = from_.replace(blackberryDir, toPath, 1)

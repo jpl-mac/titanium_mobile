@@ -779,14 +779,12 @@ properties:
     summary: Use a date picker.
     type: Number
     permission: read-only
-    platforms: [android, iphone, ipad, mobileweb]
-    
+
   - name: PICKER_TYPE_DATE_AND_TIME
     summary: Use a date and time picker.
     type: Number
     permission: read-only
-    platforms: [android, iphone, ipad, mobileweb]
-    
+
   - name: PICKER_TYPE_PLAIN
     summary: Use a plain picker (for values other than date or time).
     type: Number
@@ -797,8 +795,7 @@ properties:
     summary: Use a time picker.
     type: Number
     permission: read-only
-    platforms: [android, iphone, ipad, mobileweb]
-    
+
   - name: PORTRAIT
     summary: Orientation constant for portrait mode orientation.
     description: |
