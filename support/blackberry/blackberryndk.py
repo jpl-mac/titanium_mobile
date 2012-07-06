@@ -179,7 +179,7 @@ class BlackberryNDK:
 		frameworkDir = os.path.join(buildDir, 'framework')
 		if os.path.exists(frameworkDir):
 			shutil.rmtree(frameworkDir)
-		shutil.copytree(os.path.join(templateDir, 'tibb', 'src', 'javascript'), frameworkDir)
+		shutil.copytree(os.path.join(templateDir, 'tibb', 'titanium', 'javascript'), frameworkDir)
 
 		# Copy all needed resources to assets
 		assetsDir = os.path.join(buildDir, 'assets')
