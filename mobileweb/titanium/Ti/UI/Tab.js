@@ -1,105 +1,124 @@
-define(["Ti/_/declare", "Ti/_/lang", "Ti/UI/View", "Ti/_/dom", "Ti/Locale", "Ti/UI"],
-	function(declare, lang, View, dom, Locale, UI) {
+define(["Ti/_/declare", "Ti/UI/View", "Ti/_/dom", "Ti/Locale", "Ti/UI", "Ti/UI/MobileWeb"],
+	function(declare, View, dom, Locale, UI, MobileWeb) {
+
+	var postTitle = {
+			post: function() {
+				this._tabTitle.text = this._getTitle();
+			}
+		},
+		UI_FILL = UI.FILL,
+		UI_SIZE = UI.SIZE;
 
 	return declare("Ti.UI.Tab", View, {
 
 		constructor: function(args) {
-			this._windows = [];
-
-			this._contentContainer = dom.create("div", {
-				className: "TiUITabContentContainer",
-				style: {
+			var win = args && args.window,
+				container = UI.createView({
+					layout: UI._LAYOUT_CONSTRAINING_VERTICAL,
 					width: "100%",
-					height: "100%",
-					display: ["-webkit-box", "-moz-box"],
-					boxOrient: "horizontal",
-					boxPack: "center",
-					boxAlign: "center"
+					height: UI_SIZE
+				}),
+				navGroup = this._tabNavigationGroup = MobileWeb.createNavigationGroup({ window: win, _tab: this });;
+
+			this._add(container);
+
+			container._add(this._tabIcon = UI.createImageView({
+				height: UI_SIZE,
+				width: UI_SIZE
+			}));
+
+			container._add(this._tabTitle = UI.createLabel({
+				width: "100%",
+				wordWrap: true,
+				textAlign: UI.TEXT_ALIGNMENT_CENTER
+			}));
+
+			win && require.on(this, "singletap", this, function(e) {
+				var tabGroup = this._tabGroup;
+				if (tabGroup) {
+					if (tabGroup.activeTab === this) {
+						navGroup._reset();
+					} else {
+						tabGroup.activeTab = this;
+					}
 				}
-			}, this.domNode);
+			});
+		},
 
-			this._tabIcon = dom.create("img", {
-				className: "TiUITabImage"
-			}, this._contentContainer);
+		_defaultWidth: UI_FILL,
 
-			this._tabTitle = dom.create("div", {
-				className: "TiUITabTitle",
-				style: {
-					whiteSpace: "nowrap"
+		_defaultHeight: UI_FILL,
+
+		open: function(win, options) {
+			this._tabNavigationGroup.open(win, options);
+		},
+
+		close: function(win, options) {
+			this._tabNavigationGroup.close(win, options);
+		},
+
+		_focus: function() {
+			this.fireEvent("focus", this._tabGroup._getEventData());
+			var win = this._tabNavigationGroup._getTopWindow();
+			if (win) {
+				if (this._tabGroup && this._tabGroup._opened && !win._opened) {
+					win._opened = 1;
+					win.fireEvent("open");
 				}
-			}, this._contentContainer);
-
-			require.on(this.domNode, "click", this, function(e) {
-				this._tabGroup && this._tabGroup.setActiveTab(this);
-			});
+				win._handleFocusEvent();
+			}
 		},
 
-		open: function(win, args) {
-			win = win || this.window;
-			this._windows.push(win);
-			win.activeTab = this;
-
-			// Apply a background if one is not already set
-			lang.isDef(win.backgroundColor) || (win.backgroundColor = "white");
-
-			// Open the window and animate it in
-			var originalOpacity = lang.isDef(win.opacity) ? win.opacity : 1;
-			win.opacity = 0;
-			win.open(args);
-			win.animate({opacity: originalOpacity, duration: 250}, function(){
-				win.opacity = originalOpacity;
-			});
+		_blur: function() {
+			var win = this._tabNavigationGroup._getTopWindow();
+			win && win._handleBlurEvent();
+			this.fireEvent("blur", this._tabGroup._getEventData());
 		},
 
-		close: function(args) {
-			var win = this._windows.pop();
-			win && win.animate({opacity: 0, duration: 250}, function(){
-				win.close(args);
-			});
+		_getTitle: function() {
+			return Locale._getString(this.titleid, this.title);
 		},
 
-		_defaultWidth: UI.FILL,
-		
-		_defaultHeight: UI.FILL,
-		
-		_tabGroup: null,
+		_setTabGroup: function(tabGroup) {
+			this._tabGroup = tabGroup;
+			this._tabNavigationGroup.navBarAtTop = tabGroup.tabsAtTop;
+			this._win && (this._win.tabGroup = tabGroup);
+		},
+
+		_setNavBarAtTop: function(value) {
+			this._tabNavigationGroup.navBarAtTop = value;
+		},
 
 		properties: {
 			active: {
-				get: function(value) {
+				get: function() {
 					return this._tabGroup && this._tabGroup.activeTab === this;
+				},
+				post: function(value) {
+					var tabGroup = this._tabGroup,
+						navGroup = this._tabNavigationGroup,
+						doEvents = tabGroup._focused && tabGroup._opened;
+					if (value) {
+						navGroup.navBarAtTop = tabGroup.tabsAtBottom;
+						navGroup._updateTitle();
+						tabGroup._addTabContents(navGroup);
+						doEvents && this._focus();
+					} else {
+						tabGroup._removeTabContents(navGroup);
+						doEvents && this._blur();
+					}
 				}
 			},
 
 			icon: {
 				set: function(value) {
-					return this._tabIcon.src = value;
+					return this._tabIcon.image = value;
 				}
 			},
 
-			title: {
-				set: function(value) {
-					return this._tabTitle.innerHTML = value;
-				}
-			},
+			title: postTitle,
 
-			titleid: {
-				set: function(value) {
-					this.title = Locale.getString(value);
-					return value;
-				}
-			},
-
-			window: {
-				get: function(value) {
-					var w = this._windows;
-					return value ? value : w.length ? w[0] : null;
-				},
-				set: function(value) {
-					this._windows.unshift(value);
-					return value;
-				}
-			}
+			titleid: postTitle
 		}
 
 	});

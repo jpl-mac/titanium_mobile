@@ -24,11 +24,13 @@ import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.proxy.ActivityProxy;
+import org.appcelerator.titanium.util.TiRHelper;
 import org.appcelerator.titanium.util.TiUrl;
 
 import android.app.Activity;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Pair;
 
 
 /**
@@ -77,6 +79,8 @@ public class KrollProxy implements Handler.Callback, KrollProxySupport
 	protected Handler mainHandler = null;
 	protected Handler runtimeHandler = null;
 
+	private KrollDict langConversionTable = null;
+
 	public static final String PROXY_ID_PREFIX = "proxy$";
 
 
@@ -104,6 +108,7 @@ public class KrollProxy implements Handler.Callback, KrollProxySupport
 		creationUrl = new TiUrl(baseCreationUrl);
 		this.listenerIdGenerator = new AtomicInteger(0);
 		this.eventListeners = Collections.synchronizedMap(new HashMap<String, HashMap<Integer, KrollEventCallback>>());
+		this.langConversionTable = getLangConversionTable();
 	}
 
 	private void setupProxy(KrollObject object, Object[] creationArguments, TiUrl creationUrl)
@@ -223,6 +228,135 @@ public class KrollProxy implements Handler.Callback, KrollProxySupport
 	}
 
 	/**
+	 * @return the language conversion table used to load localized values for certain properties from the locale files.
+	 *	For each localizable property, such as "title," the proxy should define a second property, such as "titleid", used to specify a
+	 *	localization key for that property. If the user specifies a localization key in "titleid", the corresponding localized text from the locale file 
+	 *	is used for "title."
+	 *
+	 *	Subclasses should override this method to return a table mapping localizable properties to the corresponding localization key properties.
+	 *
+	 *	For example, if the proxy has two properties, "title" and "text", and the corresponding localization key properties are "titleid" and "textid", this might look like:
+	 *	</br>
+	 *
+	 *	<pre><code>protected KrollDict getLangConversionTable()
+	 *{
+	 *	KrollDict table = new KrollDict();
+	 *	table.put("title", "titleid");
+	 *	table.put("text", "textid");
+	 *	return table;
+	 *} </pre> </code>
+	 *
+	 * @module.api
+	 *
+	 */
+	protected KrollDict getLangConversionTable()
+	{
+		return null;
+	}
+
+	/**
+	 * Handles initialization of the proxy's locale string properties.
+	 *
+	 * @see #getLangConversionTable()
+	 */
+	private void handleLocaleProperties()
+	{
+		if (langConversionTable == null) {
+			return;
+		}
+
+		/*
+		 * Iterate through the language conversion table.
+		 * This table maps target properties to their locale lookup property.
+		 * Example: title -> titleid
+		 *
+		 * The lookup identifier stored in the locale property (titleid) will be used
+		 * to query the locale strings file to get the localized value.
+		 * This localized value will be set to the targeted property (title).
+		 */
+		for (Map.Entry<String, Object> entry : langConversionTable.entrySet()) {
+			// Get the lookup identifier stored in the locale property.
+			String localeProperty = entry.getValue().toString();
+			String lookupId = properties.getString(localeProperty);
+			if (lookupId == null) {
+				// If no locale lookup identifier is provided, skip this entry.
+				continue;
+			}
+
+			// Lookup the localized string from the locale file.
+			String localizedValue = getLocalizedText(lookupId);
+			if (localizedValue == null) {
+				// If there is no localized value for this identifier,
+				// log a warning and skip over the entry.
+				Log.w(TAG, "No localized string found for identifier: " + lookupId);
+				continue;
+			}
+
+			// Set the localized value to the targeted property.
+			String targetProperty = entry.getKey();
+			setProperty(targetProperty, localizedValue);
+		}
+	}
+
+	/**
+	 * Updates the lookup identifier value of a locale property.
+	 * This will also update the targeted value with the string found
+	 * using the new lookup identifier.
+	 *
+	 * @param localeProperty name of the locale property (example: titleid)
+	 * @param newLookupId the new lookup identifier
+	 * @return a pair containing the name of the target property which was updated and the new value set on it.
+	 */
+	private Pair<String, String> updateLocaleProperty(String localeProperty, String newLookupId)
+	{
+		if (langConversionTable == null) {
+			return null;
+		}
+
+		properties.put(localeProperty, newLookupId);
+
+		// Determine which localized property this locale property updates.
+		for (Map.Entry<String, Object> entry : langConversionTable.entrySet()) {
+			if (entry.getValue().toString().equals(localeProperty)) {
+				String targetProperty = entry.getKey();
+				String localizedValue = getLocalizedText(newLookupId);
+				setProperty(targetProperty, localizedValue);
+
+				return Pair.create(targetProperty, localizedValue);
+			}
+		}
+
+		// If we reach this point, the provided locale property is not valid.
+		return null;
+	}
+
+	/**
+	 * Return true if the given property is a locale property.
+	 * @param propertyName name of the property to check (ex: titleid)
+	 * @return true if this property is a locale property
+	 */
+	private boolean isLocaleProperty(String propertyName)
+	{
+		return propertyName.endsWith("id");
+	}
+
+	/**
+	 * Looks up a localized string given an identifier.
+	 *
+	 * @param lookupId the identifier of the localized value to look up.
+	 * @return the localized string if found, otherwise null.
+	 */
+	private String getLocalizedText(String lookupId)
+	{
+		try {
+			int resid = TiRHelper.getResource("string." + lookupId);
+			return getActivity().getString(resid);
+		} catch (TiRHelper.ResourceNotFoundException e) {
+			return null;
+		}
+	}
+
+	/**
 	 * Handles the creation {@link KrollDict} passed into the create method for this proxy.
 	 * This is usually the first (and sometimes only) argument to the proxy's create method.
 	 * 
@@ -238,6 +372,7 @@ public class KrollProxy implements Handler.Callback, KrollProxySupport
 
 		properties.putAll(dict);
 		handleDefaultValues();
+		handleLocaleProperties();
 
 		if (modelListener != null) {
 			modelListener.processProperties(properties);
@@ -554,9 +689,21 @@ public class KrollProxy implements Handler.Callback, KrollProxySupport
 
 	public void onPropertyChanged(String name, Object value)
 	{
-		Object oldValue = properties.get(name);
-		properties.put(name, value);
-		firePropertyChanged(name, oldValue, value);
+		String propertyName = name;
+		Object newValue = value;
+
+		if (isLocaleProperty(name)) {
+			Log.i(TAG, "Updating locale: " + name);
+			Pair<String, String> update = updateLocaleProperty(name, value.toString());
+			if (update != null) {
+				propertyName = update.first;
+				newValue = update.second;
+			}
+		}
+
+		Object oldValue = properties.get(propertyName);
+		properties.put(propertyName, newValue);
+		firePropertyChanged(propertyName, oldValue, newValue);
 	}
 
 	public void onPropertiesChanged(Object[][] changes)
@@ -691,11 +838,29 @@ public class KrollProxy implements Handler.Callback, KrollProxySupport
 	// TODO: count should be removed since we no longer report it.
 	//       These methods only gets called now when the first listener
 	//       is added or the last one has been removed.
+	/**
+	 * Called when a event listener is added to the proxy
+	 * 
+	 * @param event			the event that the listener has been added for
+	 * @param count			the number of listeners for this event.  should not be used as this value 
+	 * 						is not reported correctly
+	 * @param proxy			the proxy that the event was added to.  otherwise known as "this"
+	 * @return				<code>void</code>
+	 */
 	protected void eventListenerAdded(String event, int count, KrollProxy proxy)
 	{
 		modelListener.listenerAdded(event, count, this);
 	}
 
+	/**
+	 * Called when a event listener is removed from the proxy
+	 * 
+	 * @param event			the event that the listener has been removed for
+	 * @param count			the number of listeners for this event.  should not be used as this value 
+	 * 						is not reported correctly
+	 * @param proxy			the proxy that the event was removed from.  otherwise known as "this"
+	 * @return				<code>void</code>
+	 */
 	protected void eventListenerRemoved(String event, int count, KrollProxy proxy)
 	{
 		modelListener.listenerRemoved(event, count, this);

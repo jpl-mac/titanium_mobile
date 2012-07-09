@@ -30,6 +30,7 @@ methods:
         type: Number
     returns: 
       - type: Titanium.UI.PickerRow
+    platforms: [iphone, ipad, android, mobileweb]
     
   - name: reloadColumn
     summary: Repopulates values for a column.
@@ -57,13 +58,14 @@ methods:
         type: Boolean
         default: true
         optional: true
+    platforms: [iphone, ipad, android, mobileweb]
 
   - name: setValue
     summary: Sets the date and time value property for Date pickers.
     description: |
         Applicable to the <Titanium.UI.PICKER_TYPE_DATE> and <Titanium.UI.PICKER_TYPE_DATE_AND_TIME> 
         picker types.
-    platforms: [iphone, ipad]
+    platforms: [iphone, ipad, blackberry]
     parameters:
       - name: date
         summary: A Javascript `Date` object.
@@ -110,6 +112,7 @@ methods:
 events:
   - name: change
     summary: Fired when the value of any column's row is changed.
+             For the BlackBerry only 'value' and 'type' properties are supporting.
     properties:
       - name: columnIndex
         summary: |
@@ -149,6 +152,7 @@ properties:
   - name: columns
     summary: Columns used for this picker, as an array of <Titanium.UI.PickerColumn> objects.
     type: Array<Titanium.UI.PickerColumn>
+    platforms: [iphone, ipad, android, mobileweb]
     
   - name: countDownDuration
     summary: Duration in milliseconds used for a Countdown Timer picker.
@@ -185,6 +189,12 @@ properties:
     description: |
         Applicable to <Titanium.UI.PICKER_TYPE_DATE>, <Titanium.UI.PICKER_TYPE_TIME> and 
         <Titanium.UI.PICKER_TYPE_DATE_AND_TIME> picker types.
+        
+        Locale must be represented as a combination of ISO 2-letter language and country codes. 
+        For example, `en-US` or `en-GB`. See the 
+        [ISO 639-1](http://en.wikipedia.org/wiki/ISO_639-1) and 
+        [ISO 3166-1 alpha-2](http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements) 
+        sections of wikipedia for reference.
         
         On iOS, the system locale is always used.
     type: String

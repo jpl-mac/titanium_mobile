@@ -21,6 +21,14 @@ methods:
             var number = 21;
             var message = String.format('Welcome, %s! You are visitor number %d', forename, number);
             Ti.API.info(message);
+
+        #### BlackBerry
+        `%a` and `%A` are treated as `%f` and `%F`.
+
+        Supported length modifiers are `ll` for integer specifiers and `L` for double specifiers.
+        `j`, `t` and `L` (for integer) are not supported, others have no effect.
+
+        '*' and '*m$' for width and precision are not supported.  If they are used the behaviour is undefined.
     returns:
         type: String
         summary: Formatted string.
@@ -32,13 +40,14 @@ methods:
       - name: value
         summary: |
             Comma-separated list of one or more values to substitute into the `formatString`. 
-            Optional on Android.
+            Optional on Android and BlackBerry.
         type: [ String, Number ]
         
   - name: formatCurrency
     summary: |
         Formats a number into the currency format, including currency symbol, of the locale 
         configured for the system.
+    description: On BlackBerry NYI
     returns:
         type: String
         summary: Formatted, localized string.
@@ -49,6 +58,7 @@ methods:
         
   - name: formatDate
     summary: Formats a date into the date format of the locale configured for the system.
+    description: On BlackBerry NYI
     returns:
         type: String
         summary: Formatted, localized string.
@@ -67,6 +77,7 @@ methods:
     summary: |
         Formats a number into the decimal format, including decimal symbol, of the locale 
         configured for the system.
+    description: On BlackBerry NYI
     returns:
         type: String
         summary: |
@@ -89,7 +100,10 @@ methods:
 
   - name: formatTime
     summary: Formats a date into the time format of the locale configured for the system.
-    description: On Android, this method returns the short format.
+    description: |
+        On Android, this method returns the short format.
+
+        On BlackBerry: NYI
     returns:
         type: String
         summary: Formatted, localized string.

@@ -247,6 +247,7 @@ def zip_iphone_ipad(zf,basepath,platform,version,version_tag):
 	zip_dir(zf,os.path.join(top_dir,'iphone','Classes'),basepath+'/iphone/Classes',subs)
 	zip_dir(zf,os.path.join(top_dir,'iphone','headers'),basepath+'/iphone/headers',subs)
 	zip_dir(zf,os.path.join(top_dir,'iphone','iphone'),basepath+'/iphone/iphone',subs)
+	zf.write(os.path.join(top_dir, 'iphone', 'AppledocSettings.plist'),'%s/iphone/AppledocSettings.plist'%(basepath))
 	
 	ticore_lib = os.path.join(top_dir,'iphone','lib')
 	
@@ -315,7 +316,7 @@ def zip_blackberry(zf,basepath,version):
 	def zipBlackberryDir(dir):
 		for root, dirs, files in os.walk(dir):
 			for file in files:
-				if not file.endswith('.a'):
+				if not (file.endswith('.a') or file.endswith('.js')):
 					continue
 				from_ = os.path.join(root, file)
 				to_ = from_.replace(blackberryDir, toPath, 1)

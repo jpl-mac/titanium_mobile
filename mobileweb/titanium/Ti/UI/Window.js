@@ -1,12 +1,14 @@
-define(["Ti/_/declare", "Ti/Gesture", "Ti/Locale", "Ti/_/UI/SuperView", "Ti/UI"], function(declare, Gesture, Locale, SuperView, UI) {
+define(["Ti/_/declare", "Ti/Gesture", "Ti/Locale", "Ti/_/UI/SuperView", "Ti/UI"],
+	function(declare, Gesture, Locale, SuperView, UI) {
 
-	var undef;
+	var UI_FILL = UI.FILL,
+		UI_SIZE = UI.SIZE;
 
 	return declare("Ti.UI.Window", SuperView, {
 	
-		_defaultWidth: UI.FILL,
+		_defaultWidth: UI_FILL,
 
-		_defaultHeight: UI.FILL,
+		_defaultHeight: UI_FILL,
 
 		postscript: function() {
 			if (this.url) {
@@ -17,31 +19,42 @@ define(["Ti/_/declare", "Ti/Gesture", "Ti/Locale", "Ti/_/UI/SuperView", "Ti/UI"]
 			}
 		},
 
-		open: function(args) {
-			if (this.modal) {
-				UI._addWindow(this._modalWin = UI.createView({
-					backgroundColor: UI.backgroundColor,
-					backgroundImage: UI.backgroundImage
-				})).show();
-			}
-			SuperView.prototype.open.call(this, args);
-		},
-
-		close: function(args) {
-			var mw = this._modalWin;
-			if (mw) {
-				UI._removeWindow(mw).destroy();
-				this._modalWin = null;
-			}
-			SuperView.prototype.close.call(this, args);
+		_getTitle: function() {
+			return Locale.getString(this.titleid, this.title);
 		},
 
 		constants: {
-			url: undef
+			url: void 0
 		},
 
 		properties: {
-			modal: undef,
+			modal: {
+				set: function(value, oldValue) {
+					if (value !== oldValue) {
+						if (value) {
+							var parentContainer = this._modalParentContainer = UI.createView();
+							parentContainer._add(UI.createView({
+								backgroundColor: "#000",
+								opacity: 0.5
+							}));
+							parentContainer._add(this._modalContentContainer = UI.createView({
+								width: UI_SIZE,
+								height: UI_SIZE
+							}));
+							this._modalContentContainer.add(this); // We call the normal .add() method to hook into the views proper add mechanism
+						} else if (this._modalParentContainer) {
+							this._modalParentContainer._opened && this._modalParentContainer.close();
+							this._modalContentContainer.remove(this);
+							this._modalParentContainer = null;
+							if (this._opened) {
+								this.close(); // Close to reset state...at this point it's not attached to the window anymore, but thinks it's still open
+								this.open();
+							}
+						}
+					}
+					return value;
+				}
+			},
 
 			orientation: {
 				get: function() {
@@ -49,18 +62,9 @@ define(["Ti/_/declare", "Ti/Gesture", "Ti/Locale", "Ti/_/UI/SuperView", "Ti/UI"]
 				}
 			},
 
-			title: {
-				set: function(value) {
-					return this.setWindowTitle(value);
-				}
-			},
+			title: void 0,
 
-			titleid: {
-				set: function(value) {
-					this.title = Locale.getString(value);
-					return value;
-				}
-			}
+			titleid: void 0
 		}
 
 	});

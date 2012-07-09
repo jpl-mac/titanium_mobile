@@ -11,7 +11,7 @@
 
 import os, sys, shutil
 from blackberryndk import BlackberryNDK
-from argparse import ArgumentParser
+from optparse import OptionParser
 
 template_dir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
 top_support_dir = os.path.dirname(template_dir)
@@ -25,27 +25,6 @@ class Blackberry(object):
 		self.name = name
 		self.id = appid
 		self.ndk = bbndk
-
-		# TODO MAC: the bar-descriptor likely needs to be regenerated at
-		# 	build time to capture changes to tiapp.xml
-		# Configuration for the bar-descriptor.xml file
-		self.configDescriptor = {
-			'id':self.id,
-			'appname':self.name,
-			'platformversion':self.ndk.version,
-			'description':None,
-			'version':'1.0',
-			'author':'Appcelerator Titanium Mobile', # TODO MAC: Find out how validate the author
-			'category':'core.games',                 # TODO MAC: Find out how validate the category
-			'icon':'assets/appicon.png',
-			'splashscreen':'assets/default.png'
-		}
-
-		# Configuration for the project file
-		self.configProject = {
-			'appname':self.name,
-			'buildlocation':None # TODO MAC: Find out how specify the build location
-		}
 
 	def create(self, dir):
 		project_dir = os.path.join(dir, self.name)
@@ -80,14 +59,33 @@ class Blackberry(object):
 				print >> sys.stderr, e
 				sys.exit(1)
 
+		# Configuration for the bar-descriptor.xml file
+		configDescriptor = {
+			'id':self.id,
+			'appname':self.name,
+			'platformversion':self.ndk.version,
+			'description':'not specified',
+			'version':'1.0',
+			'author':'not specified',
+			'category':'core.games',                 # TODO MAC: Find out how validate the category
+			'icon':'assets/appicon.png',
+			'splashscreen':'assets/default.png'
+		}
+
+		# Configuration for the project file
+		configProject = {
+			'appname':self.name,
+			'buildlocation':None # TODO MAC: Find out how specify the build location
+		}
+
 		# add replaced templates: bar-descriptor.xml, .project files
 		templates = os.path.join(template_dir,'templates')
 		# copy bar-descriptor.xml
 		shutil.copy2(os.path.join(templates,'bar-descriptor.xml'), build_dir)
-		_renderTemplate(os.path.join(build_dir,'bar-descriptor.xml'), self.configDescriptor)
+		renderTemplate(os.path.join(build_dir,'bar-descriptor.xml'), configDescriptor)
 		# copy project file
 		shutil.copy2(os.path.join(templates,'project'), os.path.join(build_dir, '.project'))
-		_renderTemplate(os.path.join(build_dir,'.project'), self.configProject)
+		renderTemplate(os.path.join(build_dir,'.project'), configProject)
 
 		# import project into workspace so it can be built with mkbuild
 		self.ndk.importProject(build_dir)
@@ -98,18 +96,15 @@ class Blackberry(object):
 		#if not os.path.exists(blackberry_resources_dir):
 		#	os.makedirs(blackberry_resources_dir)
 
-def _renderTemplate(template, config):
-	tmpl = _loadTemplate(template)
-	f = None
-	try:
-		f = open(template, "w")
-		f.write(tmpl.render(config = config))
-	except Exception, e:
-		print >>sys.stderr, e
-		sys.exit(1)
-	finally:
-		if f != None:
-			f.close
+	@staticmethod
+	def renderTemplate(template, config):
+		tmpl = _loadTemplate(template)
+		try:
+			with open(template, 'w') as f:
+				f.write(tmpl.render(config = config))
+		except Exception, e:
+			print >>sys.stderr, e
+			sys.exit(1)
 
 def _loadTemplate(template):
 	return Template(filename=template, output_encoding='utf-8', encoding_errors='replace')
@@ -148,47 +143,63 @@ def __unitTestTraceback():
 
 def __runUnitTests():
 	from tiunittest import UnitTest
-
-	ndk = None if args.test == True else args.test
+	ndk = options.ndk.decode("utf-8") if options.ndk != None else None
 
 	bbndk = BlackberryNDK(ndk)
 	bb = Blackberry('TemplateTest', 'com.macadamian.template', bbndk)
 
+	configDescriptor = {
+		'id':bb.id,
+		'appname':bb.name,
+		'platformversion':bb.ndk.version,
+		'description':'not specified',
+		'version':'1.0',
+		'author':'not specified',
+		'category':'core.games',                 # TODO MAC: Find out how validate the category
+		'icon':'assets/appicon.png',
+		'splashscreen':'assets/default.png'
+	}
+
+	# Configuration for the project file
+	configProject = {
+		'appname':bb.name,
+		'buildlocation':None # TODO MAC: Find out how specify the build location
+	}
+
 	with UnitTest('Test template replacing on bar-descriptor.xml file..'):
-		passed =__runTemplatingDescriptorTest(bb.configDescriptor)
+		passed =__runTemplatingDescriptorTest(configDescriptor)
 		assert passed
 
 	with UnitTest('Test template replacing on .project file..'):
-		passed = __runTemplatingProjectTest(bb.configProject)
+		passed = __runTemplatingProjectTest(configProject)
 		assert passed
 
 	print '\nFinished Running Unit Tests'
 	UnitTest.printDetails()
 
-
 if __name__ == '__main__':
 	# This script is only meant to be invoked from project.py
-	# Setup script usage
-	parser = ArgumentParser(description = 'Creates blackberry project')
-	parser.add_argument('name', help = 'Blackberry project name', nargs = '?')
-	parser.add_argument('id', help = 'Blackberry project id', nargs = '?')
-	parser.add_argument('dir', help = 'Blackberry project directory', nargs = '?')
-	parser.add_argument('ndk', help = 'Blackberry NDK path', nargs = '?')
-	parser.add_argument('-t', '--test', help = 'run unit tests', metavar = 'ndk_location', nargs = '?', const = True)
-	args = parser.parse_args()
+	# Setup script usage using optparse
+	parser = OptionParser(usage='--name name --id id --dir dir [--ndk ndk] [-t]', description='Creates blackberry project')
+	parser.add_option('--name', help='Blackberry project name', dest='name')
+	parser.add_option('--id', help='Blackberry project id', dest='id')
+	parser.add_option('--dir', help='Blackberry project directory', dest='dir')
+	parser.add_option('--ndk', help='Blackberry NDK path', dest='ndk')
+	parser.add_option('-t', '--test', help='run unit tests', dest='test', action='store_true')
+	(options, args) = parser.parse_args()
 
-	if args.test:
+	if options.test:
 		__runUnitTests()
 		sys.exit(0)
 	else:
-		if args.name == None or args.id == None or args.dir == None or args.ndk == None:
+		if options.name == None or options.id == None or options.dir == None:
 			parser.print_usage()
 			sys.exit(1)
 
 	try:
-		bbndk = BlackberryNDK(args.ndk.decode("utf-8"))
-		bb = Blackberry(args.name.decode("utf-8"), args.id.decode("utf-8"), bbndk)
-		bb.create(args.dir.decode("utf-8"))
+		bbndk = BlackberryNDK(options.ndk.decode("utf-8") if options.ndk != None else None)
+		bb = Blackberry(options.name.decode("utf-8"), options.id.decode("utf-8"), bbndk)
+		bb.create(options.dir.decode("utf-8"))
 	except Exception, e:
 		print >>sys.stderr, e
 		sys.exit(1)
