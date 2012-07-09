@@ -24,14 +24,14 @@ description: |
     <th align="left">Unit</th> <th align="left">Specifier</th> <th align="left">Note</th>
     </tr>
     <tr> <td>pixels</td> <td>px</td> <td></td> </tr>
-    <tr> <td>density-independent pixels</td> <td>dip</td> <td>Equivalent to Apple "points."</td> </tr>
-    <tr> <td>inches</td> <td>in</td> <td></td> </tr>
+    <tr> <td>density-independent pixels</td> <td>dip</td> <td>Equivalent to Apple "points." Not supported by BlackBerry.</td> </tr>
+    <tr> <td>inches</td> <td>in</td> <td>Not supported by BlackBerry.</td> </tr>
     <tr> <td>millimeters</td> <td>mm</td> <td>Android, iOS only</td>  </tr>
     <tr> <td>centimeters</td> <td>cm</td> <td>Android, iOS only</td>  </tr>
     <tr> <td>points</td> <td>pt</td> 
          <td>Typographical points of 1/72 of an inch. On Android, you can specify sizes and 
          coordinates in typographical points. On other platforms, this unit is only used
-         to specify font sizes.  Not to be confused with Apple "points."</td> </tr>
+         to specify font sizes.  Not to be confused with Apple "points." Not supported by BlackBerry.</td> </tr>
     </table>
     
     The interpretation of the density-independent pixel (DIP) varies by platform:
@@ -127,6 +127,7 @@ since: "0.9"
 events:
   - name: click
     summary: Fired when the device detects a click against the view.
+    platforms: [android, iphone, ipad, mobileweb]
     description: |
         There is a subtle difference between singletap and click events.
 
@@ -500,6 +501,7 @@ methods:
     
   - name: startLayout
     summary: Starts a batch update of this view's layout properties.
+    platforms: [android, iphone, ipad, mobileweb]
     description: |
         To prevent a layout pass each time a property is modified, call `startLayout` before 
         changing any properties that may change this view's layout. This initiates a batch update 
@@ -620,11 +622,14 @@ properties:
         corner. 
         
         See the "Using an anchorPoint" example in <Titanium.UI.Animation> for a demonstration.
+        
+        Incomplete for BlackBerry.
     type: Point
     platforms: [iphone, ipad, blackberry]
     
   - name: animatedCenterPoint
     summary: Current position of the view during an animation.
+    platforms: [android, iphone, ipad, blackberry]
     type: Point
     permission: read-only
     platforms: [android, iphone, ipad]
@@ -637,6 +642,7 @@ properties:
     
   - name: backgroundDisabledColor
     summary: Disabled background color of the view, as a color name or hex triplet.
+    platforms: [android, blackberry]
     description: |
         For information about color values, see the "Colors" section of <Titanium.UI>. 
     type: String
@@ -867,10 +873,13 @@ properties:
         This is an input property for specifying the view's height dimension. To determine the 
         view's size once rendered, use the [rect](Titanium.UI.View.rect) or 
         [size](Titanium.UI.View.size) properties.
+        
+        BlackBerry only supports pixels.
     type: [Number,String]
     
   - name: left
     summary: View's left position, in platform-specific units.
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     description: |
         This position is relative to the view's parent. Exact interpretation depends on the 
         parent view's [layout](Titanium.UI.View.layout) property. Can be either a float value or 
@@ -1059,6 +1068,7 @@ properties:
     
   - name: top
     summary: The view's top position.
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     description: |
         This position is relative to the view's parent. Exact interpretation depends on the 
         parent view's [layout](Titanium.UI.View.layout) property. Can be either a float value or 
@@ -1103,6 +1113,8 @@ properties:
         This is an input property for specifying the view's width dimension. To determine 
         the view's size once rendered, use the [rect](Titanium.UI.View.rect) or
         [size](Titanium.UI.View.size) properties.
+        
+        BlackBerry only supports pixels.
     type: [Number,String]
     
   - name: zIndex
@@ -1200,6 +1212,7 @@ properties:
 ---
 name: GradientColorRef
 summary: A simple object consisting of a color and an offset.
+platforms: [android, iphone, ipad, mobileweb]
 properties:
   - name: color
     summary: |
@@ -1215,6 +1228,7 @@ properties:
 ---
 name: Dimension
 summary: A simple object consisting of the position and size measurements.
+platforms: [android, iphone, ipad, mobileweb]
 since: "2.0.0"
 description: |
   When a dimension is returned by the [rect](Titanium.UI.View.rect) property, `x` represents the 
