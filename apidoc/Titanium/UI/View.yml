@@ -173,11 +173,13 @@ since: "0.9"
       - name: callback
         summary: Function to be invoked upon completion of the animation.
         type: Callback<Object>
+    platforms: [android, iphone, ipad, mobileweb]
 
   - name: finishLayout
     since: "2.0.0"
     summary: Finishes a batch-update of the View's layout params and schedules a layout pass of the view tree.
     description: Since the layout pass scheduled is asynchronous, rect and size values may not be available immediately after finishLayout() is called.  It may take some time for the layout pass to actually occur.
+    platforms: [android, iphone, ipad, mobileweb]
 
   - name: hide
     summary: Hides this view.
@@ -188,6 +190,7 @@ since: "0.9"
       - name: view
         summary: View to remove from this view's hierarchy.
         type: Titanium.UI.View
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: show
     summary: Makes this view visible.
@@ -240,6 +243,7 @@ since: "0.9"
   - name: updateLayout
     since: "2.0.0"
     summary: Performs a batch-update of all supplied layout params and schedules a layout pass after they have been updated
+    platforms: [android, iphone, ipad, mobileweb]
     parameters:
       - name: params
         summary: |
@@ -666,6 +670,7 @@ methods:
     
   - name: startLayout
     summary: Starts a batch update of this view's layout properties.
+    platforms: [android, iphone, ipad, mobileweb]
     description: |
         To prevent a layout pass each time a property is modified, call `startLayout` before 
         changing any properties that may change this view's layout. This initiates a batch update 
@@ -786,6 +791,8 @@ properties:
         corner. 
         
         See the "Using an anchorPoint" example in <Titanium.UI.Animation> for a demonstration.
+        
+        Incomplete for BlackBerry.
     type: Point
     platforms: [iphone, ipad, blackberry]
     
@@ -1035,10 +1042,13 @@ properties:
         This is an input property for specifying the view's height dimension. To determine the 
         view's size once rendered, use the [rect](Titanium.UI.View.rect) or 
         [size](Titanium.UI.View.size) properties.
+        
+        BlackBerry only supports pixels.
     type: [Number,String]
     
   - name: left
     summary: View's left position, in platform-specific units.
+    platforms: [android, iphone, ipad, mobileweb]
     description: |
         This position is relative to the view's parent. Exact interpretation depends on the 
         parent view's [layout](Titanium.UI.View.layout) property. Can be either a float value or 
@@ -1227,6 +1237,7 @@ properties:
     
   - name: top
     summary: The view's top position.
+    platforms: [android, iphone, ipad, mobileweb]
     description: |
         This position is relative to the view's parent. Exact interpretation depends on the 
         parent view's [layout](Titanium.UI.View.layout) property. Can be either a float value or 
@@ -1271,6 +1282,8 @@ properties:
         This is an input property for specifying the view's width dimension. To determine 
         the view's size once rendered, use the [rect](Titanium.UI.View.rect) or
         [size](Titanium.UI.View.size) properties.
+        
+        BlackBerry only supports pixels.
     type: [Number,String]
     
   - name: zIndex
@@ -1368,6 +1381,7 @@ properties:
 ---
 name: GradientColorRef
 summary: A simple object consisting of a color and an offset.
+platforms: [android, iphone, ipad, mobileweb]
 properties:
   - name: color
     summary: |
@@ -1383,6 +1397,7 @@ properties:
 ---
 name: Dimension
 summary: A simple object consisting of the position and size measurements.
+platforms: [android, iphone, ipad, mobileweb]
 since: "2.0.0"
 description: |
   When a dimension is returned by the [rect](Titanium.UI.View.rect) property, `x` represents the 
