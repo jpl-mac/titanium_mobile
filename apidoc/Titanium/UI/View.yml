@@ -145,6 +145,8 @@ methods:
             view.left = 50;
             view.finishLayout();
 
+    platforms: [android, iphone, ipad, mobileweb]
+
   - name: toImage
     summary: Returns an image of the rendered view, as a Blob.
     platforms: [android, iphone, ipad]
@@ -485,7 +487,7 @@ properties:
     
   - name: animatedCenterPoint
     summary: Current position of the view during an animation.
-    platforms: [android, iphone, ipad]
+    platforms: [android, iphone, ipad, blackberry]
     type: Point
     permission: read-only
     
