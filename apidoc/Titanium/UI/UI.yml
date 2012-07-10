@@ -122,6 +122,26 @@ description:  |
     
     Currently, Android does not support the color name `'brown'` and iOS does not support `'aqua'`, 
     `'fuchsia'`, `'lime'` or `'maroon'`.
+
+    BlackBerry supports the following color names.
+
+    `'aliceblue'`, `'antiquewhite'`, `'aqua'`, `'aquamarine'`, `'azure'`, `'beige'`, `'bisque'`, `'black'`, `'blanchedalmond'`,
+    `'blue'`, `'blueviolet'`, `'brown'`, `'burlywood'`, `'cadetblue'`, `'chartreuse'`, `'chocolate'`, `'coral'`, `'cornflowerblue'`,
+    `'cornsilk'`, `'crimson'`, `'cyan'`, `'darkblue'`, `'darkcyan'`, `'darkgoldenrod'`, `'darkgray, darkgreen'`, `'darkgrey'`,
+    `'darkkhaki'`, `'darkmagenta'`, `'darkolivegreen'`, `'darkorange'`, `'darkorchid'`, `'darkred'`, `'darksalmon'`, `'darkseagreen'`,
+    `'darkslateblue'`, `'darkslategray'`, `'darkslategrey'`, `'darkturquoise'`, `'darkviolet'`, `'deeppink'`, `'deepskyblue'`,
+    `'dimgray'`, `'dimgrey'`, `'dodgerblue'`, `'firebrick'`, `'floralwhite'`, `'forestgreen'`, `'fuchsia'`, `'gainsboro'`, `'ghostwhite'`,
+    `'gold'`, `'goldenrod'`, `'gray'`, `'green'`, `'greenyellow'`, `'grey'`, `'honeydew'`, `'hotpink'`, `'indianred'`, `'indigo'`, `'ivory'`,
+    `'khaki'`, `'lavender'`, `'lavenderblush'`, `'lawngreen'`, `'lemonchiffon'`, `'lightblue'`, `'lightcoral'`, `'lightcyan'`,
+    `'lightgoldenrodyellow'`, `'lightgray'`, `'lightgreen'`, `'lightgrey'`, `'lightpink'`, `'lightsalmon'`, `'lightseagreen'`,
+    `'lightskyblue'`, `'lightslategray'`, `'lightslategrey'`, `'lightsteelblue'`, `'lightyellow'`, `'lime'`, `'limegreen'`,
+    `'linen'`, `'magenta'`, `'maroon'`, `'mediumaquamarine'`, `'mediumblue'`, `'mediumorchid'`, `'mediumpurple'`, `'mediumseagreen'`,
+    `'mediumslateblue'`, `'mediumspringgreen'`, `'mediumturquoise'`, `'mediumvioletred'`, `'midnightblue'`, `'mintcream'`,
+    `'mistyrose'`, `'moccasin'`, `'navajowhite'`, `'navy'`, `'oldlace'`, `'olive'`, `'olivedrab'`, `'orange'`, `'orangered'`, `'orchid'`,
+    `'palegoldenrod'`, `'palegreen'`, `'paleturquoise'`, `'palevioletred'`, `'papayawhip'`, `'peachpuff'`, `'peru'`, `'pink'`, `'plum'`,
+    `'powderblue'`, `'purple'`, `'red'`, `'rosybrown'`, `'royalblue'`, `'saddlebrown'`, `'salmon'`, `'sandybrown'`, `'seagreen'`, `'seashell'`,
+    `'sienna'`, `'silver'`, `'skyblue'`, `'slateblue'`, `'slategray'`, `'slategrey'`, `'snow'`, `'springgreen'`, `'steelblue'`, `'tan'`, `'teal'`,
+    `'thistle'`, `'tomato'`, `'transparent'`, `'turquoise'`, `'violet'`, `'wheat'`, `'white'`, `'whitesmoke'`, `'yellow'`, `'yellowgreen'
     
     All color properties also accept a value of `'transparent'`.
     
@@ -759,14 +779,12 @@ properties:
     summary: Use a date picker.
     type: Number
     permission: read-only
-    platforms: [android, iphone, ipad, mobileweb]
-    
+
   - name: PICKER_TYPE_DATE_AND_TIME
     summary: Use a date and time picker.
     type: Number
     permission: read-only
-    platforms: [android, iphone, ipad, mobileweb]
-    
+
   - name: PICKER_TYPE_PLAIN
     summary: Use a plain picker (for values other than date or time).
     type: Number
@@ -777,8 +795,7 @@ properties:
     summary: Use a time picker.
     type: Number
     permission: read-only
-    platforms: [android, iphone, ipad, mobileweb]
-    
+
   - name: PORTRAIT
     summary: Orientation constant for portrait mode orientation.
     description: |

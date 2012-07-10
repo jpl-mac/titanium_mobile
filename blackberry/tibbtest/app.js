@@ -21,7 +21,7 @@ win1.add(label1);
 
 var mybutton=Ti.UI.createButton
 (
-	{title: 'Push Me'}
+	{top: 100,title: 'Push Me'}
 );
 
 mybutton.addEventListener
@@ -30,7 +30,17 @@ mybutton.addEventListener
 	function(e)
 	{
 		e.source.title='Pushed!';
-		e.source.setVisible(false);
+		slider1.backgroundColor='#00F';
+		progress1.visible=false;
+		if(progress1.visible)
+		{
+			label1.text='Progress bar is visible';
+		}
+		else
+		{
+			label1.text='Progress bar is invisible';
+		}
+		e.source.title='Children:'+win1.children.length;
 	}
 );
 
@@ -39,23 +49,23 @@ win1.add(mybutton);
 var slider1=Ti.UI.createSlider
 (
 	{
-		top: 0,
+		top: 200,
 		min: 0,
 		max: 100,
 		value: 50,
 	}
 );
 
-slider1.addEventListener
-(
-	'change',
-	function(e)
-	{
-		progress1.value=e.value;
-		label1.text='Slider value: '+e.value;
-		label1.top=200.0+e.value;
-	}
-);
+var sliderListener=function(e)
+{
+	progress1.value=100-e.value;
+	label1.text='Slider value: '+e.value;
+	label1.top=e.value;
+	mybutton.opacity=e.value/100.0;
+	mybutton.left=e.value;
+};
+
+slider1.addEventListener('change',sliderListener);
 
 
 win1.add(slider1);
@@ -64,6 +74,7 @@ var progress1=Ti.UI.createProgressBar({
 	value:0,
 	min: 0,
 	max: 100,
+	top: 300,
 });
 
 win1.add(progress1);

@@ -24,14 +24,14 @@ description: |
     <th align="left">Unit</th> <th align="left">Specifier</th> <th align="left">Note</th>
     </tr>
     <tr> <td>pixels</td> <td>px</td> <td></td> </tr>
-    <tr> <td>density-independent pixels</td> <td>dip</td> <td>Equivalent to Apple "points."</td> </tr>
-    <tr> <td>inches</td> <td>in</td> <td></td> </tr>
+    <tr> <td>density-independent pixels</td> <td>dip</td> <td>Equivalent to Apple "points." Not supported by BlackBerry.</td> </tr>
+    <tr> <td>inches</td> <td>in</td> <td>Not supported by BlackBerry.</td> </tr>
     <tr> <td>millimeters</td> <td>mm</td> <td>Android, iOS only</td>  </tr>
     <tr> <td>centimeters</td> <td>cm</td> <td>Android, iOS only</td>  </tr>
     <tr> <td>points</td> <td>pt</td> 
          <td>Typographical points of 1/72 of an inch. On Android, you can specify sizes and 
          coordinates in typographical points. On other platforms, this unit is only used
-         to specify font sizes.  Not to be confused with Apple "points."</td> </tr>
+         to specify font sizes.  Not to be confused with Apple "points." Not supported by BlackBerry.</td> </tr>
     </table>
     
     The interpretation of the density-independent pixel (DIP) varies by platform:
@@ -127,6 +127,7 @@ since: "0.9"
 events:
   - name: click
     summary: Fired when the device detects a click against the view.
+    platforms: [android, iphone, ipad, mobileweb]
     description: |
         There is a subtle difference between singletap and click events.
 
@@ -156,6 +157,7 @@ events:
         
   - name: dblclick
     summary: Fired when the device detects a double click against the view.
+    platforms: [android, iphone, ipad, mobileweb]
     properties:
       - name: globalPoint
         summary: |
@@ -261,10 +263,12 @@ events:
         
         Note that altering any properties that affect layout from the `postlayout` callback 
         may result in an endless loop.
+    platforms: [android, iphone, ipad, mobileweb]
     since: "2.0.0"
 
   - name: singletap
     summary: Fired when the device detects a single tap against the view.
+    platforms: [android, iphone, ipad, mobileweb]
     properties:
       - name: globalPoint
         summary: |
@@ -311,6 +315,7 @@ events:
     description: |
         A touchcancel can happen in circumstances such as an incoming call to allow the 
         UI to clean up state.
+    platforms: [android, iphone, ipad, mobileweb]
     properties:
       - name: globalPoint
         summary: |
@@ -330,6 +335,7 @@ events:
         
   - name: touchend
     summary: Fired when a touch event is completed.
+    platforms: [android, iphone, ipad, mobileweb]
     properties:
       - name: globalPoint
         summary: |
@@ -349,6 +355,7 @@ events:
         
   - name: touchmove
     summary: Fired as soon as the device detects movement of a touch.
+    platforms: [android, iphone, ipad, mobileweb]
     description: |
         Event coordinates are always relative to the view in which the initial touch occurred
     properties:
@@ -370,6 +377,7 @@ events:
         
   - name: touchstart
     summary: Fired as soon as the device detects a touch gesture.
+    platforms: [android, iphone, ipad, mobileweb]
     properties:
       - name: globalPoint
         summary: |
@@ -389,6 +397,7 @@ events:
         
   - name: twofingertap
     summary: Fired when the device detects a two-finger tap against the view.
+    platforms: [android, iphone, ipad, mobileweb]
     properties:
       - name: globalPoint
         summary: |
@@ -436,6 +445,7 @@ methods:
         
   - name: animate
     summary: Animates this view.
+    platforms: [android, iphone, ipad, mobileweb]
     description: |
         The [Animation](Titanium.UI.Animation) object or dictionary passed to this method defines 
         the end state for the animation, the duration of the animation, and other properties.
@@ -461,6 +471,7 @@ methods:
     
   - name: finishLayout
     since: "2.0.0"
+    platforms: [android, iphone, ipad, mobileweb]
     summary: |
         Finishes a batch update of the View's layout properties and schedules a layout pass of the 
         view tree.
@@ -479,6 +490,7 @@ methods:
     
   - name: remove
     summary: Removes a child view from this view's hierarchy.
+    platforms: [android, iphone, ipad, mobileweb]
     parameters:
       - name: view
         summary: View to remove from this view's hierarchy.
@@ -489,6 +501,7 @@ methods:
     
   - name: startLayout
     summary: Starts a batch update of this view's layout properties.
+    platforms: [android, iphone, ipad, mobileweb]
     description: |
         To prevent a layout pass each time a property is modified, call `startLayout` before 
         changing any properties that may change this view's layout. This initiates a batch update 
@@ -541,6 +554,7 @@ methods:
         optional: true
         
   - name: updateLayout
+    platforms: [android, iphone, ipad, mobileweb]
     summary: |
         Performs a batch update of all supplied layout properties and schedules a layout pass after 
         they have been updated.
@@ -608,11 +622,14 @@ properties:
         corner. 
         
         See the "Using an anchorPoint" example in <Titanium.UI.Animation> for a demonstration.
+        
+        Incomplete for BlackBerry.
     type: Point
-    platforms: [iphone, ipad]
+    platforms: [iphone, ipad, blackberry]
     
   - name: animatedCenterPoint
     summary: Current position of the view during an animation.
+    platforms: [android, iphone, ipad, blackberry]
     type: Point
     permission: read-only
     platforms: [android, iphone, ipad]
@@ -625,10 +642,11 @@ properties:
     
   - name: backgroundDisabledColor
     summary: Disabled background color of the view, as a color name or hex triplet.
+    platforms: [android, blackberry]
     description: |
         For information about color values, see the "Colors" section of <Titanium.UI>. 
     type: String
-    platforms: [android]
+    platforms: [android, blackberry]
     
   - name: backgroundDisabledImage
     summary: Disabled background image for the view, specified as a local file path or URL.
@@ -724,6 +742,7 @@ properties:
   - name: backgroundImage
     summary: Background image for the view, specified as a local file path or URL.
     type: String
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: backgroundRepeat
     summary: Determines whether to tile a background across a view.
@@ -793,14 +812,17 @@ properties:
     description: |
         For information about color values, see the "Colors" section of <Titanium.UI>. 
     type: String
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: borderRadius
     summary: Border radius of the view.
     type: Number
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: borderWidth
     summary: Border width of the view.
     type: Number
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: bottom
     summary: View's bottom position, in platform-specific units.
@@ -812,6 +834,7 @@ properties:
         This is an input property for specifying where the view should be positioned, and does not
         represent the view's calculated position.
     type: [Number,String]
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: center
     summary: View's center position, in the parent view's coordinates. 
@@ -819,11 +842,13 @@ properties:
         This is an input property for specifying where the view should be positioned, and does not
         represent the view's calculated position.
     type: Point
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: children
     summary: Array of this view's child views.
     type: Array<Titanium.UI.View>
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     
   - name: focusable
     summary: Whether view should be focusable while navigating with the trackball.
@@ -848,10 +873,13 @@ properties:
         This is an input property for specifying the view's height dimension. To determine the 
         view's size once rendered, use the [rect](Titanium.UI.View.rect) or 
         [size](Titanium.UI.View.size) properties.
+        
+        BlackBerry only supports pixels.
     type: [Number,String]
     
   - name: left
     summary: View's left position, in platform-specific units.
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     description: |
         This position is relative to the view's parent. Exact interpretation depends on the 
         parent view's [layout](Titanium.UI.View.layout) property. Can be either a float value or 
@@ -863,6 +891,7 @@ properties:
     
   - name: layout
     type: String
+    platforms: [android, iphone, ipad, mobileweb]
     summary: |
         Specifies how the view positions its children. 
         One of: 'composite', 'vertical', or 'horizontal'.
@@ -992,6 +1021,7 @@ properties:
         This is an input property for specifying where the view should be positioned, and does not
         represent the view's calculated position.
     type: [Number, String]
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: rect
     summary: |
@@ -1008,6 +1038,7 @@ properties:
     type: Dimension
     permission: read-only
     since: "2.0.0"
+    platforms: [android, iphone, ipad, mobileweb]
 
   - name: size
     summary: |
@@ -1024,6 +1055,7 @@ properties:
         [postlayout](Titanium.UI.View.postlayout) event.
     type: Dimension
     permission: read-only
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: softKeyboardOnFocus
     summary: Determines keyboard behavior when this view is focused.
@@ -1036,6 +1068,7 @@ properties:
     
   - name: top
     summary: The view's top position.
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     description: |
         This position is relative to the view's parent. Exact interpretation depends on the 
         parent view's [layout](Titanium.UI.View.layout) property. Can be either a float value or 
@@ -1050,11 +1083,13 @@ properties:
     description: If false, will forward the events to peers.
     type: Boolean
     default: true
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: transform
     summary: Transformation matrix to apply to the view.
     description: Android and Mobile Web only support 2DMatrix transforms.
     type: [ Titanium.UI.2DMatrix, Titanium.UI.iOS.3DMatrix ]
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: visible
     summary: Determines whether the view is visible.
@@ -1078,6 +1113,8 @@ properties:
         This is an input property for specifying the view's width dimension. To determine 
         the view's size once rendered, use the [rect](Titanium.UI.View.rect) or
         [size](Titanium.UI.View.size) properties.
+        
+        BlackBerry only supports pixels.
     type: [Number,String]
     
   - name: zIndex
@@ -1087,6 +1124,7 @@ properties:
         When this property is explicitly set, regardless of its value, it causes the view to be 
         positioned in front of any sibling that has an undefined z-index.
     type: Number
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: keepScreenOn
     summary: Determines whether to keep the device screen on.
@@ -1174,6 +1212,7 @@ properties:
 ---
 name: GradientColorRef
 summary: A simple object consisting of a color and an offset.
+platforms: [android, iphone, ipad, mobileweb]
 properties:
   - name: color
     summary: |
@@ -1189,6 +1228,7 @@ properties:
 ---
 name: Dimension
 summary: A simple object consisting of the position and size measurements.
+platforms: [android, iphone, ipad, mobileweb]
 since: "2.0.0"
 description: |
   When a dimension is returned by the [rect](Titanium.UI.View.rect) property, `x` represents the 

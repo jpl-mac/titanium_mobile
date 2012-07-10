@@ -171,9 +171,17 @@ class BlackberryNDK:
 		return retCode
 
 	def package(self, package, appFile, projectName, type, debugToken, isUnitTest = False):
-		# Copy all needed resources to assets
+		templateDir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
 		buildDir = os.path.abspath(os.path.join(appFile, '..', '..', '..'))
 		projectDir = os.path.abspath(os.path.join(buildDir, '..', '..', '..'))
+
+		# Copy the framework's JavaScript
+		frameworkDir = os.path.join(buildDir, 'framework')
+		if os.path.exists(frameworkDir):
+			shutil.rmtree(frameworkDir)
+		shutil.copytree(os.path.join(templateDir, 'tibb', 'titanium', 'javascript'), frameworkDir)
+
+		# Copy all needed resources to assets
 		assetsDir = os.path.join(buildDir, 'assets')
 		resourcesDir = os.path.join(projectDir, 'Resources')
 		blackberryResourcesDir = os.path.join(resourcesDir, 'blackberry')
@@ -200,7 +208,9 @@ class BlackberryNDK:
 					fullFilenameDest = fullFilenameSrc.replace(blackberryResourcesDir, assetsDir, 1)
 					shutil.copy2(fullFilenameSrc, fullFilenameDest)
 
-		command = [self.packagerProgram, '-package', package, 'bar-descriptor.xml', '-e', appFile, projectName, 'assets']
+		# TODO: minimize .js files in Release mode
+
+		command = [self.packagerProgram, '-package', package, 'bar-descriptor.xml', '-e', appFile, projectName, 'assets', 'framework']
 		if isUnitTest:
 			command.append('icon.png')
 		if type != 'deploy':
