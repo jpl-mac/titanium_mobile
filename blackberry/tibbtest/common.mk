@@ -26,7 +26,7 @@ CCFLAGS+=-fstack-protector-all -D_FORTIFY_SOURCE=2 \
 LDFLAGS+=-Wl,-z,relro -Wl,-z,now $(if $(filter g so shared,$(VARIANTS)),,-pie)
 
 # Add your required library names, here
-LIBS+=tibb v8 v8preparser socket
+LIBS+=tibb v8 v8preparser socket screen
 
 # Extra .so required
 LDFLAGS+=-lQtCascades -lQtCore -lQtDeclarative -lQtGui -lQtMultimedia -lQtNetwork -lm -lbb
