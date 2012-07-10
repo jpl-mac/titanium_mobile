@@ -455,6 +455,18 @@ int NativeControlObject::setRight(TiObject* obj)
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
+PROP_SETGET(setWindow)
+int NativeControlObject::setWindow(TiObject* obj)
+{
+    return NATIVE_ERROR_NOTSUPPORTED;
+}
+
+PROP_SETGET(setIcon)
+int NativeControlObject::setIcon(TiObject* obj)
+{
+    return NATIVE_ERROR_NOTSUPPORTED;
+}
+
 // PROP_SETTING_FUNCTION resolves the static name of the function, e.g.,
 // PROP_SETTING_FUNCTION(setBackgroundColor) resolves to "prop_setBackgroundColor"
 
@@ -469,6 +481,7 @@ const static NATIVE_PROPSETGET_SETTING g_propSetGet[] =
     {N_PROP_FONT, PROP_SETGET_FUNCTION(setFont), NULL},
     {N_PROP_HEIGHT, PROP_SETGET_FUNCTION(setHeight), NULL},
     {N_PROP_HINT_TEXT, PROP_SETGET_FUNCTION(setHintText), NULL},
+    {N_PROP_ICON, PROP_SETGET_FUNCTION(setIcon), NULL},
     {N_PROP_IMAGE, PROP_SETGET_FUNCTION(setImage), NULL},
     {N_PROP_LABEL, PROP_SETGET_FUNCTION(setLabel), NULL},
     {N_PROP_LEFT, PROP_SETGET_FUNCTION(setLeft), NULL},
@@ -486,10 +499,12 @@ const static NATIVE_PROPSETGET_SETTING g_propSetGet[] =
     {N_PROP_TYPE, PROP_SETGET_FUNCTION(setType), NULL},
     {N_PROP_VALUE, PROP_SETGET_FUNCTION(setValue), NULL},
     {N_PROP_VISIBLE, PROP_SETGET_FUNCTION(setVisible), PROP_SETGET_FUNCTION(getVisible)},
-    {N_PROP_WIDTH, PROP_SETGET_FUNCTION(setWidth), NULL}
+    {N_PROP_WIDTH, PROP_SETGET_FUNCTION(setWidth), NULL},
+    {N_PROP_WINDOW, PROP_SETGET_FUNCTION(setWindow), NULL}
 };
 
 static SetGetProperties g_props(g_propSetGet, GET_ARRAY_SIZE(g_propSetGet));
+
 
 int NativeControlObject::setPropertyValue(size_t propertyNumber, TiObject* obj)
 {

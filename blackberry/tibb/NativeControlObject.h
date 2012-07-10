@@ -50,6 +50,7 @@ public:
     virtual int setFont(TiObject* obj);
     virtual int setHeight(TiObject* obj);
     virtual int setHintText(TiObject* obj);
+    virtual int setIcon(TiObject* obj);
     virtual int setImage(TiObject* obj);
     virtual int setLabel(TiObject* obj);
     virtual int setLeft(TiObject* obj);
@@ -70,6 +71,8 @@ public:
     virtual int setVisible(TiObject* obj);
     virtual int getVisible(TiObject* obj);
     virtual int setWidth(TiObject* obj);
+    virtual int setWindow(TiObject* obj);
+
     static int getColorComponents(TiObject* obj, float* r, float* g, float* b, float* a);
     static int getBoolean(TiObject* obj, bool* value);
     static int getString(TiObject* obj, QString& str);
