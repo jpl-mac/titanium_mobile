@@ -180,7 +180,8 @@ methods:
                 require ('/myModule/module.js')
 
         #### BlackBerry
-            NYI
+
+            Currently, only base paths are valid. Relative paths are NYI.
     returns:
         summary: Exported `exports` object of the required module.
         type: Object
