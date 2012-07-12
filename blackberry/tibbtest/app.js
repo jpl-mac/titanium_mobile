@@ -10,12 +10,10 @@ var win1 = Titanium.UI.createWindow({
 
 var label1 = Ti.UI.createLabel({
 	textAlign : 'center',
-	text:'Hello, world!',
+	font: {fontSize:12},
 	color:'green',
 	top: 200
 });
-
-label1.text=new Date();
 
 win1.add(label1);
 
@@ -31,7 +29,15 @@ mybutton.addEventListener
 	{
 		e.source.title='Pushed!';
 		slider1.backgroundColor='#00F';
-		progress1.backgroundColor='#0F0';
+		progress1.visible=false;
+		if(progress1.visible)
+		{
+			label1.text='Progress bar is visible';
+		}
+		else
+		{
+			label1.text='Progress bar is invisible';
+		}
 		e.source.title='Children:'+win1.children.length;
 	}
 );
@@ -54,6 +60,7 @@ var sliderListener=function(e)
 	label1.text='Slider value: '+e.value;
 	label1.top=e.value;
 	mybutton.opacity=e.value/100.0;
+	mybutton.left=e.value;
 };
 
 slider1.addEventListener('change',sliderListener);
