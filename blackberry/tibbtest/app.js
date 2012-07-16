@@ -28,17 +28,7 @@ mybutton.addEventListener
 	function(e)
 	{
 		e.source.title='Pushed!';
-		slider1.backgroundColor='#00F';
-		progress1.visible=false;
-		if(progress1.visible)
-		{
-			label1.text='Progress bar is visible';
-		}
-		else
-		{
-			label1.text='Progress bar is invisible';
-		}
-		e.source.title='Children:'+win1.children.length;
+		win1.remove(progress1);
 	}
 );
 

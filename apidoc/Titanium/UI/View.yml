@@ -490,7 +490,7 @@ methods:
     
   - name: remove
     summary: Removes a child view from this view's hierarchy.
-    platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     parameters:
       - name: view
         summary: View to remove from this view's hierarchy.
