@@ -178,7 +178,8 @@ methods:
                 require ('/myModule/module.js')
 
         #### BlackBerry
-            NYI
+
+            Currently, only base paths are valid. Relative paths are NYI.
     returns:
         summary: Exported `exports` object of the required module.
         type: Object
@@ -215,7 +216,6 @@ methods:
         For more information, see the MDN website for 
         [setInterval](https://developer.mozilla.org/en/DOM/window.setInterval).
 
-        On BlackBerry: NYI
     returns:
         summary: Unique timer identifier.
         type: Number
@@ -252,7 +252,6 @@ methods:
         For more information, see the MDN website for 
         [setTimeout](https://developer.mozilla.org/en/DOM/window.setTimeout).
 
-        On BlackBerry: NYI
     returns:
         summary: Unique timer identifier.
         type: Number

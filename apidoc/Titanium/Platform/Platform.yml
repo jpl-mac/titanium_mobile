@@ -138,7 +138,7 @@ properties:
         from the `DisplayCaps` object that it returns.
     type: Titanium.Platform.DisplayCaps
     permission: read-only
-    platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     
   - name: id
     summary: The applications's globally-unique ID (UUID).
@@ -250,7 +250,7 @@ properties:
     summary: The system's OS version.
     type: String
     permission: read-only
-    platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
 
 examples:
   - title: Battery Event Example
