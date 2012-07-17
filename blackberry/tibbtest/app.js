@@ -10,12 +10,10 @@ var win1 = Titanium.UI.createWindow({
 
 var label1 = Ti.UI.createLabel({
 	textAlign : 'center',
-	text:'Hello, world!',
+	font: {fontSize:12},
 	color:'green',
 	top: 200
 });
-
-label1.text=new Date();
 
 win1.add(label1);
 
