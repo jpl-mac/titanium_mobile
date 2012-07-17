@@ -41,6 +41,7 @@ var slider1=Ti.UI.createSlider
 		min: 0,
 		max: 100,
 		value: 50,
+		width: '100mm',
 	}
 );
 
