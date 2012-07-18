@@ -28,7 +28,6 @@ public:
     virtual int getObjectType() const;
     virtual int initialize(TiEventContainerFactory* containerFactory);
     virtual int setImage(const char* image);
-    virtual void completeInitialization();
 
 protected:
     virtual ~NativeImageViewObject();

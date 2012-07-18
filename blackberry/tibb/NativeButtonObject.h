@@ -35,7 +35,6 @@ public:
     virtual int initialize(TiEventContainerFactory* containerFactory);
     virtual int setTitle(TiObject* obj);
     virtual int setImage(TiObject* obj);
-    virtual void completeInitialization();
 
 private:
     bb::cascades::Button* button_;

@@ -39,6 +39,7 @@ int NativeDateTimePickerObject::initialize(TiEventContainerFactory* containerFac
     TiEventContainer* eventChange = containerFactory->createEventContainer();
     eventChange->setDataProperty("type", tetCHANGE);
     events_.insert(tetCHANGE, new EventPair(eventChange, new DateTimePickerEventHandler(eventChange)));
+    QObject::connect(dateTimePicker_, SIGNAL(valueChanged(QDateTime)), events_[tetCHANGE]->handler, SLOT(setValue(QDateTime)));
     return NATIVE_ERROR_OK;
 }
 
@@ -121,10 +122,4 @@ int NativeDateTimePickerObject::getObjectType() const
 NAHANDLE NativeDateTimePickerObject::getNativeHandle() const
 {
     return dateTimePicker_;
-}
-
-void NativeDateTimePickerObject::completeInitialization()
-{
-    NativeControlObject::completeInitialization();
-    QObject::connect(dateTimePicker_, SIGNAL(valueChanged(QDateTime)), events_[tetCHANGE]->handler, SLOT(setValue(QDateTime)));
 }

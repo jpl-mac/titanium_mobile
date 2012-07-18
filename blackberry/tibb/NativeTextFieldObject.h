@@ -27,7 +27,6 @@ public:
     virtual int getObjectType() const;
     virtual int initialize(TiEventContainerFactory* containerFactory);
     virtual int setHintText(TiObject* obj);
-    virtual void completeInitialization();
 
 protected:
     virtual ~NativeTextFieldObject();

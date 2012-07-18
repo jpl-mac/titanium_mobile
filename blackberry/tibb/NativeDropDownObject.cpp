@@ -36,6 +36,7 @@ int NativeDropDownObject::initialize(TiEventContainerFactory* containerFactory)
     setControl(dropdown_);
     TiEventContainer* eventClick = containerFactory->createEventContainer();
     events_.insert(tetCLICK, new EventPair(eventClick, new DropDownEventHandler(eventClick)));
+    QObject::connect(dropdown_, SIGNAL(selectedIndexChanged(int selectedIndex)), events_[tetCLICK]->handler, SLOT(selectedIndexChanged(int selectedIndex)));
     return NATIVE_ERROR_OK;
 }
 
@@ -81,10 +82,4 @@ int NativeDropDownObject::setSelectedIndex(TiObject* obj)
     }
     dropdown_->setSelectedIndex(value);
     return NATIVE_ERROR_OK;
-}
-
-void NativeDropDownObject::completeInitialization()
-{
-    NativeControlObject::completeInitialization();
-    QObject::connect(dropdown_, SIGNAL(selectedIndexChanged(int selectedIndex)), events_[tetCLICK]->handler, SLOT(selectedIndexChanged(int selectedIndex)));
 }

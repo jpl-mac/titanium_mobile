@@ -186,6 +186,7 @@ public:
     virtual int open();
     virtual int start();
     virtual int stop();
+    virtual int openWindowOnTab(NativeObject* obj);
     virtual int show();
     virtual int hide();
     virtual void completeInitialization();

@@ -100,10 +100,9 @@ methods:
         type: Titanium.UI.Window
 
       - name: options
-        summary: Dictionary of display and animation settings to use when opening the window. Identical to the `options` parameter to [Window.close](Titanium.UI.Window.close).
+        summary: Dictionary of display and animation settings to use when opening the window. Identical to the `options` parameter to [Window.close](Titanium.UI.Window.close). For blackberry NYI.
         type: Object
         optional: true
-    platforms: [iphone, android, ipad, mobileweb]
 properties:
   - name: active
     summary: |

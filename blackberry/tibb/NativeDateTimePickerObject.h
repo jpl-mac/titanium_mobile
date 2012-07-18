@@ -35,7 +35,6 @@ public:
     virtual int setMinDate(TiObject* obj);
     virtual int setMaxDate(TiObject* obj);
     virtual int initialize(TiEventContainerFactory* containerFactory);
-    virtual void completeInitialization();
     virtual NAHANDLE getNativeHandle() const;
 
 protected:

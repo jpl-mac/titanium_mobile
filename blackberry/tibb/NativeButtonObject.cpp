@@ -38,6 +38,7 @@ int NativeButtonObject::initialize(TiEventContainerFactory* containerFactory)
     TiEventContainer* eventClick = containerFactory->createEventContainer();
     eventClick->setDataProperty("type", tetCLICK);
     events_.insert(tetCLICK, new EventPair(eventClick, new ButtonEventHandler(eventClick)));
+    QObject::connect(button_, SIGNAL(clicked()), events_[tetCLICK]->handler, SLOT(clicked(void)));
     return NATIVE_ERROR_OK;
 }
 
@@ -65,9 +66,4 @@ int NativeButtonObject::setImage(TiObject* obj)
     const bb::cascades::Image image = bb::cascades::Image(QUrl(str));
     button_->setImage(image);
     return NATIVE_ERROR_OK;
-}
-
-void NativeButtonObject::completeInitialization()
-{
-    QObject::connect(button_, SIGNAL(clicked()), events_[tetCLICK]->handler, SLOT(clicked(void)));
 }

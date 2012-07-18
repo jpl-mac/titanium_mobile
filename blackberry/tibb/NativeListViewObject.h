@@ -35,7 +35,6 @@ public:
     virtual int setWidth(TiObject* obj);
     virtual int setData(TiObject* obj);
     virtual int initialize(TiEventContainerFactory* containerFactory);
-    virtual void completeInitialization();
     virtual QString getListViewElementFromIndex(QVariantList var);
     virtual NAHANDLE getNativeHandle() const;
     virtual int scrollToIndex(int index);

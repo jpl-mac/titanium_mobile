@@ -35,7 +35,6 @@ public:
     virtual int setMax(TiObject* obj);
     virtual int setMin(TiObject* obj);
     virtual int setValue(TiObject* obj);
-    virtual void completeInitialization();
 
 private:
     bb::cascades::Slider* slider_;

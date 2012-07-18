@@ -36,6 +36,7 @@ int NativeListViewObject::initialize(TiEventContainerFactory* containerFactory)
     TiEventContainer* eventClicked = containerFactory->createEventContainer();
     eventClicked->setDataProperty("type", tetCLICK);
     events_.insert(tetCLICK, new EventPair(eventClicked, new ListViewEventHandler(eventClicked, this)));
+    QObject::connect(listView_, SIGNAL(selectionChanged(QVariantList, bool)), events_[tetCLICK]->handler, SLOT(selectionChanged(QVariantList, bool)));
     return NATIVE_ERROR_OK;
 }
 
@@ -113,12 +114,6 @@ int NativeListViewObject::getObjectType() const
 NAHANDLE NativeListViewObject::getNativeHandle() const
 {
     return listView_;
-}
-
-void NativeListViewObject::completeInitialization()
-{
-    NativeControlObject::completeInitialization();
-    QObject::connect(listView_, SIGNAL(selectionChanged(QVariantList, bool)), events_[tetCLICK]->handler, SLOT(selectionChanged(QVariantList, bool)));
 }
 
 QString NativeListViewObject::getListViewElementFromIndex(QVariantList var)

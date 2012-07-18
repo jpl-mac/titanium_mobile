@@ -39,6 +39,7 @@ int NativeImageViewObject::initialize(TiEventContainerFactory* containerFactory)
     TiEventContainer* eventImageChanged = containerFactory->createEventContainer();
     eventImageChanged->setDataProperty("type", tetCHANGE);
     events_.insert(tetCHANGE, new EventPair(eventImageChanged, new ImageViewEventHandler(eventImageChanged)));
+    QObject::connect(imageView_, SIGNAL(imageChanged(const bb::cascades::Image)), events_[tetCHANGE]->handler, SLOT(imageChanged(const bb::cascades::Image)));
     return NATIVE_ERROR_OK;
 }
 
@@ -47,10 +48,4 @@ int NativeImageViewObject::setImage(const char* /*image*/)
     // FIXME: following call fails to compile on R4
     //imageView_->setImage(bb::cascades::Image(image));
     return NATIVE_ERROR_OK;
-}
-
-void NativeImageViewObject::completeInitialization()
-{
-    NativeControlObject::completeInitialization();
-    QObject::connect(imageView_, SIGNAL(imageChanged(const bb::cascades::Image)), events_[tetCHANGE]->handler, SLOT(imageChanged(const bb::cascades::Image)));
 }

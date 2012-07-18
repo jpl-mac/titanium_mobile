@@ -26,10 +26,12 @@ public:
 protected:
     virtual ~TiUITab();
     virtual void initializeTiObject(TiObject* parentContext);
+    virtual void onCreateStaticMembers();
 
 private:
-    TiUITab();
+    static Handle<Value> open_(void* userContext, TiObject* caller, const Arguments& args);
 
+    TiUITab();
     //This class is neither copy-constructible nor assignable
     TiUITab(const TiUITab& obj);
     TiUITab& operator=(const TiUITab& obj);
