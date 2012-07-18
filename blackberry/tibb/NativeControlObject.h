@@ -9,6 +9,7 @@
 #define NATIVECONTROLOBJECT_H_
 
 #include "NativeObject.h"
+
 #include <bb/cascades/Container>
 #include <bb/cascades/AbsoluteLayoutProperties>
 #include <bb/cascades/Color>
@@ -95,7 +96,6 @@ protected:
     NativeControlObject();
     virtual ~NativeControlObject();
     virtual void setControl(bb::cascades::Control* control);
-    int getNextEventId();
 
 private:
     static int getMeasurementInfo(TiObject* obj, float maxPixels, float dotsPerMillimeter,
@@ -108,7 +108,6 @@ private:
     bb::cascades::Color disabledBackgroundColor_;
     float left_;
     float top_;
-    int nextEventId_;
 };
 
 #endif /* NATIVECONTROLOBJECT_H_ */

@@ -7,6 +7,7 @@
 
 #include "NativeControlObject.h"
 
+#include "TiEventContainer.h"
 #include "TiObject.h"
 #include <stdlib.h>
 #include <string.h>
@@ -132,8 +133,7 @@ NativeControlObject::NativeControlObject() :
     control_(NULL),
     layout_(NULL),
     left_(0),
-    top_(0),
-    nextEventId_(1)
+    top_(0)
 {
     if ((g_width <= 0) || (g_height <= 0))
     {
@@ -176,18 +176,6 @@ void NativeControlObject::setControl(bb::cascades::Control* control)
     }
     container_->add(control);
     control_ = control;
-}
-
-int NativeControlObject::getNextEventId()
-{
-    // Account for overflow.
-    if (nextEventId_ < 1)
-    {
-        // This event id must start at 1 because 0 is reserved. Since
-        // V8 will always cast a value of undefined to zero.
-        nextEventId_ = 1;
-    }
-    return nextEventId_++;
 }
 
 int NativeControlObject::setVisibility(bool visible)
@@ -260,13 +248,13 @@ int NativeControlObject::setBackgroundDisableColor(TiObject* obj)
 }
 
 PROP_SETGET(setColor)
-int NativeControlObject::setColor(TiObject* obj)
+int NativeControlObject::setColor(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
 PROP_SETGET(setData)
-int NativeControlObject::setData(TiObject* obj)
+int NativeControlObject::setData(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
@@ -299,7 +287,7 @@ int NativeControlObject::setEnabled(TiObject* obj)
 }
 
 PROP_SETGET(setFont)
-int NativeControlObject::setFont(TiObject* obj)
+int NativeControlObject::setFont(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
@@ -322,19 +310,19 @@ int NativeControlObject::setHeight(TiObject* obj)
 }
 
 PROP_SETGET(setHintText)
-int NativeControlObject::setHintText(TiObject* obj)
+int NativeControlObject::setHintText(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
 PROP_SETGET(setImage)
-int NativeControlObject::setImage(TiObject* obj)
+int NativeControlObject::setImage(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
 PROP_SETGET(setLabel)
-int NativeControlObject::setLabel(TiObject* obj)
+int NativeControlObject::setLabel(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
@@ -354,25 +342,25 @@ int NativeControlObject::setLeft(TiObject* obj)
 }
 
 PROP_SETGET(setMax)
-int NativeControlObject::setMax(TiObject* obj)
+int NativeControlObject::setMax(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
 PROP_SETGET(setMinDate)
-int NativeControlObject::setMinDate(TiObject* obj)
+int NativeControlObject::setMinDate(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
 PROP_SETGET(setMaxDate)
-int NativeControlObject::setMaxDate(TiObject* obj)
+int NativeControlObject::setMaxDate(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
 PROP_SETGET(setMin)
-int NativeControlObject::setMin(TiObject* obj)
+int NativeControlObject::setMin(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
@@ -395,31 +383,31 @@ int NativeControlObject::setOpacity(TiObject* obj)
 }
 
 PROP_SETGET(setOptions)
-int NativeControlObject::setOptions(TiObject* obj)
+int NativeControlObject::setOptions(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
 PROP_SETGET(setSelectedIndex)
-int NativeControlObject::setSelectedIndex(TiObject* obj)
+int NativeControlObject::setSelectedIndex(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
 PROP_SETGET(setText)
-int NativeControlObject::setText(TiObject* obj)
+int NativeControlObject::setText(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
 PROP_SETGET(setTextAlign)
-int NativeControlObject::setTextAlign(TiObject* obj)
+int NativeControlObject::setTextAlign(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
 PROP_SETGET(setTitle)
-int NativeControlObject::setTitle(TiObject* obj)
+int NativeControlObject::setTitle(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
@@ -439,7 +427,7 @@ int NativeControlObject::setTop(TiObject* obj)
 }
 
 PROP_SETGET(setValue)
-int NativeControlObject::setValue(TiObject* obj)
+int NativeControlObject::setValue(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
@@ -481,13 +469,13 @@ int NativeControlObject::setWidth(TiObject* obj)
 }
 
 PROP_SETGET(setType)
-int NativeControlObject::setType(TiObject* obj)
+int NativeControlObject::setType(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
 PROP_SETGET(setRight)
-int NativeControlObject::setRight(TiObject* obj)
+int NativeControlObject::setRight(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
