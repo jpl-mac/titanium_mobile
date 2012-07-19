@@ -129,7 +129,7 @@ since: "0.9"
 events:
   - name: click
     summary: Fired when the device detects a click against the view.
-    platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     description: |
         There is a subtle difference between singletap and click events.
 
@@ -152,10 +152,12 @@ events:
       - name: x
         type: Number
         summary: X coordinate of the event from the `source` view's coordinate system.
+        platforms: [android, iphone, ipad, mobileweb]
     
       - name: y
         summary: Y coordinate of the event from the `source` view's coordinate system.
         type: Number
+        platforms: [android, iphone, ipad, mobileweb]
         
   - name: dblclick
     summary: Fired when the device detects a double click against the view.
