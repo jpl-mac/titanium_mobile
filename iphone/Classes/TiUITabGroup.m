@@ -69,8 +69,10 @@ DEFINE_EXCEPTIONS
 
 - (void)handleWillShowTab:(TiUITabProxy *)newFocus
 {
-	[focused handleWillBlur];
-	[newFocus handleWillFocus];
+    if (focused != newFocus) {
+        [focused handleWillBlur];
+        [newFocus handleWillFocus];
+    }
 }
 
 - (void)handleDidShowTab:(TiUITabProxy *)newFocus
@@ -291,6 +293,20 @@ DEFINE_EXCEPTIONS
 	}
 }
 
+-(void)setTabsBackgroundColor_:(id)value
+{
+    if ([TiUtils isIOS5OrGreater]) {
+        TiColor* color = [TiUtils colorValue:value];
+        if (color != nil) {
+            controller.tabBar.tintColor = color.color;
+        }
+
+    } else {
+        NSLog(@"[WARN] tabsBackgroundColor is only supported in iOS 5 or above.");
+    }
+
+
+}
 
 #pragma mark Public APIs
 
@@ -336,10 +352,14 @@ DEFINE_EXCEPTIONS
 			active = [[self tabController].viewControllers objectAtIndex:index];
 		}
 	}
-    if (active != nil) {
-        [self tabController].selectedViewController = active;
-        [self tabBarController:[self tabController] didSelectViewController:active];
-    }
+	if (active == nil && [self tabController].viewControllers.count > 0)  {
+		active = [self tabController].selectedViewController;
+	}
+	if (active == nil)  {
+		DebugLog(@"setActiveTab called but active view controller could not be determined");
+	}
+	[self tabController].selectedViewController = active;
+	[self tabBarController:[self tabController] didSelectViewController:active];
 }
 
 -(void)setAllowUserCustomization_:(id)value

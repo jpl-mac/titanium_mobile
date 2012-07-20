@@ -298,10 +298,18 @@
 	[self textWidgetView].rightButtonPadding = [TiUtils floatValue:value];
 }
 
+-(void)setEditable_:(id)value
+{
+    BOOL _trulyEnabled = ([TiUtils boolValue:value def:YES] && [TiUtils boolValue:[[self proxy] valueForUndefinedKey:@"enabled"] def:YES]);
+    [[self textWidgetView] setEnabled:_trulyEnabled];
+}
+
 -(void)setEnabled_:(id)value
 {
-	[[self textWidgetView] setEnabled:[TiUtils boolValue:value]];
+    BOOL _trulyEnabled = ([TiUtils boolValue:value def:YES] && [TiUtils boolValue:[[self proxy] valueForUndefinedKey:@"editable"] def:YES]);
+    [[self textWidgetView] setEnabled:_trulyEnabled];
 }
+
 
 -(void)setBackgroundImage_:(id)image
 {
@@ -456,30 +464,17 @@
 
 - (BOOL)textFieldShouldBeginEditing:(UITextField *)textField;        // return NO to disallow editing.
 {
-	return YES;
+    return YES;
 }
 
 - (BOOL)textField:(UITextField *)tf shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
 {
-	NSString *curText = [tf text];
-    
+    NSString *curText = [[tf text] stringByReplacingCharactersInRange:range withString:string];
+   
     NSInteger maxLength = [[self textWidgetView] maxLength];    
-    if (maxLength > -1) {
-        NSInteger length = [curText length] + [string length] - range.length;
-        
-        if (length > maxLength) {
-            return NO;
-        }
+    if ( (maxLength > -1) && ([curText length] > maxLength) ) {
+        return NO;
     }
-	
-	if ([string isEqualToString:@""])
-	{
-		curText = [curText substringToIndex:[curText length]-range.length];
-	}
-	else
-	{
-		curText = [NSString stringWithFormat:@"%@%@",curText,string];
-	}
 
 	[(TiUITextFieldProxy *)self.proxy noteValueChange:curText];
 	return YES;

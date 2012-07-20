@@ -42,9 +42,14 @@
 {
 	NSString *value = [label text];
 	UIFont *font = [label font];
-	CGSize maxSize = CGSizeMake(suggestedWidth<=0 ? 480 : suggestedWidth, 1000);
+	CGSize maxSize = CGSizeMake(suggestedWidth<=0 ? 480 : suggestedWidth, 10000);
 	CGSize shadowOffset = [label shadowOffset];
 	requiresLayout = YES;
+	if ((suggestedWidth > 0) && [value characterAtIndex:value.length-1] == ' ') {
+		// (CGSize)sizeWithFont:(UIFont *)font constrainedToSize:(CGSize)size lineBreakMode:(UILineBreakMode)lineBreakMode method truncates
+		// the string having trailing spaces when given size parameter width is equal to the expected return width, so we adjust it here.
+		maxSize.width += 0.00001;
+	}
 	CGSize size = [value sizeWithFont:font constrainedToSize:maxSize lineBreakMode:UILineBreakModeTailTruncation];
 	if (shadowOffset.width > 0)
 	{
@@ -67,7 +72,31 @@
 
 -(void)padLabel
 {
-	[label setFrame:initialLabelFrame];
+    CGSize actualLabelSize = [self sizeForFont:initialLabelFrame.size.width];
+    CGFloat originX = (initialLabelFrame.size.width - actualLabelSize.width)/2.0;
+    if (originX < 0) {
+        originX = 0;
+    }
+    CGRect labelRect = CGRectMake(originX, 0, actualLabelSize.width, actualLabelSize.height);
+    switch (verticalAlign) {
+        case UIControlContentVerticalAlignmentBottom:
+            labelRect.origin.y = initialLabelFrame.size.height - actualLabelSize.height;
+            break;
+        case UIControlContentVerticalAlignmentCenter:
+            labelRect.origin.y = (initialLabelFrame.size.height - actualLabelSize.height)/2;
+            if (labelRect.origin.y < 0) {
+                labelRect.size.height = (initialLabelFrame.size.height - labelRect.origin.y);
+            }
+            break;
+        default:
+            if (initialLabelFrame.size.height < actualLabelSize.height) {
+                labelRect.size.height = initialLabelFrame.size.height;
+            }
+            break;
+    }
+    
+    [label setFrame:CGRectIntegral(labelRect)];
+
     if (repad &&
         backgroundView != nil && 
         !CGRectIsEmpty(initialLabelFrame))
@@ -107,6 +136,7 @@
         label.backgroundColor = [UIColor clearColor];
         label.numberOfLines = 0;
         [self addSubview:label];
+        self.clipsToBounds = YES;
 	}
 	return label;
 }
@@ -135,6 +165,13 @@
 
 #pragma mark Public APIs
 
+-(void)setVerticalAlign_:(id)value
+{
+    verticalAlign = [TiUtils intValue:value def:1];
+    if (label != nil) {
+        [self padLabel];
+    }
+}
 -(void)setText_:(id)text
 {
 	[[self label] setText:[TiUtils stringValue:text]];

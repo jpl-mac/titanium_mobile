@@ -5,49 +5,34 @@ description: Use the <Titanium.UI.createTextArea> method to create a text area.
 extends: Titanium.UI.View
 since: "0.8"
 
-events:
-  - name: blur
-    summary: Fired when this text area loses focus.
-    properties:
-      - name: value
-        summary: Value of this text area.
-        type: String
-        
-  - name: change
-    summary: Fired when this text area value changes.
-    properties:
-      - name: value
-        summary: New value of this text area.
-        type: String
-    
-  - name: focus
-    summary: Fired when this text area gains focus.
-    properties:
-      - name: value
-        summary: Value of this text area.
-        type: String
-        
-  - name: return
-    summary: Fired when the return key is pressed on the keyboard.
-    properties:
-      - name: value
-        summary: Value of this text area.
-        type: String
-        
-  - name: selected
-    summary: Fired when text in this text area is selected.
-    properties:
-      - name: range
-        summary: Dictionary that describes the position and length of the selected text.
-        type: textAreaSelectedParams
+methods:
+    # main doc inherited from Ti.UI.View.add
+  - name: add
+    description: |
+        Adding children to a `TextArea` is not supported on all platforms.
+
+        If you need to display views on top of this object, consider using 
+        another view as a container for both this object and the views you want 
+        to appear on top of it.
     platforms: [iphone, ipad]
 
-methods:
   - name: blur
     summary: Forces this text area to lose focus.
     
   - name: focus
     summary: Forces this text area to gain focus.
+
+  - name: hasText
+    summary: Returns `true` if this text area contains text.
+    returns:
+        type: Boolean
+        summary: True if this text area contains text.
+    since: "2.1.0"
+
+  - name: remove
+    description: |
+        See also: [add](Titanium.UI.TextArea.add), <Titanium.UI.View.add>.
+    platforms: [iphone, ipad]
 
 properties:
   - name: appearance
@@ -81,16 +66,24 @@ properties:
   - name: autoLink
     summary: Automatically convert text to clickable links. 
     description: |
-        Use one of the <Titanium.UI.iOS> auto-detect constants, 
+        In iOS, use one of the <Titanium.UI.iOS> auto-detect constants: 
         [AUTODETECT_ADDRESS](Titanium.UI.iOS.AUTODETECT_ADDRESS), 
         [AUTODETECT_ALL](Titanium.UI.iOS.AUTODETECT_ALL), 
         [AUTODETECT_CALENDAR](Titanium.UI.iOS.AUTODETECT_CALENDAR), 
         [AUTODETECT_LINK](Titanium.UI.iOS.AUTODETECT_LINK), 
         [AUTODETECT_NONE](Titanium.UI.iOS.AUTODETECT_NONE), 
         or [AUTODETECT_PHONE](Titanium.UI.iOS.AUTODETECT_PHONE).
+        
+        In Android, use one of the <Titanium.UI.Android> linkify constants:
+        [LINKIFY_ALL](Titanium.UI.Android.LINKIFY_ALL),
+        [LINKIFY_EMAIL_ADDRESSES](Titanium.UI.Android.LINKIFY_EMAIL_ADDRESSES),
+        [LINKIFY_MAP_ADDRESSES](Titanium.UI.Android.LINKIFY_MAP_ADDRESSES),
+        [LINKIFY_PHONE_NUMBERS](Titanium.UI.Android.LINKIFY_PHONE_NUMBERS),
+        or [LINKIFY_WEB_URLS](Titanium.UI.Android.LINKIFY_WEB_URLS).
     type: Number
-    default: <Titanium.UI.iOS.AUTODETECT_NONE>
-    platforms: [iphone, ipad]
+    default: <Titanium.UI.iOS.AUTODETECT_NONE> in iOS, undefined in Android
+    since: {android: 2.2.0}
+    platforms: [android, iphone, ipad]
     
   - name: clearOnEdit
     summary: Determines whether the value of this text area should be cleared when it is focused.
@@ -255,6 +248,43 @@ properties:
     type: [Number, String]
     default: <Titanium.UI.TEXT_VERTICAL_ALIGNMENT_TOP>
     platforms: [android]
+
+events:
+  - name: blur
+    summary: Fired when this text area loses focus.
+    properties:
+      - name: value
+        summary: Value of this text area.
+        type: String
+        
+  - name: change
+    summary: Fired when this text area value changes.
+    properties:
+      - name: value
+        summary: New value of this text area.
+        type: String
+    
+  - name: focus
+    summary: Fired when this text area gains focus.
+    properties:
+      - name: value
+        summary: Value of this text area.
+        type: String
+        
+  - name: return
+    summary: Fired when the return key is pressed on the keyboard.
+    properties:
+      - name: value
+        summary: Value of this text area.
+        type: String
+        
+  - name: selected
+    summary: Fired when text in this text area is selected.
+    properties:
+      - name: range
+        summary: Dictionary that describes the position and length of the selected text.
+        type: textAreaSelectedParams
+    platforms: [iphone, ipad]
 
 examples:
   - title: Basic Text Area with Customizations

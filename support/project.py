@@ -18,6 +18,9 @@ parser.add_option('-u', '--update-platforms', dest='update_platforms',
 def run(args):
 	return subprocess.Popen(args, stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()
 
+def is_iphone(platform):
+	return ((platform == 'iphone') or (platform == 'ios') or (platform == 'ipad'))
+
 def main(args, options):
 	argc = len(args)
 	if argc < 5 or args[1]=='--help':
@@ -36,7 +39,7 @@ def main(args, options):
 	blackberry_ndk = None
 
 	platformCount = 0;
-	if args[4] == 'iphone' or (argc > 5 and args[5] == 'iphone') or (argc > 6 and args[6] == 'iphone') or (argc > 7 and args[7] == 'iphone'):
+	if is_iphone(args[4]) or (argc > 5 and is_iphone(args[5])) or (argc > 6 and is_iphone(args[6])) or (argc > 7 and is_iphone(args[7])):
 		iphone = True
 		platformCount += 1
 	if args[4] == 'android' or (argc > 5 and args[5] == 'android') or (argc > 6 and args[6] == 'android') or (argc > 7 and args[7] == 'android'):

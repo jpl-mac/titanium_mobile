@@ -28,7 +28,7 @@ define(["Ti/_/Evented", "Ti/_/lang", "Ti/Network"], function(Evented, lang, Netw
 					magneticHeading: e.webkitCompassHeading
 				},
 				success: true,
-				timestamp: (new Date()).getTime()
+				timestamp: Date.now()
 				
 			};
 			api.fireEvent("heading", currentHeading);
@@ -69,7 +69,7 @@ define(["Ti/_/Evented", "Ti/_/lang", "Ti/Network"], function(Evented, lang, Netw
 		
 		getCurrentHeading: function(callback) {
 			if (compassSupport) {
-				if (currentHeading && (new Date()).getTime() - currentHeading.timestamp < api.maximumHeadingAge) {
+				if (currentHeading && Date.now() - currentHeading.timestamp < api.maximumHeadingAge) {
 					callback(currentHeading);
 				} else {
 					singleShotHeading(createHeadingCallback(callback));
@@ -201,6 +201,10 @@ define(["Ti/_/Evented", "Ti/_/lang", "Ti/Network"], function(Evented, lang, Netw
 				maximumHeadingAge: 1000,
 				forwardGeocoderTimeout: void 0,
 				reverseGeocoderTimeout: void 0
+			},
+
+			hasCompass: function() {
+				return compassSupport;
 			}
 			
 		},
