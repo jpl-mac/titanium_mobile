@@ -1210,6 +1210,7 @@ properties:
     type: Boolean
     default: true
     since: "2.1.0"
+    platforms: [android, iphone, ipad, mobileweb]
 
   - name: zIndex
     summary: Z-index stack order position, relative to other sibling views.
