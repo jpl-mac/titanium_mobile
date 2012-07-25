@@ -63,9 +63,9 @@ class BlackberryNDK:
 				return None
 
 		if platform.system() == 'Windows':
-			default_dirs = ['C:\\bbndk-10.0.4-beta']
+			default_dirs = ['C:\\bbndk']
 		else:
-			default_dirs = ['/Developer/SDKs/bbndk-10.0.4-beta', '/opt/bbndk-10.0.4-beta', '~/bbndk-10.0.4-beta', '~/opt/bbndk-10.0.4-beta']
+			default_dirs = ['/Applications/bbndk', '/Developer/SDKs/bbndk', '/opt/bbndk', '~/bbndk', '~/opt/bbndk']
 
 		for default_dir in default_dirs:
 			if os.path.exists(default_dir):
