@@ -132,7 +132,8 @@ NativeControlObject::NativeControlObject() :
     control_(NULL),
     layout_(NULL),
     left_(0),
-    top_(0)
+    top_(0),
+    eventHandler_(NULL)
 {
     if ((g_width <= 0) || (g_height <= 0))
     {
@@ -156,6 +157,11 @@ NativeControlObject::NativeControlObject() :
 
 NativeControlObject::~NativeControlObject()
 {
+    if (eventHandler_ != NULL)
+    {
+        delete eventHandler_;
+        eventHandler_ = NULL;
+    }
 }
 
 NAHANDLE NativeControlObject::getNativeHandle() const
@@ -174,6 +180,16 @@ void NativeControlObject::setControl(bb::cascades::Control* control)
     }
     container_->add(control);
     control_ = control;
+}
+
+void NativeControlObject::setupEvents(TiEventContainerFactory* containerFactory)
+{
+    NativeProxyObject::setupEvents(containerFactory);
+    TiEventContainer* eventClick = containerFactory->createEventContainer();
+    eventClick->setDataProperty("type", tetCLICK);
+    events_.insert(tetCLICK, EventPairSmartPtr(eventClick, new UIViewEventHandler(eventClick)));
+    QObject::connect(control_, SIGNAL(touch(bb::cascades::TouchEvent*)),
+                     events_[tetCLICK]->handler, SLOT(touch(bb::cascades::TouchEvent*)));
 }
 
 int NativeControlObject::setVisibility(bool visible)
@@ -466,26 +482,26 @@ int NativeControlObject::setType(TiObject*)
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
-PROP_SETGET(setRight)
+//PROP_SETGET(setRight)         // Commented to stop compiler from complaining
 int NativeControlObject::setRight(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
 PROP_SETGET(setWindow)
-int NativeControlObject::setWindow(TiObject* obj)
+int NativeControlObject::setWindow(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
 PROP_SETGET(setIcon)
-int NativeControlObject::setIcon(TiObject* obj)
+int NativeControlObject::setIcon(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
 
 PROP_SETGET(setMessage)
-int NativeControlObject::setMessage(TiObject* obj)
+int NativeControlObject::setMessage(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
