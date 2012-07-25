@@ -13,8 +13,8 @@
 #ifdef USE_TI_UI2DMATRIX	
 	#import "Ti2DMatrix.h"
 #endif
-#ifdef USE_TI_UIIOS3DMATRIX
-	#import "TiUIiOS3DMatrix.h"
+#if defined(USE_TI_UIIOS3DMATRIX) || defined(USE_TI_UI3DMATRIX)
+	#import "Ti3DMatrix.h"
 #endif
 #import "TiViewProxy.h"
 #import "TiApp.h"
@@ -24,7 +24,7 @@ void InsetScrollViewForKeyboard(UIScrollView * scrollView,CGFloat keyboardTop,CG
 {
 	VerboseLog(@"ScrollView:%@, keyboardTop:%f minimumContentHeight:%f",scrollView,keyboardTop,minimumContentHeight);
 
-	CGRect scrollVisibleRect = [scrollView convertRect:[scrollView bounds] toView:[[TiApp controller] view]];
+	CGRect scrollVisibleRect = [scrollView convertRect:[scrollView bounds] toView:[[TiApp app] topMostView]];
 	//First, find out how much we have to compensate.
 
 	CGFloat obscuredHeight = scrollVisibleRect.origin.y + scrollVisibleRect.size.height - keyboardTop;	
@@ -57,7 +57,7 @@ void OffsetScrollViewForRect(UIScrollView * scrollView,CGFloat keyboardTop,CGFlo
 			scrollView,keyboardTop,minimumContentHeight,
 			responderRect.origin.x,responderRect.origin.y,responderRect.size.width,responderRect.size.height);
 
-	CGRect scrollVisibleRect = [scrollView convertRect:[scrollView bounds] toView:[[TiApp controller] view]];
+	CGRect scrollVisibleRect = [scrollView convertRect:[scrollView bounds] toView:[[TiApp app] topMostView]];
 	//First, find out how much we have to compensate.
 
 	CGFloat obscuredHeight = scrollVisibleRect.origin.y + scrollVisibleRect.size.height - keyboardTop;	
@@ -102,7 +102,7 @@ void ModifyScrollViewForKeyboardHeightAndContentHeightWithResponderRect(UIScroll
 			scrollView,keyboardTop,minimumContentHeight,
 			responderRect.origin.x,responderRect.origin.y,responderRect.size.width,responderRect.size.height);
 
-	CGRect scrollVisibleRect = [scrollView convertRect:[scrollView bounds] toView:[[TiApp controller] view]];
+	CGRect scrollVisibleRect = [scrollView convertRect:[scrollView bounds] toView:[[TiApp app] topMostView]];
 	//First, find out how much we have to compensate.
 
 	CGFloat obscuredHeight = scrollVisibleRect.origin.y + scrollVisibleRect.size.height - keyboardTop;	
@@ -360,10 +360,10 @@ DEFINE_EXCEPTIONS
 		return;
 	}
 #endif
-#ifdef USE_TI_UIIOS3DMATRIX	
-	if ([transformMatrix isKindOfClass:[TiUIiOS3DMatrix class]])
+#if defined(USE_TI_UIIOS3DMATRIX) || defined(USE_TI_UI3DMATRIX)
+	if ([transformMatrix isKindOfClass:[Ti3DMatrix class]])
 	{
-		self.layer.transform = CATransform3DConcat(CATransform3DMakeAffineTransform(virtualParentTransform),[(TiUIiOS3DMatrix*)transformMatrix matrix]);
+		self.layer.transform = CATransform3DConcat(CATransform3DMakeAffineTransform(virtualParentTransform),[(Ti3DMatrix*)transformMatrix matrix]);
 		return;
 	}
 #endif
@@ -469,13 +469,13 @@ DEFINE_EXCEPTIONS
     
     UIGraphicsBeginImageContextWithOptions(bgImage.size, NO, bgImage.scale);
     CGContextRef imageContext = UIGraphicsGetCurrentContext();
-    CGContextDrawImage(imageContext, CGRectMake(0, 0, bgImage.size.width * bgImage.scale, bgImage.size.height * bgImage.scale), [bgImage CGImage]);
+    CGContextDrawImage(imageContext, CGRectMake(0, 0, bgImage.size.width , bgImage.size.height), [bgImage CGImage]);
     UIImage* translatedImage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     
     UIGraphicsBeginImageContextWithOptions(self.bounds.size, NO, bgImage.scale);
     CGContextRef background = UIGraphicsGetCurrentContext();
-    CGRect imageRect = CGRectMake(0, 0, bgImage.size.width * bgImage.scale, bgImage.size.height * bgImage.scale);
+    CGRect imageRect = CGRectMake(0, 0, bgImage.size.width, bgImage.size.height);
     CGContextDrawTiledImage(background, imageRect, [translatedImage CGImage]);
     UIImage* renderedBg = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
@@ -493,6 +493,7 @@ DEFINE_EXCEPTIONS
     else {
         [self backgroundImageLayer].contents = (id)bgImage.CGImage;
         if (bgImage != nil) {
+            [self backgroundImageLayer].contentsScale = [bgImage scale];
             [self backgroundImageLayer].contentsCenter = TiDimensionLayerContentCenter(topCap, leftCap, topCap, leftCap, [bgImage size]);
         }
     }
@@ -1218,6 +1219,8 @@ DEFINE_EXCEPTIONS
 
 	[self updateTouchHandling];
     if ([event isEqualToString:@"swipe"]) {
+        [[self gestureRecognizerForEvent:@"uswipe"] setEnabled:NO];
+        [[self gestureRecognizerForEvent:@"dswipe"] setEnabled:NO];
         [[self gestureRecognizerForEvent:@"rswipe"] setEnabled:NO];
         [[self gestureRecognizerForEvent:@"lswipe"] setEnabled:NO];
     }

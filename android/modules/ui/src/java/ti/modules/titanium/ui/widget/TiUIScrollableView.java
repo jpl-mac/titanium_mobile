@@ -277,8 +277,8 @@ public class TiUIScrollableView extends TiUIView
 			}
 		}
 
-		if (d.containsKey(TiC.PROPERTY_SCROLLINGENABLED)) {
-			mEnabled = TiConvert.toBoolean(d, TiC.PROPERTY_SCROLLINGENABLED);
+		if (d.containsKey(TiC.PROPERTY_SCROLLING_ENABLED)) {
+			mEnabled = TiConvert.toBoolean(d, TiC.PROPERTY_SCROLLING_ENABLED);
 		}
 
 		super.processProperties(d);
@@ -298,7 +298,7 @@ public class TiUIScrollableView extends TiUIView
 			} else {
 				hidePager();
 			}
-		} else if (TiC.PROPERTY_SCROLLINGENABLED.equals(key)) {
+		} else if (TiC.PROPERTY_SCROLLING_ENABLED.equals(key)) {
 			mEnabled = TiConvert.toBoolean(newValue);
 		} else {
 			super.propertyChanged(key, oldValue, newValue, proxy);
@@ -307,14 +307,18 @@ public class TiUIScrollableView extends TiUIView
 
 	public void addView(TiViewProxy proxy)
 	{
-		mViews.add(proxy);
-		mAdapter.notifyDataSetChanged();
+		if (!mViews.contains(proxy)) {
+			mViews.add(proxy);
+			getProxy().setProperty(TiC.PROPERTY_VIEWS, mViews.toArray());
+			mAdapter.notifyDataSetChanged();
+		}
 	}
 
 	public void removeView(TiViewProxy proxy)
 	{
 		if (mViews.contains(proxy)) {
 			mViews.remove(proxy);
+			getProxy().setProperty(TiC.PROPERTY_VIEWS, mViews.toArray());
 			mAdapter.notifyDataSetChanged();
 		}
 	}
@@ -357,6 +361,7 @@ public class TiUIScrollableView extends TiUIView
 			Log.w(TAG, "Request to move to index " + index+ " ignored, as it is out-of-bounds.");
 			return;
 		}
+		mCurIndex = index;
 		mPager.setCurrentItem(index);
 	}
 

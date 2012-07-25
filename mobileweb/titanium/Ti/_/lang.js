@@ -7,7 +7,7 @@
  * <http://dojotoolkit.org>
  */
 
-define(function() {
+define(["Ti/_/has"], function(has) {
 	var global = this,
 		hitch,
 		is = require.is;
@@ -17,7 +17,7 @@ define(function() {
 	}
 
 	function hitchArgs(scope, method) {
-		var pre = toArray(arguments, 2);
+		var pre = toArray(arguments, 2),
 			named = is(method, "String");
 		return function() {
 			var s = scope || global,
@@ -105,7 +105,7 @@ define(function() {
 									enumerable: true
 								});
 
-								if (require.has("declare-property-methods") && (writable || property.toUpperCase() !== property)) {
+								if (has("declare-property-methods") && (writable || property.toUpperCase() !== property)) {
 									externalDest["get" + capitalizedName] = function() { return internalDest[property]; };
 									writable && (externalDest["set" + capitalizedName] = function(v) { return internalDest[property] = v; });
 								}
@@ -151,7 +151,9 @@ define(function() {
 				q = parts.pop(),
 				obj = window,
 				i = 0,
-				p = parts[i++];
+				p = parts[i++],
+				a,
+				r;
 
 			if (p) {
 				do {
@@ -159,17 +161,15 @@ define(function() {
 				} while (obj && (p = parts[i++]));
 			}
 
-			if (!obj || !q) {
-				return;
-			}
-			q = q in obj ? obj[q] : (obj[q] = {});
-
-			// need to mix args into values
-			for (i = 1; i < arguments.length; i++) {
-				is(arguments[i], "Object") ? this.mixProps(q, arguments[i], 1) : (q = arguments[i]);
+			if (obj && q) {
+				r = q in obj ? obj[q] : {};
+				// need to mix args into values
+				for (i = 1; i < arguments.length; i++) {
+					is(a = arguments[i], "Object") ? this.mixProps(r, a, 1) : (r = a);
+				}
 			}
 
-			return q;
+			return obj[q] = r;
 		},
 
 		toArray: toArray,
@@ -178,15 +178,17 @@ define(function() {
 			var enc = encodeURIComponent,
 				pairs = [],
 				prop,
-				value;
+				value,
+				i,
+				l;
 
 			for (prop in obj) {
 				if (obj.hasOwnProperty(prop)) {
 					is(value = obj[prop], "Array") || (value = [value]);
 					prop = enc(prop) + "=";
-					require.each(value, function(v) {
-						pairs.push(prop + enc(v));
-					});
+					for (i = 0, l = value.length; i < l;) {
+						pairs.push(prop + enc(value[i++]));
+					}
 				}
 			}
 
@@ -194,7 +196,7 @@ define(function() {
 		},
 
 		val: function(originalValue, defaultValue) {
-			return is(originalValue, "Undefined") ? defaultValue : originalValue;
+			return originalValue === void 0 ? defaultValue : originalValue;
 		}
 	};
 });

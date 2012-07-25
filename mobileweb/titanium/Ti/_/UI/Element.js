@@ -1,25 +1,14 @@
 define(
-	["Ti/_/browser", "Ti/_/css", "Ti/_/declare", "Ti/_/dom", "Ti/_/event", "Ti/_/lang", "Ti/_/style", "Ti/_/Evented",
-	"Ti/UI", "Ti/_/Promise", "Ti/_/string"],
-	function(browser, css, declare, dom, event, lang, style, Evented, UI, Promise, string) {
+	["Ti/_/css", "Ti/_/declare", "Ti/_/dom", "Ti/_/event", "Ti/_/lang",
+	"Ti/_/style", "Ti/_/Evented", "Ti/UI", "Ti/UI/Animation"],
+	function(css, declare, dom, event, lang, style, Evented, UI, Animation) {
 
 	var global = window,
 		unitize = dom.unitize,
 		computeSize = dom.computeSize,
 		on = require.on,
 		setStyle = style.set,
-		isDef = lang.isDef,
-		val = lang.val,
 		is = require.is,
-		has = require.has,
-		transitionEvents = {
-			webkit: "webkitTransitionEnd",
-			trident: "msTransitionEnd",
-			gecko: "transitionend",
-			presto: "oTransitionEnd"
-		},
-		transitionEnd = transitionEvents[browser.runtime] || "transitionEnd",
-		curves = ["ease", "ease-in", "ease-in-out", "ease-out", "linear"],
 		postDoBackground = {
 			post: "_doBackground"
 		},
@@ -40,6 +29,7 @@ define(
 			longpress: "LongPress",
 			singletap: "SingleTap",
 			click: "SingleTap",
+			dragging: "Dragging",
 			doubleclick: "DoubleTap",
 			touchstart: "TouchStart",
 			touchend: "TouchEnd",
@@ -65,13 +55,14 @@ define(
 				// Handle click/touch/gestures
 				recognizers = this._gestureRecognizers = {},
 
-				useTouch = "ontouchstart" in global,
-				bg = lang.hitch(this, "_doBackground");
+				useTouch = "ontouchstart" in global;
 
 			function processTouchEvent(eventType, evt) {
 				var i,
 					touches = evt.changedTouches;
-				if (this._preventDefaultTouchEvent) {
+				if (!self._preventDefaultTouchEvent) {
+					evt.skipPreventDefault = 1;
+				} else if (!evt.skipPreventDefault) {
 					evt.preventDefault && evt.preventDefault();
 					for (i in touches) {
 						touches[i].preventDefault && touches[i].preventDefault();
@@ -94,7 +85,7 @@ define(
 
 			this._children = [];
 
-			on(this.domNode, useTouch ? "touchstart" : "mousedown", function(evt){
+			this._disconnectTouchEvent = on(this.domNode, useTouch ? "touchstart" : "mousedown", function(evt){
 				var handles = [
 					on(global, useTouch ? "touchmove" : "mousemove", function(evt){
 						if (!touchMoveBlocked) {
@@ -119,12 +110,17 @@ define(
 				processTouchEvent("TouchStartEvent", evt);
 			});
 
-			this.addEventListener("touchstart", bg);
-			this.addEventListener("touchend", bg);
+			on(this, "touchstart", this, "_doBackground");
+			on(this, "touchend", this, "_doBackground");
 
 			var values = this.constants.__values__;
 			this._layoutCoefficients = {
 				width: {
+					x1: 0,
+					x2: 0,
+					x3: 0
+				},
+				minWidth: {
 					x1: 0,
 					x2: 0,
 					x3: 0
@@ -135,6 +131,11 @@ define(
 					x3: 0
 				},
 				height: {
+					x1: 0,
+					x2: 0,
+					x3: 0
+				},
+				minHeight: {
 					x1: 0,
 					x2: 0,
 					x3: 0
@@ -213,7 +214,7 @@ define(
 			view._triggerLayout();
 		},
 
-		_insertAt: function(view,index, hidden) {
+		_insertAt: function(view, index, hidden) {
 			var children = this._children;
 			if (index > children.length || index < 0) {
 				return;
@@ -249,6 +250,7 @@ define(
 		destroy: function() {
 			if (this._alive) {
 				var children = this._children;
+				this._disconnectTouchEvent();
 				while (children.length) {
 					children.splice(0, 1)[0].destroy();
 				}
@@ -500,9 +502,9 @@ define(
 				}
 			}
 
-			require.each(require.config.vendorPrefixes.css, lang.hitch(this,function(vendorPrefix) {
+			require.config.vendorPrefixes.css.forEach(function(vendorPrefix) {
 				setStyle(this.domNode, "backgroundImage", vendorPrefix + cssVal + ")");
-			}));
+			}, this);
 		},
 
 		_preventDefaultTouchEvent: true,
@@ -588,7 +590,9 @@ define(
 					m = (evt.type || "").match(/mouse(over|out)/),
 					bi = this.backgroundImage || this._defaultBackgroundImage || "none",
 					bc = this.backgroundColor || this._defaultBackgroundColor,
-					repeat = this.backgroundRepeat;
+					repeat = this.backgroundRepeat,
+					nodeStyle = this.domNode.style,
+					tmp;
 
 				if (this._touching) {
 					bc = this.backgroundSelectedColor || this._defaultBackgroundSelectedColor || bc;
@@ -606,12 +610,18 @@ define(
 					bi = this.backgroundDisabledImage || this._defaultBackgroundDisabledImage || bi;
 				}
 
-				setStyle(this.domNode, {
-					backgroundColor: bc || (bi && bi !== "none" ? "transparent" : ""),
-					backgroundImage: style.url(bi),
-					backgroundRepeat: repeat ? "repeat" : "no-repeat",
-					backgroundSize: repeat ? "auto" : "100% 100%"
-				});
+				bc = bc || (bi && bi !== "none" ? "transparent" : "");
+				nodeStyle.backgroundColor.toLowerCase() !== bc.toLowerCase() && (nodeStyle.backgroundColor = bc);
+
+				bi = style.url(bi);
+				nodeStyle.backgroundImage.replace(/'|"/g, '').toLowerCase() !== bi.toLowerCase() && (nodeStyle.backgroundImage = bi);
+
+				if (bi) {
+					tmp = repeat ? "repeat" : "no-repeat";
+					nodeStyle.backgroundRepeat !== tmp && (nodeStyle.backgroundRepeat = tmp);
+					tmp = repeat ? "auto" : "100%";
+					nodeStyle.backgroundSize.replace(/(100%) 100%/, "$1") !== tmp && (nodeStyle.backgroundSize = tmp);
+				}
 			}
 		},
 
@@ -626,18 +636,7 @@ define(
 				f.node = node;
 				f.evts = [
 					on(node, "focus", this, "_doBackground"),
-					on(node, "blur", this, "_doBackground") /*,
-					on(node, "mouseover", this, function() {
-						this._doBackground();
-						f.evtsMore = [
-							on(node, "mousemove", this, "_doBackground"),
-							on(node, "mouseout", this, function() {
-								this._doBackground();
-								event.off(f.evtsMore);
-								f.evtsMore = [];
-							})
-						];
-					})*/
+					on(node, "blur", this, "_doBackground")
 				];
 			}
 
@@ -653,91 +652,18 @@ define(
 		},
 
 		animate: function(anim, callback) {
-			if (UI._layoutInProgress || !this._isAttachedToActiveWin()) {
-				on.once(UI,"postlayout", lang.hitch(this, function(){
-					this._doAnimation(anim, callback);
-				}));
-			} else {
-				this._doAnimation(anim, callback);
-			}
-		},
-
-		_doAnimation: function(anim, callback) {
-			anim = anim || {};
-			var curve = curves[anim.curve] || "ease",
-				self = this,
-				fn = function() {
-
-					// It is possible for the asynchronicity of animations to leave us in a state where the element was removed from its parent mid-animation
-					if (!self._parent) {
-						return;
-					}
-
-					var transformCss = "";
-
-					// Set the color and opacity properties
-					anim.backgroundColor !== void 0 && (self.backgroundColor = anim.backgroundColor);
-					anim.opacity !== void 0 && setStyle(self.domNode, "opacity", anim.opacity);
-					setStyle(self.domNode, "display", anim.visible !== void 0 && !anim.visible ? "none" : "");
-
-					// Set the position and size properties
-					if (!["left", "top", "right", "bottom", "center", "width", "height", "borderWidth"].every(function(v) { return !isDef(anim[v]); })) {
-						self._parent._layout.calculateAnimation(self, anim); // Guaranteed a parent because of the _isAttachedToActiveWin check in animate()
-					}
-
-					// Set the z-order
-					!isDef(anim.zIndex) && setStyle(self.domNode, "zIndex", anim.zIndex);
-
-					// Set the transform properties
-					if (anim.transform) {
-						self._curTransform = self._curTransform ? self._curTransform.multiply(anim.transform) : anim.transform;
-						transformCss = self._curTransform.toCSS();
-					}
-
-					setStyle(self.domNode, "transform", transformCss);
-				};
-
-			anim.duration = anim.duration || 0;
-			anim.delay = anim.delay || 0;
-			anim.transform && setStyle(self.domNode, "transform", "");
-			anim.start && anim.start();
-
-			if (anim.duration > 0) {
-				function completeAnimation(){
-					if (!self._destroyed) {
-						// Clear the transform so future modifications in these areas are not animated
-						setStyle(self.domNode, "transition", "");
-						is(anim.complete, "Function") && anim.complete();
-						is(callback, "Function") && callback.call(self);
-					}
-				}
-				
-				// Create the transition, must be set before setting the other properties
-				if (style.supports("transition", self.domNode)) {
-					setStyle(self.domNode, "transition", "all " + anim.duration + "ms " + curve + (anim.delay ? " " + anim.delay + "ms" : ""));
-					on.once(global, transitionEnd, function(e) {
-						completeAnimation();
-					});
-				} else {
-					setTimeout(completeAnimation,anim.duration);
-				}
-				setTimeout(fn, 0);
-			} else {
-				fn();
-				is(anim.complete, "Function") && anim.complete();
-				is(callback, "Function") && callback.call(self);
-			}
+			return Animation._play(this, anim && anim.declaredClass === "Ti.UI.Animation" ? anim : new Animation(anim)).then(callback);
 		},
 
 		_setTouchEnabled: function(value) {
 			var children = this._children,
+				child,
 				i = 0,
 				len = children.length;
 			setStyle(this.domNode, "pointerEvents", value ? "auto" : "none");
-			if (!value) {
-				for (; i < len; i++) {
-					children[i]._setTouchEnabled(value);
-				}
+			for (; i < len; i++) {
+				child = children[i];
+				child._setTouchEnabled(value && child.touchEnabled);
 			}
 		},
 		
@@ -925,10 +851,11 @@ define(
 
 			visible: {
 				set: function(value, orig) {
+					value = !!value;
 					if (value !== orig) {
 						!value && (this._lastDisplay = style.get(this.domNode, "display"));
 						setStyle(this.domNode, "display", !!value ? this._lastDisplay || "" : "none");
-						!!value && this._triggerLayout();
+						value && orig !== void 0 && this._triggerLayout();
 					}
 					return value;
 				}
@@ -948,7 +875,7 @@ define(
 
 			transform: {
 				set: function(value) {
-					setStyle(this.domNode, "transform", value.toCSS());
+					setStyle(this.domNode, "transform", value && value.toCSS());
 					return this._curTransform = value;
 				}
 			},

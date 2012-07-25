@@ -267,6 +267,7 @@ class Builder(object):
 		
 	def set_java_commands(self):
 		self.jarsigner = "jarsigner"
+		self.keytool = "keytool"
 		self.javac = "javac"
 		self.java = "java"
 		java_home = None
@@ -277,6 +278,7 @@ class Builder(object):
 		if platform.system() == "Windows":
 			if java_home:
 				home_jarsigner = os.path.join(java_home, "bin", "jarsigner.exe")
+				home_keytool = os.path.join(java_home, "bin", "keytool.exe")
 				home_javac = os.path.join(java_home, "bin", "javac.exe")
 				home_java = os.path.join(java_home, "bin", "java.exe")
 				found = True
@@ -287,7 +289,13 @@ class Builder(object):
 					# Expected but not found
 					found = False
 					error("Required jarsigner not found")
-					
+				
+				if os.path.exists(home_keytool):
+					self.keytool = home_keytool
+				else:
+					error("Required keytool not found")
+					found = False
+
 				if os.path.exists(home_javac):
 					self.javac = home_javac
 				else:
@@ -308,6 +316,7 @@ class Builder(object):
 				for path in os.environ['PATH'].split(os.pathsep):
 					if os.path.exists(os.path.join(path, 'jarsigner.exe')) and os.path.exists(os.path.join(path, 'javac.exe')):
 						self.jarsigner = os.path.join(path, 'jarsigner.exe')
+						self.keytool = os.path.join(path, 'keytool.exe')
 						self.javac = os.path.join(path, 'javac.exe')
 						self.java = os.path.join(path, 'java.exe')
 						java_home = os.path.dirname(os.path.dirname(self.javac))
@@ -490,7 +499,7 @@ class Builder(object):
 			'-partition-size',
 			'128' # in between nexusone and droid
 		]
-		emulator_cmd.extend(add_args);
+		emulator_cmd.extend([arg.strip() for arg in add_args if len(arg.strip()) > 0])
 		debug(' '.join(emulator_cmd))
 		
 		p = subprocess.Popen(emulator_cmd)
@@ -1506,8 +1515,9 @@ class Builder(object):
 		apk_zip.write(os.path.join(sdk_native_libs, 'armeabi', 'libtiverify.so'), 'lib/armeabi/libtiverify.so')
 		apk_zip.write(os.path.join(sdk_native_libs, 'armeabi-v7a', 'libtiverify.so'), 'lib/armeabi-v7a/libtiverify.so')
 		# See below about x86 and production
-		if self.deploy_type != 'production':
-			apk_zip.write(os.path.join(sdk_native_libs, 'x86', 'libtiverify.so'), 'lib/x86/libtiverify.so')
+		x86_dir = os.path.join(sdk_native_libs, 'x86')
+		if self.deploy_type != 'production' and os.path.exists(x86_dir):
+			apk_zip.write(os.path.join(x86_dir, 'libtiverify.so'), 'lib/x86/libtiverify.so')
 
 		if self.runtime == 'v8':
 			apk_zip.write(os.path.join(sdk_native_libs, 'armeabi', 'libkroll-v8.so'), 'lib/armeabi/libkroll-v8.so')
@@ -1516,9 +1526,9 @@ class Builder(object):
 			apk_zip.write(os.path.join(sdk_native_libs, 'armeabi-v7a', 'libstlport_shared.so'), 'lib/armeabi-v7a/libstlport_shared.so')
 			# Only include x86 in non-production builds for now, since there are
 			# no x86 devices on the market
-			if self.deploy_type != 'production':
-				apk_zip.write(os.path.join(sdk_native_libs, 'x86', 'libkroll-v8.so'), 'lib/x86/libkroll-v8.so')
-				apk_zip.write(os.path.join(sdk_native_libs, 'x86', 'libstlport_shared.so'), 'lib/x86/libstlport_shared.so')
+			if self.deploy_type != 'production' and os.path.exists(x86_dir):
+				apk_zip.write(os.path.join(x86_dir, 'libkroll-v8.so'), 'lib/x86/libkroll-v8.so')
+				apk_zip.write(os.path.join(x86_dir, 'libstlport_shared.so'), 'lib/x86/libstlport_shared.so')
 
 				
 		self.apk_updated = True
@@ -1531,6 +1541,27 @@ class Builder(object):
 		command.extend(self.device_args)
 		command.extend(args)
 		return run.run(command)
+
+	def get_sigalg(self):
+		output = run.run([self.keytool,
+			'-v', 
+			'-list',
+			'-keystore', self.keystore,
+			'-storepass', self.keystore_pass,
+			'-alias', self.keystore_alias
+		])
+
+		# If the keytool encounters an error, that means some of the provided
+		# keychain info is invalid and we should bail anyway
+		run.check_output_for_error(output, r'RuntimeException: (.*)', True)
+		run.check_output_for_error(output, r'^keytool: (.*)', True)
+
+		match = re.search(r'Signature algorithm name: (.*)', output)
+		if match is not None:
+			return match.group(1)
+
+		# Return the default:
+		return "MD5withRSA"
 
 	def package_and_deploy(self):
 		ap_ = os.path.join(self.project_dir, 'bin', 'app.ap_')
@@ -1559,7 +1590,7 @@ class Builder(object):
 			app_apk = os.path.join(self.project_dir, 'bin', 'app.apk')	
 
 		output = run.run([self.jarsigner,
-			'-sigalg', 'MD5withRSA',
+			'-sigalg', self.get_sigalg(),
 			'-digestalg', 'SHA1',
 			'-storepass', self.keystore_pass,
 			'-keystore', self.keystore,
@@ -1971,13 +2002,14 @@ class Builder(object):
 			self.google_apis_supported = False
 				
 			# find the AVD we've selected and determine if we support Google APIs
-			for avd_props in avd.get_avds(self.sdk):
-				if avd_props['id'] == avd_id:
-					my_avd = avd_props
-					self.google_apis_supported = (my_avd['name'].find('Google')!=-1 or my_avd['name'].find('APIs')!=-1)
-					break
+			if avd_id is not None:
+				for avd_props in avd.get_avds(self.sdk):
+					if avd_props['id'] == avd_id:
+						my_avd = avd_props
+						self.google_apis_supported = (my_avd['name'].find('Google')!=-1 or my_avd['name'].find('APIs')!=-1)
+						break
 			
-			if build_only:
+			if build_only or avd_id is None:
 				self.google_apis_supported = True
 
 			remove_orphaned_files(resources_dir, self.assets_resources_dir, self.non_orphans)
@@ -2213,8 +2245,7 @@ if __name__ == "__main__":
 			password = dequote(sys.argv[7])
 			alias = dequote(sys.argv[8])
 			output_dir = dequote(sys.argv[9])
-			avd_id = dequote(sys.argv[10])
-			s.build_and_run(True, avd_id, key, password, alias, output_dir)
+			s.build_and_run(True, None, key, password, alias, output_dir)
 		elif command == 'build':
 			s.build_and_run(False, 1, build_only=True)
 		else:
