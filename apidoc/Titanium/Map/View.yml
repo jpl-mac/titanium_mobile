@@ -18,6 +18,10 @@ description: |
     including a title, an optional subtitle, and one or more images.
     
     #### Android Platform Notes
+
+    Android supports only a **single** map view per application. This limitation is
+    imposed by Android, not by Titanium. Attempting to add a second map view results in
+    an exception being thrown.
     
     For Android, you must obtain an Android Maps API key from Google before using maps in a production
     application. You can sign up for the Maps API key on the Google Code web site:
@@ -364,15 +368,13 @@ properties:
     summary: The amount of north-to-south distance displayed on the map, measured in decimal degrees.
     type: Number
     permission: read-only
-    platforms: [iphone, ipad, mobileweb]
-    since: "1.9.0"
+    since: {android: "2.2.0", iphone: "1.9.0", ipad: "1.9.0", mobileweb: "1.9.0"}
 
   - name: longitudeDelta
     summary: The amount of east-to-west distance displayed on the map, measured in decimal degrees.
     type: Number
     permission: read-only
-    platforms: [iphone, ipad, mobileweb]
-    since: "1.9.0"
+    since: {android: "2.2.0", iphone: "1.9.0", ipad: "1.9.0", mobileweb: "1.9.0"}
 
 ---
 name: MapRegionType

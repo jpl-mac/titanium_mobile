@@ -86,16 +86,6 @@ public abstract class TiWindowProxy extends TiViewProxy
 	}
 
 	@Override
-	public boolean fireEvent(String eventName, Object data) {
-		// Notify tab of any focus or blur events.
-		if (tab != null && (eventName.equals(TiC.EVENT_FOCUS) || eventName.equals(TiC.EVENT_BLUR))) {
-			tab.fireEvent(eventName, data);
-		}
-
-		return super.fireEvent(eventName, data);
-	}
-
-	@Override
 	public TiUIView createView(Activity activity)
 	{
 		throw new IllegalStateException("Windows are created during open");
@@ -163,7 +153,6 @@ public abstract class TiWindowProxy extends TiViewProxy
 	@Kroll.method
 	public void close(@Kroll.argument(optional = true) Object arg)
 	{
-		if (!opened) { return; }
 
 		KrollDict options = null;
 		TiAnimation animation = null;
@@ -349,7 +338,7 @@ public abstract class TiWindowProxy extends TiViewProxy
 				activityOrientationMode = 8;
 			}
 
-			Activity activity = getActivity();
+			Activity activity = getWindowActivity();
 
 			// Wait until the window activity is created before setting orientation modes.
 			if (activity != null && windowActivityCreated)
@@ -393,7 +382,7 @@ public abstract class TiWindowProxy extends TiViewProxy
 
 	protected abstract void handleOpen(KrollDict options);
 	protected abstract void handleClose(KrollDict options);
-	protected abstract Activity handleGetActivity();
+	protected abstract Activity getWindowActivity();
 
 	/**
 	 * Sub-classes will need to call handlePostOpen after their window is visible

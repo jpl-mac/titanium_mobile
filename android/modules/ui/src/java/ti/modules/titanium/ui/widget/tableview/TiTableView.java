@@ -389,10 +389,21 @@ public class TiTableView extends FrameLayout
 		}
 	}
 	
-	protected Item getItemAtPosition(int position) {
+	public Item getItemAtPosition(int position) {
 		return viewModel.getViewModel().get(adapter.index.get(position));
 	}
 
+	public int getIndexFromXY(double x, double y) {
+		int bound = listView.getLastVisiblePosition() - listView.getFirstVisiblePosition();
+		for (int i = 0; i <= bound; i++) {
+			View child = listView.getChildAt(i);
+			if (child != null && x >= child.getLeft() && x <= child.getRight() && y >= child.getTop() && y <= child.getBottom()) {
+				return listView.getFirstVisiblePosition() + i;
+			}
+		}
+		return -1;
+	}
+	
 	protected boolean rowClicked(TiBaseTableViewItem rowView, int position, boolean longClick) {
 		String viewClicked = rowView.getLastClickedViewName();
 		Item item = getItemAtPosition(position);
@@ -530,6 +541,11 @@ public class TiTableView extends FrameLayout
 		}
 
 		super.onLayout(changed, left, top, right, bottom);
+
+		TiViewProxy viewProxy = proxy;
+		if (viewProxy != null && viewProxy.hasListeners(TiC.EVENT_POST_LAYOUT)) {
+			viewProxy.fireEvent(TiC.EVENT_POST_LAYOUT, null);
+		}
 
 		// Layout is finished, re-enable focus events.
 		if (focusListener != null) {

@@ -1,45 +1,55 @@
-define(["Ti/_/declare", "Ti/_/lang", "Ti/UI/View", "Ti/_/dom", "Ti/_/css", "Ti/_/style", "Ti/UI"],
-	function(declare, lang, View, dom, css, style, UI) {
+define(["Ti/_/declare", "Ti/_/lang", "Ti/UI/View", "Ti/_/dom", "Ti/_/css", "Ti/_/style", "Ti/UI", "Ti/_/Layouts/ConstrainingHorizontal"],
+	function(declare, lang, View, dom, css, style, UI, ConstrainingHorizontal) {
 
-	var setStyle = style.set,
+	var on = require.on,
+		emptyfn = function(){},
+		setStyle = style.set,
 		isDef = lang.isDef,
-		imagePrefix = "themes/" + require.config.ti.theme + "/UI/TableViewRow/"
+		imagePrefix = "themes/" + require.config.ti.theme + "/UI/TableViewRow/",
 		checkImage = imagePrefix + "check.png",
 		childImage = imagePrefix + "child.png",
 		detailImage = imagePrefix + "detail.png";
 
 	return declare("Ti.UI.TableViewRow", View, {
-		
+
 		// The number of pixels 1 indention equals
 		_indentionScale: 10,
-		
+
 		constructor: function(args) {
-			this._contentAligner = UI.createView({
-				width: UI.INHERIT,
-				height: UI.INHERIT,
-				layout: "constrainingHorizontal"
-			});
-			this._add(this._contentAligner);
-			
-			this._contentAligner._add(this._leftImageView = UI.createImageView({
+
+			this._layout = new ConstrainingHorizontal(this);
+
+			this._add(this._leftImageView = UI.createImageView({
 				width: UI.SIZE,
 				height: UI.SIZE
 			})); 
 
-			this._contentAligner._add(this._titleLabel = UI.createLabel({
+			var centerContainer = UI.createView({
 				width: UI.INHERIT,
-				height: UI.SIZE,
+				height: UI.INHERIT
+			});
+			this._add(centerContainer);
+
+			centerContainer._add(this._titleLabel = UI.createLabel({
+				width: UI.INHERIT,
+				height: UI.INHERIT,
 				wordWrap: false
 			}));
 
-			this._contentAligner._add(this._rightImageView = UI.createImageView({
+			centerContainer._add(this._contentContainer = UI.createView({
+				width: UI.INHERIT,
+				height: UI.INHERIT
+			}));
+
+			this._add(this._rightImageView = UI.createImageView({
 				right: 0,
 				width: UI.SIZE,
 				height: UI.SIZE
 			}));
 
-			// Force single tap to be processed.
-			this.addEventListener("singletap");
+			// Force single tap and long press to be enabled.
+			on(this, "singletap", emptyfn);
+			on(this, "longpress", emptyfn);
 		},
 
 		_defaultWidth: UI.INHERIT,
@@ -51,7 +61,7 @@ define(["Ti/_/declare", "Ti/_/lang", "Ti/UI/View", "Ti/_/dom", "Ti/_/css", "Ti/_
 		_tableViewSection: null,
 		
 		_handleTouchEvent: function(type, e) {
-			if (type === "click" || type === "singletap") {
+			if (type === "click" || type === "singletap" || type === "longpress") {
 				this._tableViewSection && this._tableViewSection._tableView && (this._tableViewSection._tableView._tableViewRowClicked = this);
 			}
 			View.prototype._handleTouchEvent.apply(this,arguments);
@@ -64,6 +74,16 @@ define(["Ti/_/declare", "Ti/_/lang", "Ti/UI/View", "Ti/_/dom", "Ti/_/css", "Ti/_
 				this._titleLabel.color = this.color;
 			}
 			View.prototype._doBackground.apply(this,arguments);
+		},
+
+		add: function(view) {
+			this._contentContainer._add(view);
+			this._publish(view);
+		},
+
+		remove: function(view) {
+			this._contentContainer._remove(view);
+			this._unpublish(view);
 		},
 
 		properties: {
@@ -104,6 +124,11 @@ define(["Ti/_/declare", "Ti/_/lang", "Ti/UI/View", "Ti/_/dom", "Ti/_/css", "Ti/_
 					return value;
 				},
 				value: 0
+			},
+			layout: {
+				set: function(value) {
+					this._contentContainer.layout = value;
+				}
 			},
 			leftImage: {
 				set: function(value) {

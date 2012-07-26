@@ -1,5 +1,5 @@
-define(["Ti/_", "Ti/_/dom", "Ti/_/lang", "Ti/App", "Ti/Platform"],
-	function(_, dom, lang, App, Platform) {
+define(["Ti/_", "Ti/_/dom", "Ti/_/has", "Ti/_/lang", "Ti/App", "Ti/Platform"],
+	function(_, dom, has, lang, App, Platform) {
 
 	var global = window,
 		is = require.is,
@@ -15,10 +15,6 @@ define(["Ti/_", "Ti/_/dom", "Ti/_/lang", "Ti/App", "Ti/Platform"],
 				if (analyticsEnabled) {
 					// store event
 					var storage = getStorage();
-						formatZeros = function(v, n){
-							var d = (v+'').length;
-							return (d < n ? (new Array(++n - d)).join("0") : "") + v;
-						};
 
 					storage.push({
 						id: _.uuid(),
@@ -36,15 +32,17 @@ define(["Ti/_", "Ti/_/dom", "Ti/_/lang", "Ti/App", "Ti/Platform"],
 			send: function(isUrgent) {
 				if (analyticsEnabled) {
 					var rand = Math.floor(Math.random() * 1e6),
-						now = (new Date).getTime(),
+						now = Date.now(),
 						ids = [],
 						jsonStrs = [],
 						sessionId = sessionStorage.getItem("ti:sessionId"),
-						seqId = JSON.parse(sessionStorage.getItem("ti:analyticsSeqId")),
+						seqId = sessionStorage.getItem("ti:analyticsSeqId"),
 						events = getStorage(),
 						i = 0,
 						len = events.length,
 						evt;
+
+					is(seqId, "String") && (seqId = JSON.parse(seqId));
 
 					clearTimeout(sendTimer);
 
@@ -68,7 +66,7 @@ define(["Ti/_", "Ti/_/dom", "Ti/_/lang", "Ti/App", "Ti/Platform"],
 								deploytype: App.deployType,
 								sid: sessionId,
 								ts: evt.ts,
-								data: /(Array|Object)/.test(is(evt.data)) ? JSON.stringify(evt.data) : evt.data
+								data: evt.data
 							}));
 
 							if (evt.type === "ti.end") {
@@ -83,7 +81,7 @@ define(["Ti/_", "Ti/_/dom", "Ti/_/lang", "Ti/App", "Ti/Platform"],
 						pending[rand] = ids;
 						analyticsLastSent = now;
 
-						if (require.has("analytics-use-xhr")) {
+						if (has("analytics-use-xhr")) {
 							var xhr = new XmlHttpRequest;
 							xhr.onreadystatechange = function() {
 								if (xhr.readyState === 4 && xhr.status === 200) {

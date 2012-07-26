@@ -152,7 +152,7 @@ static NSString * const kTitaniumJavascript = @"Ti.App={};Ti.API={};Ti.App._list
     [super frameSizeChanged:frame bounds:bounds];
 	if (webview!=nil)
 	{
-		[self setViewportWidth:@"'device-width'"];
+		[webview stringByEvaluatingJavaScriptFromString:[NSString stringWithFormat:@"document.body.style.minWidth='%fpx';document.body.style.minHeight='%fpx';",bounds.size.width-8,bounds.size.height-16]];
 		[TiUtils setView:webview positionRect:bounds];
 		
 		if (spinner!=nil)
@@ -160,43 +160,6 @@ static NSString * const kTitaniumJavascript = @"Ti.App={};Ti.API={};Ti.App._list
 			spinner.center = self.center;
 		}		
 	}
-}
-
--(void) setViewportWidth:(NSString *)aWidth
-{
-    [webview stringByEvaluatingJavaScriptFromString:[NSString stringWithFormat:
-				@"(function ( inWidth ) { "
-				"var result = ''; "
-				"var viewport = null; "
-				"var content = 'width=' + inWidth + ';'; "
-				"var document_head = document.getElementsByTagName('head')[0]; "
-				"var child = document_head.firstChild; "
-				"while ( child ) { "
-				"if ( null == viewport && child.nodeType == 1 && child.nodeName == 'meta' && child.getAttribute( 'name' ) == 'viewport' ) { "
-				"viewport = child; "
-				"content = child.getAttribute( 'content' ); "
-				"if ( content.search( /width\\s=\\s[^,]+/ ) < 0 ) { "
-				"content = 'width = ' + inWidth + ';' + content; "
-				"} else { "
-				"content = content.replace( /width\\s=\\s[^,]+/ , 'width = ' + inWidth ); "
-				"} "
-				"} "
-				"child = child.nextSibling; "
-				"} "
-				"if ( null != content ) { "
-				"child = document.createElement( 'meta' ); "
-				"child.setAttribute( 'name' , 'viewport' ); "
-				"child.setAttribute( 'content' , content ); "
-				"if ( null == viewport ) { "
-				"document_head.appendChild( child ); "
-				"result = 'append viewport ' + content; "
-				"} else { "
-				"document_head.replaceChild( child , viewport ); "
-				"result = 'replace viewport ' + content; "
-				"} "
-				"} "
-				"return result; "
-				"})( %@ )" , aWidth]];
 }
 
 -(NSURL*)fileURLToAppURL:(NSURL*)url_
@@ -737,19 +700,45 @@ static NSString * const kTitaniumJavascript = @"Ti.App={};Ti.API={};Ti.App._list
 
 - (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error
 {
-	// this means the pending request has been cancelled and should be
-	// safely squashed
-	if ([[error domain] isEqual:NSURLErrorDomain] && [error code]==-999)
+	NSString *offendingUrl = [self url];
+
+	if ([[error domain] isEqual:NSURLErrorDomain])
 	{
-		return;
+		offendingUrl = [[error userInfo] objectForKey:NSURLErrorFailingURLStringErrorKey];
+
+		// this means the pending request has been cancelled and should be
+		// safely squashed
+		if ([error code]==NSURLErrorCancelled)
+		{
+			return;
+		}
 	}
-	
-	NSLog(@"[ERROR] Error loading: %@, Error: %@",[self url],error);
-	
+
+	NSLog(@"[ERROR] Error loading: %@, Error: %@",offendingUrl,error);
+
 	if ([self.proxy _hasListeners:@"error"])
 	{
-		NSMutableDictionary *event = [NSMutableDictionary dictionaryWithObject:[self url] forKey:@"url"];
-		[event setObject:[error description] forKey:@"message"];
+		NSMutableDictionary *event = [NSMutableDictionary dictionaryWithObject:[error description] forKey:@"message"];
+
+		// We combine some error codes into a single one which we share with Android.
+		NSInteger rawErrorCode = [error code];
+		NSInteger returnErrorCode = rawErrorCode;
+
+		if (rawErrorCode == NSURLErrorUserCancelledAuthentication)
+		{
+			returnErrorCode = NSURLErrorUserAuthenticationRequired; // URL_ERROR_AUTHENTICATION
+		}
+		else if (rawErrorCode == NSURLErrorNoPermissionsToReadFile || rawErrorCode == NSURLErrorCannotCreateFile || rawErrorCode == NSURLErrorFileIsDirectory || rawErrorCode == NSURLErrorCannotCloseFile || rawErrorCode == NSURLErrorCannotWriteToFile || rawErrorCode == NSURLErrorCannotRemoveFile || rawErrorCode == NSURLErrorCannotMoveFile)
+		{
+			returnErrorCode = NSURLErrorCannotOpenFile; // URL_ERROR_FILE
+		}
+		else if (rawErrorCode == NSURLErrorDNSLookupFailed)
+		{
+			returnErrorCode = NSURLErrorCannotFindHost; // URL_ERROR_HOST_LOOKUP
+		}
+
+		[event setObject:[NSNumber numberWithInteger:returnErrorCode] forKey:@"errorCode"];
+		[event setObject:offendingUrl forKey:@"url"];
 		[self.proxy fireEvent:@"error" withObject:event];
 	}
 }

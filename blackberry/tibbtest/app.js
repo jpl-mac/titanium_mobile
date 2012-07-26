@@ -55,6 +55,11 @@ var sliderListener=function(e)
 };
 
 slider1.addEventListener('change',sliderListener);
+label1.addEventListener('click',function(e)
+	{
+		label1.text='Label was clicked';
+	}
+	);
 
 
 win1.add(slider1);

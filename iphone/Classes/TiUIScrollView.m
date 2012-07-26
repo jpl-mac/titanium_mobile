@@ -258,6 +258,13 @@
 	[[self scrollView] setBounces:![TiUtils boolValue:value]];
 }
 
+-(void)setScrollingEnabled_:(id)enabled
+{
+    BOOL scrollingEnabled = [TiUtils boolValue:enabled def:YES];
+    [[self scrollView] setScrollEnabled:scrollingEnabled];
+    [[self proxy] replaceValue:NUMBOOL(scrollingEnabled) forKey:@"scrollingEnabled" notification:NO];
+}
+
 -(void)setScrollsToTop_:(id)value
 {
 	[[self scrollView] setScrollsToTop:[TiUtils boolValue:value]];
@@ -342,6 +349,27 @@
 {
 	// scale between minimum and maximum. called after any 'bounce' animations
 	[(id<UIScrollViewDelegate>)[self proxy] scrollViewDidEndZooming:scrollView withView:(UIView*)view atScale:scale];
+}
+
+- (void)scrollViewDidZoom:(UIScrollView *)scrollView_
+{
+	CGSize boundsSize = scrollView.bounds.size;
+    CGRect frameToCenter = wrapperView.frame;
+	if (TiDimensionIsAuto(contentWidth)) {
+		if (frameToCenter.size.width < boundsSize.width) {
+			frameToCenter.origin.x = (boundsSize.width - frameToCenter.size.width) / 2;
+		} else {
+			frameToCenter.origin.x = 0;
+		}
+	}
+	if (TiDimensionIsAuto(contentHeight)) {
+		if (frameToCenter.size.height < boundsSize.height) {
+			frameToCenter.origin.y = (boundsSize.height - frameToCenter.size.height) / 2;
+		} else {
+			frameToCenter.origin.y = 0;
+		}
+	}
+    wrapperView.frame = frameToCenter;	
 }
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView_  

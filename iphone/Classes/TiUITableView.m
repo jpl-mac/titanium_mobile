@@ -20,6 +20,11 @@
 
 #define DEFAULT_SECTION_HEADERFOOTER_HEIGHT 20.0
 
+@interface TiUIView(eventHandler);
+-(void)handleListenerRemovedWithEvent:(NSString *)event;
+-(void)handleListenerAddedWithEvent:(NSString *)event;
+@end
+
 @interface TiUITableView ()
 @property (nonatomic,copy,readwrite) NSString * searchString;
 - (void)updateSearchResultIndexes;
@@ -88,6 +93,9 @@
 
 -(void)prepareForReuse
 {
+	if (proxy.callbackCell == self) {
+		[proxy prepareTableRowForReuse];
+	}
 	[self setProxy:nil];
 	[super prepareForReuse];
 	
@@ -138,13 +146,6 @@
         [proxy fireEvent:@"touchcancel" withObject:[proxy createEventObject:nil] propagate:YES];
     }
     [super touchesCancelled:touches withEvent:event];
-}
-
-
--(void)setHighlighted:(BOOL)yn animated:(BOOL)animated
-{
-	[super setHighlighted:yn animated:animated];
-	[self updateGradientLayer:yn|[self isSelected]];
 }
 
 -(void)handleEvent:(NSString*)type
@@ -208,16 +209,28 @@
 	[gradientLayer setNeedsDisplay];
 }
 
+-(void)setSelected:(BOOL)yn animated:(BOOL)animated
+{
+    [super setSelected:yn animated:animated];
+    [self updateGradientLayer:yn|[self isHighlighted]];
+}
+
+-(void)setHighlighted:(BOOL)yn animated:(BOOL)animated
+{
+    [super setHighlighted:yn animated:animated];
+    [self updateGradientLayer:yn|[self isSelected]];
+}
+
 -(void)setHighlighted:(BOOL)yn
 {
-	[self setHighlighted:yn animated:NO];
+    [super setHighlighted:yn];
+    [self updateGradientLayer:yn|[self isHighlighted]];
 }
 
 -(void)setSelected:(BOOL)yn
 {
     [super setSelected:yn];
-	[super setHighlighted:yn];
-	[self updateGradientLayer:yn|[self isHighlighted]];
+    [self updateGradientLayer:yn|[self isHighlighted]];
 }
 
 -(void) setBackgroundGradient_:(TiGradient *)newGradient
@@ -358,6 +371,8 @@
 		tableview.delegate = self;
 		tableview.dataSource = self;
 		tableview.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
+		
+		
 		if (TiDimensionIsDip(rowHeight))
 		{
 			[tableview setRowHeight:rowHeight.value];
@@ -937,6 +952,96 @@
 	}
 }
 
+-(void)handleListenerRemovedWithEvent:(NSString *)event
+{
+	if([event isEqualToString:@"longpress"])
+	{
+		for (UIGestureRecognizer *gesture in [tableview gestureRecognizers])
+		{
+			if([[gesture class] isEqual:[UILongPressGestureRecognizer class]])
+			{
+				[tableview removeGestureRecognizer:gesture];
+				return;
+			}
+		}
+	}
+	[super handleListenerRemovedWithEvent:event];
+}
+
+-(void)handleListenerAddedWithEvent:(NSString *)event
+{
+	ENSURE_UI_THREAD_1_ARG(event);
+    if ([event isEqualToString:@"longpress"]) {
+		UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressGesture:)];
+		[[self tableView] addGestureRecognizer:longPress];
+		[longPress release];
+		return;
+    }
+	[super handleListenerAddedWithEvent:event];
+}
+
+-(void)longPressGesture:(UILongPressGestureRecognizer *)recognizer
+{
+    if([[self proxy] _hasListeners:@"longpress"] && [recognizer state] == UIGestureRecognizerStateBegan)
+    {
+        UITableView *ourTableView = [self tableView];
+        CGPoint point = [recognizer locationInView:ourTableView];
+        NSIndexPath *indexPath = [ourTableView indexPathForRowAtPoint:point];
+
+        BOOL search = (ourTableView != tableview);
+        
+        if (indexPath == nil) {
+            //indexPath will also be nil if you click the header of the first section. TableView Bug??
+            TiUITableViewSectionProxy *section = [self sectionForIndex:0];
+            if (section != nil) {
+                CGRect headerRect = [ourTableView rectForHeaderInSection:0];
+                if ( CGRectContainsPoint(headerRect,point) ) {
+                    NSDictionary * eventObject = [NSDictionary dictionaryWithObjectsAndKeys:
+                                                  section,@"section",
+                                                  NUMBOOL(NO),@"detail",
+                                                  NUMBOOL(search),@"searchMode",
+                                                  NUMFLOAT(point.x), @"x",
+                                                  NUMFLOAT(point.y), @"y",
+                                                  nil];
+                    [[self proxy] fireEvent:@"longpress" withObject:eventObject]; 
+                    return;
+                }
+            }
+            NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:
+                                   NUMBOOL(NO),@"detail",
+                                   NUMBOOL(search),@"searchMode",
+                                   NUMFLOAT(point.x), @"x",
+                                   NUMFLOAT(point.y), @"y",
+                                   nil];
+            [[self proxy] fireEvent:@"longpress" withObject:event]; 
+            return;
+        }
+        
+        if (!search) {
+            //Make sure that the point does not fall into the rect for header or footer views
+            CGRect headerRect = [ourTableView rectForHeaderInSection:[indexPath section]];
+            CGRect footerRect = [ourTableView rectForFooterInSection:[indexPath section]];
+            if ( CGRectContainsPoint(headerRect,point) || CGRectContainsPoint(footerRect,point) ) {
+                TiUITableViewSectionProxy *section = [self sectionForIndex:[indexPath section]];
+                NSDictionary * eventObject = [NSDictionary dictionaryWithObjectsAndKeys:
+                                              section,@"section",
+                                              NUMBOOL(NO),@"detail",
+                                              NUMBOOL(search),@"searchMode",
+                                              NUMFLOAT(point.x), @"x",
+                                              NUMFLOAT(point.y), @"y",
+                                              nil];
+                [[self proxy] fireEvent:@"longpress" withObject:eventObject]; 
+                return;
+            }
+        }
+        if (allowsSelectionSet==NO || [ourTableView allowsSelection]==NO)
+        {
+            [ourTableView deselectRowAtIndexPath:indexPath animated:YES];
+        }
+        [self triggerActionForIndexPath:indexPath fromPath:nil tableView:ourTableView wasAccessory:NO search:search name:@"longpress"];
+	}
+}
+
 #pragma mark Searchbar-related accessors
 
 - (UIButton *) searchScreenView
@@ -1091,6 +1196,7 @@
 		}
 	}
 }
+
 
 -(CGFloat)contentHeightForWidth:(CGFloat)suggestedWidth
 {
@@ -1303,8 +1409,9 @@
 
 -(void)setAllowsSelection_:(id)arg
 {
-	allowsSelectionSet = [TiUtils boolValue:arg];
-	[[self tableView] setAllowsSelection:allowsSelectionSet];
+    allowsSelectionSet = [TiUtils boolValue:arg];
+    [[self tableView] setAllowsSelection:allowsSelectionSet];
+    [tableController setClearsSelectionOnViewWillAppear:!allowsSelectionSet];
 }
 
 -(void)setAllowsSelectionDuringEditing_:(id)arg
@@ -1434,6 +1541,7 @@
 		[searchField setDelegate:self];
 		tableController = [[UITableViewController alloc] init];
 		tableController.tableView = [self tableView];
+		[tableController setClearsSelectionOnViewWillAppear:!allowsSelectionSet];
 		searchController = [[UISearchDisplayController alloc] initWithSearchBar:[search searchBar] contentsController:tableController];
 		searchController.searchResultsDataSource = self;
 		searchController.searchResultsDelegate = self;
@@ -1684,6 +1792,7 @@ return result;	\
 	// the classname for all rows that have the same substainal layout will be the same
 	// we reuse them for speed
 	UITableViewCell *cell = [ourTableView dequeueReusableCellWithIdentifier:row.tableClass];
+	[row prepareTableRowForReuse];
 	if (cell == nil)
 	{
 		cell = [[[TiUITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:row.tableClass row:row] autorelease];
@@ -1693,11 +1802,6 @@ return result;	\
 	}
 	else
 	{
-		// TODO: Right now, reproxying, redrawing, reloading, etc. is SLOWER than simply drawing in the new cell contents!
-		// So what we're going to do with this cell is clear its contents out, then redraw it as if it were a new cell.
-		// Keeps the cell pool small and reusable.
-		[TiUITableViewRowProxy clearTableRowCell:cell];
-        
         // Have to reset the proxy on the cell, and the row's callback cell, as it may have been cleared in reuse operations (or reassigned)
         [(TiUITableViewCell*)cell setProxy:row];
         [row setCallbackCell:(TiUITableViewCell*)cell];

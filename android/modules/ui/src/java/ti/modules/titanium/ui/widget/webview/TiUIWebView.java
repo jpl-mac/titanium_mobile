@@ -116,7 +116,7 @@ public class TiUIWebView extends TiUIView
 		settings.setJavaScriptCanOpenWindowsAutomatically(true);
 		settings.setLoadsImagesAutomatically(true);
 		settings.setLightTouchEnabled(true);
-		settings.setDomStorageEnabled(true); // Required by some sites such as Twitter. Is on in our iOS WebView too.
+		settings.setDomStorageEnabled(true); // Required by some sites such as Twitter. This is in our iOS WebView too.
 
 		// enable zoom controls by default
 		boolean enableZoom = true;
@@ -337,7 +337,6 @@ public class TiUIWebView extends TiUIView
 			getWebView().getSettings().setLoadWithOverviewMode(true);
 		}
 		getWebView().loadUrl(finalUrl);
-
 	}
 
 	public void changeProxyUrl(String url)
@@ -463,6 +462,11 @@ public class TiUIWebView extends TiUIView
 	public void setBasicAuthentication(String username, String password)
 	{
 		client.setBasicAuthentication(username, password);
+	}
+
+	public void destroyWebViewBinding()
+	{
+		client.getBinding().destroy();
 	}
 
 	public void setPluginState(int pluginState)
