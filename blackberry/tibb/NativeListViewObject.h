@@ -9,6 +9,7 @@
 #define NATIVELISTVIEWOBJECT_H_
 
 #include "NativeControlObject.h"
+#include <QtCore/qobject.h>
 
 /*
  * NativeListView
@@ -21,9 +22,16 @@ namespace bb
 namespace cascades
 {
 class ListView;
+class VisualNode;
 };
 };
 
+#include <bb/cascades/ListItemManager>
+#include <bb/cascades/StandardListItem>
+
+class TiEventContainer;
+class TiCascadesEventHandler;
+class ListViewEventHandler;
 
 class NativeListViewObject : public NativeControlObject
 {
@@ -35,7 +43,7 @@ public:
     virtual int setWidth(TiObject* obj);
     virtual int setData(TiObject* obj);
     virtual int initialize();
-    virtual QString getListViewElementFromIndex(QVariantList var);
+    virtual QVariant getListViewElementFromIndex(QVariantList var);
     virtual NAHANDLE getNativeHandle() const;
     virtual int scrollToIndex(int index);
 
@@ -54,11 +62,19 @@ private:
     float top_;
 };
 
+class ListViewItemFactory: public bb::cascades::ListItemManager
+{
+public:
+    ListViewItemFactory() {};
+    bb::cascades::VisualNode* createItem(bb::cascades::ListView* list, const QString& type);
+    void updateItem(bb::cascades::ListView* list, bb::cascades::VisualNode* listItem, const QString& type,
+                    const QVariantList& indexPath, const QVariant& data);
+};
+
 //Event handler for button object
 class ListViewEventHandler : public QObject
 {
     Q_OBJECT
-
 public:
     explicit ListViewEventHandler(TiEventContainer* eventContainer, NativeListViewObject* owner)
     {
@@ -68,19 +84,7 @@ public:
     virtual ~ListViewEventHandler() {}
 
 public slots:
-    void selectionChanged(QVariantList var, bool)
-    {
-        eventContainer_->setDataProperty("index", var[0].toString().toStdString().c_str());
-        QString str;
-        if (owner_)
-        {
-            str = owner_->getListViewElementFromIndex(var);
-        }
-        //TODO later we may need to implement all complex data types instead of using just names, but for now it is fine
-        eventContainer_->setComplexDataProperty("rowData", "title", str.toUtf8().constData());
-        eventContainer_->fireEvent();
-    }
-
+    void selectionChanged(QVariantList var, bool);
 private:
     TiEventContainer* eventContainer_;
     NativeListViewObject* owner_;
