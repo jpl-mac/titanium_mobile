@@ -158,14 +158,15 @@ class BlackberryNDK:
 		command = [self.qde, '-nosplash', '-application', 'org.eclipse.cdt.managedbuilder.core.headlessbuild', '-consoleLog', '-data', workspace, '-import', project]
 		self._run(command)
 
-	def build(self, project, cpu):
+	def build(self, project, cpu, variant):
 		assert os.path.exists(project)
 		templateDir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
 		cpuList = 'CPULIST=' + cpu
 		bbRoot = 'BB_ROOT=' + templateDir
+		variant = 'VARIANTLIST=' + ('g' if variant[-2:] == '-g' else '')
 		oldPath = os.getcwd()
 		os.chdir(project)
-		command = ['make', cpuList, bbRoot]
+		command = ['make', cpuList, bbRoot, variant]
 		retCode = self._run(command)
 		os.chdir(oldPath)
 		return retCode
