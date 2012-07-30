@@ -111,10 +111,16 @@ void ListViewItemFactory::updateItem(bb::cascades::ListView*, bb::cascades::Visu
         Persistent<Value> propValue = v8Value.getValue();
         if (propValue->IsObject())
         {
+            // Get title property
             Local<Value> titleValue = propValue->ToObject()->Get(String::New("title"));
             Local<String> valueStr = titleValue->ToString();
             String::Utf8Value valueUTF(valueStr);
             ((bb::cascades::StandardListItem*)listItem)->setTitle(*valueUTF);
+            // Get image property
+            Local<Value> imagePath = propValue->ToObject()->Get(String::New("leftImage"));
+            Local<String> imagePathStr = imagePath->ToString();
+            String::Utf8Value imagePathUTF(imagePathStr);
+            ((bb::cascades::StandardListItem*)listItem)->setImage(bb::cascades::Image(QUrl("assets//" + QString(*imagePathUTF))));
         }
     }
 }

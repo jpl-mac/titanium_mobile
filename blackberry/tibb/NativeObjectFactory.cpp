@@ -15,6 +15,7 @@
 #include "NativeImageViewObject.h"
 #include "NativeLabelObject.h"
 #include "NativeListViewObject.h"
+#include "NativeListViewItemObject.h"
 #include "NativeLoggerObject.h"
 #include "NativePageObject.h"
 #include "NativeProgressBarObject.h"
@@ -99,6 +100,10 @@ NativeObject* NativeObjectFactory::createNativeObject(int type)
 
     case N_TYPE_DROPDOWN:
         obj = NativeDropDownObject::createDropDown();
+        break;
+
+    case N_TYPE_LIST_ITEM:
+        obj = NativeListViewItemObject::createListItem();
         break;
 
     case N_TYPE_LIST_VIEW:

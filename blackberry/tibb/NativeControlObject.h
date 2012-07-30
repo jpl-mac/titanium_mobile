@@ -89,6 +89,7 @@ public:
     virtual int setImage(TiObject* obj);
     virtual int setLabel(TiObject* obj);
     virtual int setLeft(TiObject* obj);
+    virtual int setLeftImage(TiObject* obj);
     virtual int setMax(TiObject* obj);
     virtual int setMaxDate(TiObject* obj);
     virtual int setMessage(TiObject* obj);
