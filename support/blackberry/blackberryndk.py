@@ -163,7 +163,7 @@ class BlackberryNDK:
 		templateDir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
 		cpuList = 'CPULIST=' + cpu
 		bbRoot = 'BB_ROOT=' + templateDir
-		variant = 'VARIANTLIST=' + ('g' if variant[-2:] == '-g' else '')
+		variant = 'VARIANTLIST=' + ('g' if variant.endswith('-g') else '')
 		oldPath = os.getcwd()
 		os.chdir(project)
 		command = ['make', cpuList, bbRoot, variant]
