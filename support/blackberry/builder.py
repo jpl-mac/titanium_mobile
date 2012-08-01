@@ -101,7 +101,7 @@ class Builder(object):
 	
 	def build(self):
 		info('Building')
-		return self.ndk.build(self.buildDir, self.cpu)
+		return self.ndk.build(self.buildDir, self.cpu, self.variant)
 
 	def terminateApp(self, ipAddress):
 		return self.ndk.terminateApp(ipAddress, self.getPackage())
