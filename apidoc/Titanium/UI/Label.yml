@@ -5,7 +5,26 @@ description: Use the <Titanium.UI.createLabel> method to create a label.
 extends: Titanium.UI.View
 since: "0.8"
 
+methods: 
+    # main doc inherited from Ti.UI.View.add
+  - name: add
+    description: |
+        Adding children to a `Label` is not supported on all platforms.
+
+        If you need to add views on top of this object, consider using 
+        another view as a container for both this object and the views you want 
+        to appear on top of it.
+
+        See also: <Titanium.UI.View.add>.
+    platforms: [iphone, ipad, mobileweb]
+
+  - name: remove
+    description: |
+        See also: [add](Titanium.UI.Label.add), <Titanium.UI.View.add>.
+    platforms: [iphone, ipad, mobileweb]
+
 properties:
+
   - name: autoLink
     summary: Automatically convert certain text items in the label to clickable links. 
     description: |
@@ -124,10 +143,15 @@ properties:
         [TEXT_VERTICAL_ALIGNMENT_BOTTOM](Titanium.UI.TEXT_VERTICAL_ALIGNMENT_BOTTOM), 
         [TEXT_VERTICAL_ALIGNMENT_CENTER](Titanium.UI.TEXT_VERTICAL_ALIGNMENT_CENTER), or 
         [TEXT_VERTICAL_ALIGNMENT_TOP](Titanium.UI.TEXT_VERTICAL_ALIGNMENT_TOP).
+    description: |
+        On iphone and ipad the default value of the property is undefined. The behavior of the label
+        depends on the actual content height. If the actual content height is larger than the available 
+        height the text is truncated at the end and the content is center aligned.
     type: [Number,String]
-    default: Titanium.UI.TEXT_VERTICAL_ALIGNMENT_CENTER
-    platforms: [mobileweb]
-
+    default: Titanium.UI.TEXT_VERTICAL_ALIGNMENT_CENTER on mobileweb.  Undefined on iphone and ipad. 
+    platforms: [mobileweb, iphone, ipad, android]
+    since: { iphone: "2.2", ipad: "2.2", mobileweb: "2.0", android: "2.2" }
+    
 examples:
   - title: Basic Label
     example: |

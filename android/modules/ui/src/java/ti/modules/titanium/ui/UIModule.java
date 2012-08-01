@@ -27,7 +27,9 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Message;
+import android.text.util.Linkify;
 import android.view.View;
+import android.webkit.WebViewClient;
 import android.widget.Toast;
 
 @Kroll.module
@@ -62,6 +64,13 @@ public class UIModule extends KrollModule implements Handler.Callback
 	@Kroll.constant public static final int KEYBOARD_NAMEPHONE_PAD = 6;
 	@Kroll.constant public static final int KEYBOARD_DEFAULT = 7;
 	@Kroll.constant public static final int KEYBOARD_DECIMAL_PAD = 8;
+	
+	@Kroll.constant public static final int AUTOLINK_ALL = Linkify.ALL;
+	@Kroll.constant public static final int AUTOLINK_EMAIL_ADDRESSES = Linkify.EMAIL_ADDRESSES;
+	@Kroll.constant public static final int AUTOLINK_MAP_ADDRESSES = Linkify.MAP_ADDRESSES;
+	@Kroll.constant public static final int AUTOLINK_PHONE_NUMBERS = Linkify.PHONE_NUMBERS;
+	@Kroll.constant public static final int AUTOLINK_URLS = Linkify.WEB_URLS;
+	@Kroll.constant public static final int AUTOLINK_NONE = 16;
 
 	@Kroll.constant public static final int INPUT_BORDERSTYLE_NONE = 0;
 	@Kroll.constant public static final int INPUT_BORDERSTYLE_ROUNDED = 1;
@@ -116,6 +125,19 @@ public class UIModule extends KrollModule implements Handler.Callback
 	@Kroll.constant public static final String UNIT_CM = TiDimension.UNIT_CM;
 	@Kroll.constant public static final String UNIT_IN = TiDimension.UNIT_IN;
 	@Kroll.constant public static final String UNIT_DIP = TiDimension.UNIT_DIP;
+
+	// TiWebViewClient onReceivedError error codes.
+	@Kroll.constant public static final int URL_ERROR_AUTHENTICATION = WebViewClient.ERROR_AUTHENTICATION;
+	@Kroll.constant public static final int URL_ERROR_BAD_URL = WebViewClient.ERROR_BAD_URL;
+	@Kroll.constant public static final int URL_ERROR_CONNECT = WebViewClient.ERROR_CONNECT;
+	@Kroll.constant public static final int URL_ERROR_SSL_FAILED = WebViewClient.ERROR_FAILED_SSL_HANDSHAKE;
+	@Kroll.constant public static final int URL_ERROR_FILE = WebViewClient.ERROR_FILE;
+	@Kroll.constant public static final int URL_ERROR_FILE_NOT_FOUND = WebViewClient.ERROR_FILE_NOT_FOUND;
+	@Kroll.constant public static final int URL_ERROR_HOST_LOOKUP = WebViewClient.ERROR_HOST_LOOKUP;
+	@Kroll.constant public static final int URL_ERROR_REDIRECT_LOOP = WebViewClient.ERROR_REDIRECT_LOOP;
+	@Kroll.constant public static final int URL_ERROR_TIMEOUT = WebViewClient.ERROR_TIMEOUT;
+	@Kroll.constant public static final int URL_ERROR_UNKNOWN = WebViewClient.ERROR_UNKNOWN;
+	@Kroll.constant public static final int URL_ERROR_UNSUPPORTED_SCHEME = WebViewClient.ERROR_UNSUPPORTED_SCHEME;
 
 	protected static final int MSG_SET_BACKGROUND_COLOR = KrollProxy.MSG_LAST_ID + 100;
 	protected static final int MSG_SET_BACKGROUND_IMAGE = KrollProxy.MSG_LAST_ID + 101;
@@ -198,9 +220,9 @@ public class UIModule extends KrollModule implements Handler.Callback
 	}
 
 	@Kroll.method
-	public int convertUnits(String convertFromValue, String convertToUnits)
+	public double convertUnits(String convertFromValue, String convertToUnits)
 	{
-		int result = 0;
+		double result = 0;
 		TiDimension dimension = new TiDimension(convertFromValue, TiDimension.TYPE_UNDEFINED);
 
 		// TiDimension needs a view to grab the window manager, so we'll just use the decorview of the current window
@@ -208,7 +230,7 @@ public class UIModule extends KrollModule implements Handler.Callback
 
 		if (view != null) {
 			if (convertToUnits.equals(UNIT_PX)) {
-				result = dimension.getAsPixels(view);
+				result = (double) dimension.getAsPixels(view);
 			} else if (convertToUnits.equals(UNIT_MM)) {
 				result = dimension.getAsMillimeters(view);
 			} else if (convertToUnits.equals(UNIT_CM)) {
@@ -216,7 +238,7 @@ public class UIModule extends KrollModule implements Handler.Callback
 			} else if (convertToUnits.equals(UNIT_IN)) {
 				result = dimension.getAsInches(view);
 			} else if (convertToUnits.equals(UNIT_DIP)) {
-				result = dimension.getAsDIP(view);
+				result = (double) dimension.getAsDIP(view);
 			}
 		}
 

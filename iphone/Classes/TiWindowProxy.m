@@ -709,8 +709,6 @@ TiOrientationFlags TiOrientationFlagsFromObject(id args)
 		[[[TiApp app] controller] windowFocused:[self controller]];
 	}
 
-	[self layoutChildren:YES];
-
 	[rootView bringSubviewToFront:view_];
 
 	// make sure the splash is gone
@@ -725,14 +723,13 @@ TiOrientationFlags TiOrientationFlagsFromObject(id args)
 -(void)fireFocus:(BOOL)newFocused;
 {
 #ifdef VERBOSE
-	if (newFocused == focused)
-	{
-		VerboseLog(@"[DEBUG] Setting focus to %d when it's already set to that.",focused);
-	}
+    if (newFocused == focused)
+    {
+        VerboseLog(@"[DEBUG] Setting focus to %d when it's already set to that.",focused);
+    }
 #endif
-
-	[self fireEvent:newFocused?@"focus":@"blur" withObject:nil propagate:NO];
-	focused = newFocused;
+    focused = newFocused;
+    [self fireEvent:newFocused?@"focus":@"blur" withObject:nil propagate:NO];
 }
 
 #pragma mark TIUIViewController methods

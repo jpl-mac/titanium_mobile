@@ -31,6 +31,8 @@ import android.graphics.drawable.TransitionDrawable;
 import android.os.Build;
 import android.os.Looper;
 import android.os.MessageQueue;
+import android.util.FloatMath;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -38,30 +40,27 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.LinearInterpolator;
-import android.view.animation.ScaleAnimation;
 import android.view.animation.Transformation;
 import android.view.animation.TranslateAnimation;
-
 
 public class TiAnimationBuilder
 {
 	private static final String LCAT = "TiAnimationBuilder";
 	private static final boolean DBG = TiConfig.LOGD;
-	
+
 	protected float anchorX;
 	protected float anchorY;
 	protected Ti2DMatrix tdm = null;
 	protected Double delay = null;
 	protected Double duration = null;
 	protected Double toOpacity = null;
-	protected Double fromOpacity = null;
 	protected Double repeat = null;
 	protected Boolean autoreverse = null;
-	protected Integer top = null, bottom = null, left = null, right = null;
-	protected Integer centerX = null, centerY = null;
-	protected Integer width = null, height = null;
+	protected String top = null, bottom = null, left = null, right = null;
+	protected String centerX = null, centerY = null;
+	protected String width = null, height = null;
 	protected Integer backgroundColor = null;
-	
+
 	protected TiAnimation animationProxy;
 	protected KrollFunction callback;
 	protected boolean relayoutChild = false, applyOpacity = false;
@@ -70,14 +69,13 @@ public class TiAnimationBuilder
 	protected View view;
 	protected TiViewProxy viewProxy;
 
-
-	public TiAnimationBuilder() 
+	public TiAnimationBuilder()
 	{
 		anchorX = Ti2DMatrix.DEFAULT_ANCHOR_VALUE;
 		anchorY = Ti2DMatrix.DEFAULT_ANCHOR_VALUE;
 	}
 
-	@SuppressWarnings({"unchecked","rawtypes"})
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	public void applyOptions(HashMap options)
 	{
 		if (options == null) {
@@ -87,7 +85,7 @@ public class TiAnimationBuilder
 		if (options.containsKey(TiC.PROPERTY_ANCHOR_POINT)) {
 			Object anchorPoint = options.get(TiC.PROPERTY_ANCHOR_POINT);
 			if (anchorPoint instanceof HashMap) {
-				HashMap point = (HashMap)anchorPoint;
+				HashMap point = (HashMap) anchorPoint;
 				anchorX = TiConvert.toFloat(point, TiC.PROPERTY_X);
 				anchorY = TiConvert.toFloat(point, TiC.PROPERTY_Y);
 			} else {
@@ -101,14 +99,18 @@ public class TiAnimationBuilder
 		if (options.containsKey(TiC.PROPERTY_DELAY)) {
 			delay = TiConvert.toDouble(options, TiC.PROPERTY_DELAY);
 		}
+
 		if (options.containsKey(TiC.PROPERTY_DURATION)) {
 			duration = TiConvert.toDouble(options, TiC.PROPERTY_DURATION);
 		}
+
 		if (options.containsKey(TiC.PROPERTY_OPACITY)) {
 			toOpacity = TiConvert.toDouble(options, TiC.PROPERTY_OPACITY);
 		}
+
 		if (options.containsKey(TiC.PROPERTY_REPEAT)) {
 			repeat = TiConvert.toDouble(options, TiC.PROPERTY_REPEAT);
+
 			if (repeat == 0d) {
 				// A repeat of 0 is probably non-sensical. Titanium iOS
 				// treats it as 1 and so should we.
@@ -117,42 +119,51 @@ public class TiAnimationBuilder
 		} else {
 			repeat = 1d; // Default as indicated in our documentation.
 		}
+
 		if (options.containsKey(TiC.PROPERTY_AUTOREVERSE)) {
 			autoreverse = TiConvert.toBoolean(options, TiC.PROPERTY_AUTOREVERSE);
 		}
+
 		if (options.containsKey(TiC.PROPERTY_TOP)) {
-			top = TiConvert.toInt(options, TiC.PROPERTY_TOP);
+			top = TiConvert.toString(options, TiC.PROPERTY_TOP);
 		}
+
 		if (options.containsKey(TiC.PROPERTY_BOTTOM)) {
-			bottom = TiConvert.toInt(options, TiC.PROPERTY_BOTTOM);
+			bottom = TiConvert.toString(options, TiC.PROPERTY_BOTTOM);
 		}
+
 		if (options.containsKey(TiC.PROPERTY_LEFT)) {
-			left = TiConvert.toInt(options, TiC.PROPERTY_LEFT);
+			left = TiConvert.toString(options, TiC.PROPERTY_LEFT);
 		}
+
 		if (options.containsKey(TiC.PROPERTY_RIGHT)) {
-			right = TiConvert.toInt(options, TiC.PROPERTY_RIGHT);
+			right = TiConvert.toString(options, TiC.PROPERTY_RIGHT);
 		}
+
 		if (options.containsKey(TiC.PROPERTY_CENTER)) {
 			Object centerPoint = options.get(TiC.PROPERTY_CENTER);
 			if (centerPoint instanceof HashMap) {
 				HashMap center = (HashMap) centerPoint;
-				centerX = TiConvert.toInt(center, TiC.PROPERTY_X);
-				centerY = TiConvert.toInt(center, TiC.PROPERTY_Y);
-				
+				centerX = TiConvert.toString(center, TiC.PROPERTY_X);
+				centerY = TiConvert.toString(center, TiC.PROPERTY_Y);
+
 			} else {
 				Log.e(LCAT, "Invalid argument type for center property. Ignoring");
 			}
 		}
+
 		if (options.containsKey(TiC.PROPERTY_WIDTH)) {
-			width = TiConvert.toInt(options, TiC.PROPERTY_WIDTH);
+			width = TiConvert.toString(options, TiC.PROPERTY_WIDTH);
 		}
+
 		if (options.containsKey(TiC.PROPERTY_HEIGHT)) {
-			height = TiConvert.toInt(options, TiC.PROPERTY_HEIGHT);
+			height = TiConvert.toString(options, TiC.PROPERTY_HEIGHT);
 		}
+
 		if (options.containsKey(TiC.PROPERTY_BACKGROUND_COLOR)) {
 			backgroundColor = TiConvert.toColor(options, TiC.PROPERTY_BACKGROUND_COLOR);
 		}
-		
+
 		this.options = options;
 	}
 
@@ -179,13 +190,14 @@ public class TiAnimationBuilder
 			parentWidth = group.getMeasuredWidth();
 		}
 
-		return render(viewProxy, view, view.getLeft(), view.getTop(), view.getMeasuredWidth(), view.getMeasuredHeight(), parentWidth, parentHeight);
+		return render(viewProxy, view, view.getLeft(), view.getTop(), view.getMeasuredWidth(),
+			view.getMeasuredHeight(), parentWidth, parentHeight);
 	}
 
 	private void addAnimation(AnimationSet animationSet, Animation animation)
 	{
-		boolean reverse = (autoreverse != null && autoreverse.booleanValue());
-		animation.setRepeatMode(reverse ? Animation.REVERSE : Animation.RESTART);
+		// repeatCount is ignored at the AnimationSet level, so it needs to
+		// be set for each child animation manually.
 
 		// We need to reduce the repeat count by 1, since for native Android
 		// 1 would mean repeating it once.
@@ -193,7 +205,7 @@ public class TiAnimationBuilder
 
 		// In Android (native), the repeat count includes reverses. So we
 		// need to double-up and add one to the repeat count if we're reversing.
-		if (reverse) {
+		if (autoreverse != null && autoreverse.booleanValue()) {
 			repeatCount = repeatCount * 2 + 1;
 		}
 
@@ -207,157 +219,147 @@ public class TiAnimationBuilder
 		return new TiMatrixAnimation(matrix, anchorX, anchorY);
 	}
 
-	public AnimationSet render(TiViewProxy viewProxy, View view, int x, int y, int w, int h, int parentWidth, int parentHeight)
+	public AnimationSet render(TiViewProxy viewProxy, View view, int x, int y, int w, int h, int parentWidth,
+		int parentHeight)
 	{
 		this.view = view;
 		this.viewProxy = viewProxy;
-		
+
 		AnimationSet as = new AnimationSet(false);
 		AnimationListener animationListener = new AnimationListener();
-		
+		if (callback != null || animationProxy != null) {
+			as.setAnimationListener(animationListener);
+		}
+		TiUIView tiView = viewProxy.peekView();
+
 		if (toOpacity != null) {
-			if (viewProxy.hasProperty(TiC.PROPERTY_OPACITY)) {
-				fromOpacity = TiConvert.toDouble(viewProxy.getProperty(TiC.PROPERTY_OPACITY));
+			// Determine which value to use for "from" value, in this order:
+			// 1.)	If we previously performed an alpha animation on the view,
+			//		use that as the from value.
+			// 2.)	Else, if we have set an opacity property on the view, use
+			//		that as the from value.
+			// 3.)	Else, use 1.0f as the from value.
+
+			float fromOpacity;
+			float currentAnimatedAlpha =
+					tiView == null ? Float.MIN_VALUE : tiView.getAnimatedAlpha();
+
+			if (currentAnimatedAlpha != Float.MIN_VALUE) {
+				// MIN_VALUE is used as a signal that no value has been set.
+				fromOpacity = currentAnimatedAlpha;
+
+			} else if (viewProxy.hasProperty(TiC.PROPERTY_OPACITY)) {
+				fromOpacity = TiConvert.toFloat(viewProxy.getProperty(TiC.PROPERTY_OPACITY));
 
 			} else {
-				fromOpacity = 1.0 - toOpacity;
+				fromOpacity = 1.0f;
 			}
-			
-			Animation animation = new AlphaAnimation(fromOpacity.floatValue(), toOpacity.floatValue());
-			applyOpacity = true;
+
+			Animation animation = new AlphaAnimation(fromOpacity, toOpacity.floatValue());
+
+			// Remember the toOpacity value for next time, since we no way of looking
+			// up animated alpha values on the Android native view itself.
+			if (tiView != null) {
+				tiView.setAnimatedAlpha(toOpacity.floatValue());
+			}
+
+			applyOpacity = true; // Used in the animation listener
 			addAnimation(as, animation);
 			animation.setAnimationListener(animationListener);
 
-			TiUIView uiView = viewProxy.peekView();
-			if (viewProxy.hasProperty(TiC.PROPERTY_OPACITY) && fromOpacity != null && toOpacity != null
-				&& uiView != null) {
+			if (viewProxy.hasProperty(TiC.PROPERTY_OPACITY) && toOpacity != null
+				&& tiView != null) {
 				// Initialize the opacity to 1 when we are going to change it in
 				// the animation. If the opacity of the view was initialized to
-				// 0, the animation doesn't work
-				uiView.setOpacity(1);
+				// 0, the animation doesn't work at all. If it was initialized to
+				// something less than 1.0, then it "works" but doesn't give the
+				// expected results. The reason seems to be partially explained
+				// here:
+				// http://stackoverflow.com/a/11387049/67842
+				// Basically, the AlphaAnimation is transforming the
+				// *existing* alpha value of the view. So to do what we want it
+				// to do, we need to start with a base of 1. Surprisingly, this
+				// does not seem to show a blip if the opacity was less than
+				// 1.0 to begin with.
+				tiView.setOpacity(1.0f);
 			}
 		}
-		
+
 		if (backgroundColor != null) {
 			int fromBackgroundColor = 0;
-			
+
 			if (viewProxy.hasProperty(TiC.PROPERTY_BACKGROUND_COLOR)) {
-				fromBackgroundColor = TiConvert.toColor(TiConvert.toString(viewProxy.getProperty(TiC.PROPERTY_BACKGROUND_COLOR)));
+				fromBackgroundColor = TiConvert.toColor(TiConvert.toString(viewProxy
+					.getProperty(TiC.PROPERTY_BACKGROUND_COLOR)));
 			} else {
-				Log.w(LCAT, "Cannot animate view without a backgroundColor. View doesn't have that property. Using #00000000");
-				fromBackgroundColor = Color.argb(0,0,0,0);
+				Log.w(LCAT,
+					"Cannot animate view without a backgroundColor. View doesn't have that property. Using #00000000");
+				fromBackgroundColor = Color.argb(0, 0, 0, 0);
 			}
+
 			Animation a = new TiColorAnimation(view, fromBackgroundColor, backgroundColor);
 			addAnimation(as, a);
 		}
 
 		if (tdm != null) {
-			as.setFillAfter(true);
-			as.setFillEnabled(true);
 
-			TiUIView tiView = viewProxy.peekView();
-
-			// For scale animations, rely on the Android-provided ScaleAnimation rather than our
-			// TiMatrixAnimation and Operation.
 			Animation anim;
-			if (tdm.isScaleOperation()) {
-				// fromX, toX, fromY, toY, anchorX, anchorY
-				float[] params = tdm.getScaleOperationParameters();
-				float fromX = params[0];
-				float fromY = params[2];
-
-				if (fromX == Ti2DMatrix.VALUE_UNSPECIFIED) {
-					if (tiView != null) {
-						fromX = tiView.getAnimatedXScale();
-					} else {
-						fromX = 1.0f; // i.e., regular size.
-					}
-				}
-
-				if (fromY == Ti2DMatrix.VALUE_UNSPECIFIED) {
-					if (tiView != null) {
-						fromY = tiView.getAnimatedYScale();
-					} else {
-						fromY = 1.0f; // i.e., regular size.
-					}
-				}
-
-				anim = new ScaleAnimation(fromX, params[1], fromY, params[3],
-					Animation.RELATIVE_TO_SELF, params[4],
-					Animation.RELATIVE_TO_SELF, params[5]);
-
-				// Remember the toX, toY
-				if (tiView != null) {
-					tiView.setAnimatedXScale(params[1]);
-					tiView.setAnimatedYScale(params[3]);
-				}
-
-			} else {
-
-				if (tdm.isRotateOperation()) {
-					// Make sure we rotate from the right starting position,
-					// in case a rotation has already occurred.
-					float[] params = tdm.getRotateOperationParameters();
-					float fromDegrees = params[0];
-					float toDegrees = params[1];
-
-					if (fromDegrees == Ti2DMatrix.VALUE_UNSPECIFIED) {
-						fromDegrees = tiView.getAnimatedRotationDegrees();
-						tdm.setRotationFromDegrees(fromDegrees);
-					}
-
-					// And remember for next time.
-					tiView.setAnimatedRotationDegrees(toDegrees);
-
-				}
-
-				anim = new TiMatrixAnimation(tdm, anchorX, anchorY);
-
+			if (tdm.hasScaleOperation() && tiView != null) {
+				tiView.setAnimatedScaleValues(tdm.verifyScaleValues(tiView,
+					(autoreverse != null && autoreverse.booleanValue())));
 			}
 
-			anim.setFillAfter(true);
-
-			if (duration != null) {
-				anim.setDuration(duration.longValue());
+			if (tdm.hasRotateOperation() && tiView != null) {
+				tiView.setAnimatedRotationDegrees(tdm.verifyRotationValues(tiView,
+					(autoreverse != null && autoreverse.booleanValue())));
 			}
+
+			anim = new TiMatrixAnimation(tdm, anchorX, anchorY);
 
 			addAnimation(as, anim);
 
 		}
 
-		// Set duration after adding children.
-		if (duration != null) {
-			as.setDuration(duration.longValue());
-		}
-		if (delay != null) {
-			as.setStartOffset(delay.longValue());
-		}
-
-		// ignore translate/resize if we have a matrix.. we need to eventually collect to/from properly
 		if (top != null || bottom != null || left != null || right != null || centerX != null || centerY != null) {
 			TiDimension optionTop = null, optionBottom = null;
 			TiDimension optionLeft = null, optionRight = null;
 			TiDimension optionCenterX = null, optionCenterY = null;
-			
+
+			// Note that we're stringifying the values to make sure we
+			// use the correct TiDimension constructor, except when
+			// we know the values are expressed for certain in pixels.
 			if (top != null) {
 				optionTop = new TiDimension(top, TiDimension.TYPE_TOP);
+			} else if (bottom == null && centerY == null) {
+				// Fix a top value since no other y-axis value is being set.
+				optionTop = new TiDimension(view.getTop(), TiDimension.TYPE_TOP);
+				optionTop.setUnits(TypedValue.COMPLEX_UNIT_PX);
 			}
+
 			if (bottom != null) {
 				optionBottom = new TiDimension(bottom, TiDimension.TYPE_BOTTOM);
 			}
+
 			if (left != null) {
 				optionLeft = new TiDimension(left, TiDimension.TYPE_LEFT);
+			} else if (right == null && centerX == null) {
+				// Fix a left value since no other x-axis value is being set.
+				optionLeft = new TiDimension(view.getLeft(), TiDimension.TYPE_LEFT);
+				optionLeft.setUnits(TypedValue.COMPLEX_UNIT_PX);
 			}
+
 			if (right != null) {
 				optionRight = new TiDimension(right, TiDimension.TYPE_RIGHT);
 			}
+
 			if (centerX != null) {
 				optionCenterX = new TiDimension(centerX, TiDimension.TYPE_CENTER_X);
 			}
+
 			if (centerY != null) {
 				optionCenterY = new TiDimension(centerY, TiDimension.TYPE_CENTER_Y);
 			}
-			
+
 			int horizontal[] = new int[2];
 			int vertical[] = new int[2];
 			ViewParent parent = view.getParent();
@@ -367,35 +369,51 @@ public class TiAnimationBuilder
 				parentView = (View) parent;
 			}
 
-			//TODO: center
-			TiCompositeLayout.computePosition(parentView, optionLeft, optionCenterX, optionRight, w, 0, parentWidth, horizontal);
-			TiCompositeLayout.computePosition(parentView, optionTop, optionCenterY, optionBottom, h, 0, parentHeight, vertical);
-			
-			Animation animation = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.ABSOLUTE, horizontal[0]-x,
-				Animation.RELATIVE_TO_SELF, 0, Animation.ABSOLUTE, vertical[0]-y);
-			animation.setFillEnabled(true);
-			animation.setFillAfter(true);
+			TiCompositeLayout.computePosition(parentView, optionLeft, optionCenterX, optionRight, w, 0, parentWidth,
+				horizontal);
+			TiCompositeLayout.computePosition(parentView, optionTop, optionCenterY, optionBottom, h, 0, parentHeight,
+				vertical);
 
-			if (duration != null) {
-				animation.setDuration(duration.longValue());
-			}
+			Animation animation = new TranslateAnimation(Animation.ABSOLUTE, 0, Animation.ABSOLUTE,
+				horizontal[0] - x, Animation.ABSOLUTE, 0, Animation.ABSOLUTE, vertical[0] - y);
 
-			as.setFillEnabled(true);
-			as.setFillAfter(true);
 			animation.setAnimationListener(animationListener);
-			as.addAnimation(animation);
+			addAnimation(as, animation);
+
+			// Will need to update layout params at end of animation
+			// so that touch events will be recognized at new location,
+			// and so that view will stay at new location after changes in
+			// orientation. But if autoreversing to original layout, no
+			// need to re-layout.
+			relayoutChild = (autoreverse == null || !autoreverse.booleanValue());
 
 			if (DBG) {
-				Log.d(LCAT, "animate " + viewProxy + " relative to self: " + (horizontal[0]-x) + ", " + (vertical[0]-y));
+				Log.d(LCAT, "animate " + viewProxy + " relative to self: " + (horizontal[0] - x) + ", "
+					+ (vertical[0] - y));
 			}
 
-			relayoutChild = true;
 		}
 
 		if (tdm == null && (width != null || height != null)) {
-			// we need to setup a custom animation for this, is there a better way?
-			int toWidth = width == null ? w : width;
-			int toHeight = height == null ? h : height;
+			TiDimension optionWidth, optionHeight;
+
+			if (width != null) {
+				optionWidth = new TiDimension(width, TiDimension.TYPE_WIDTH);
+			} else {
+				optionWidth = new TiDimension(w, TiDimension.TYPE_WIDTH);
+				optionWidth.setUnits(TypedValue.COMPLEX_UNIT_PX);
+			}
+
+			if (height != null) {
+				optionHeight = new TiDimension(height, TiDimension.TYPE_HEIGHT);
+			} else {
+				optionHeight = new TiDimension(w, TiDimension.TYPE_HEIGHT);
+				optionHeight.setUnits(TypedValue.COMPLEX_UNIT_PX);
+			}
+
+			int toWidth = optionWidth.getAsPixels(view);
+			int toHeight = optionHeight.getAsPixels(view);
+
 			SizeAnimation sizeAnimation = new SizeAnimation(view, w, h, toWidth, toHeight);
 
 			if (duration != null) {
@@ -404,24 +422,44 @@ public class TiAnimationBuilder
 
 			sizeAnimation.setInterpolator(new LinearInterpolator());
 			sizeAnimation.setAnimationListener(animationListener);
-			as.addAnimation(sizeAnimation);
+			addAnimation(as, sizeAnimation);
 
-			relayoutChild = true;
+			// Will need to update layout params at end of animation
+			// so that touch events will be recognized within new
+			// size rectangle, and so that new size will survive
+			// any changes in orientation. But if autoreversing
+			// to original layout, no need to re-layout.
+			relayoutChild = (autoreverse == null || !autoreverse.booleanValue());
 		}
-		
-		if (callback != null || animationProxy != null) {
-			as.setAnimationListener(animationListener);
+
+		// Set duration, repeatMode and fillAfter only after adding children.
+		// The values are pushed down to the child animations.
+		as.setFillAfter(true);
+
+		if (duration != null) {
+			as.setDuration(duration.longValue());
+		}
+
+		if (autoreverse != null && autoreverse.booleanValue()) {
+			as.setRepeatMode(Animation.REVERSE);
+		} else {
+			as.setRepeatMode(Animation.RESTART);
+		}
+
+		// startOffset is relevant to the animation set and thus
+		// not also set on the child animations.
+		if (delay != null) {
+			as.setStartOffset(delay.longValue());
 		}
 
 		return as;
 	}
-	
+
 	protected class SizeAnimation extends Animation
 	{
 		protected View view;
 		protected float fromWidth, fromHeight, toWidth, toHeight;
 		protected static final String LCAT = "TiSizeAnimation";
-
 
 		public SizeAnimation(View view, float fromWidth, float fromHeight, float toWidth, float toHeight)
 		{
@@ -432,39 +470,42 @@ public class TiAnimationBuilder
 			this.toHeight = toHeight;
 
 			if (DBG) {
-				Log.d(LCAT, "animate view from (" + fromWidth + "x" + fromHeight + ") to (" + toWidth + "x" + toHeight + ")");
+				Log.d(LCAT, "animate view from (" + fromWidth + "x" + fromHeight + ") to (" + toWidth + "x" + toHeight
+					+ ")");
 			}
 		}
-		
+
 		@Override
 		protected void applyTransformation(float interpolatedTime, Transformation transformation)
 		{
 			super.applyTransformation(interpolatedTime, transformation);
-			
+
 			int width = 0;
 			if (fromWidth == toWidth) {
-				width = (int)fromWidth;
+				width = (int) fromWidth;
 
 			} else {
-				width = (int)Math.floor(fromWidth + ((toWidth - fromWidth) * interpolatedTime));
+				width = (int) FloatMath.floor(fromWidth + ((toWidth - fromWidth) * interpolatedTime));
 			}
 
 			int height = 0;
 			if (fromHeight == toHeight) {
-				height = (int)fromHeight;
+				height = (int) fromHeight;
 
 			} else {
-				height = (int)Math.floor(fromHeight + ((toHeight - fromHeight) * interpolatedTime));
+				height = (int) FloatMath.floor(fromHeight + ((toHeight - fromHeight) * interpolatedTime));
 			}
-			
+
 			ViewGroup.LayoutParams params = view.getLayoutParams();
 			params.width = width;
 			params.height = height;
 
 			if (params instanceof TiCompositeLayout.LayoutParams) {
-				TiCompositeLayout.LayoutParams tiParams = (TiCompositeLayout.LayoutParams)params;
+				TiCompositeLayout.LayoutParams tiParams = (TiCompositeLayout.LayoutParams) params;
 				tiParams.optionHeight = new TiDimension(height, TiDimension.TYPE_HEIGHT);
+				tiParams.optionHeight.setUnits(TypedValue.COMPLEX_UNIT_PX);
 				tiParams.optionWidth = new TiDimension(width, TiDimension.TYPE_WIDTH);
+				tiParams.optionWidth.setUnits(TypedValue.COMPLEX_UNIT_PX);
 			}
 
 			view.setLayoutParams(params);
@@ -478,7 +519,6 @@ public class TiAnimationBuilder
 		protected float anchorX = -1, anchorY = -1;
 
 		public boolean interpolate = true;
-
 
 		public TiMatrixAnimation(Ti2DMatrix matrix, float anchorX, float anchorY)
 		{
@@ -528,39 +568,52 @@ public class TiAnimationBuilder
 				int left = view.getLeft();
 				int top = view.getTop();
 
-				((ViewGroup)view.getParent()).invalidate(left + rect.left, top + rect.top, left + rect.width(), top + rect.height());
+				((ViewGroup) view.getParent()).invalidate(left + rect.left, top + rect.top, left + rect.width(),
+					top + rect.height());
 			}
 		}
 	}
-	
+
 	public static class TiColorAnimation extends Animation
 	{
-		protected View view;
+		View view;
 		TransitionDrawable transitionDrawable;
-		boolean started = false;
-		
-		public TiColorAnimation(View view, int fromColor, int toColor) 
+		boolean reversing = false;
+		int duration = 0;
+
+		public TiColorAnimation(View view, int fromColor, int toColor)
 		{
 			this.view = view;
 
 			ColorDrawable fromColorDrawable = new ColorDrawable(fromColor);
 			ColorDrawable toColorDrawable = new ColorDrawable(toColor);
-			transitionDrawable = new TransitionDrawable(new Drawable[]{fromColorDrawable, toColorDrawable});
-		}
+			transitionDrawable = new TransitionDrawable(new Drawable[] { fromColorDrawable, toColorDrawable });
 
-		@Override
-		protected void applyTransformation(float interpolatedTime, Transformation t) 
-		{
-			super.applyTransformation(interpolatedTime, t);
-			if (!started) {
-				// Kick off a TransitionDrawable to do this for us. All
-				// subsequent calls to applyTransformation will just be ignored.
-				started = true;
-				view.setBackgroundDrawable(transitionDrawable);
-				long duration = this.getDuration();
-				int durationInt = (new Long(duration)).intValue();
-				transitionDrawable.startTransition(durationInt);
-			}
+			this.setAnimationListener(new android.view.animation.Animation.AnimationListener() {
+
+				public void onAnimationStart(Animation animation)
+				{
+					TiColorAnimation.this.view.setBackgroundDrawable(transitionDrawable);
+					TiColorAnimation.this.duration = Long.valueOf(animation.getDuration()).intValue();
+					transitionDrawable.startTransition(TiColorAnimation.this.duration);
+				}
+
+				public void onAnimationRepeat(Animation animation)
+				{
+					if (animation.getRepeatMode() == Animation.REVERSE) {
+						reversing = !reversing;
+					}
+					if (reversing) {
+						transitionDrawable.reverseTransition(TiColorAnimation.this.duration);
+					} else {
+						transitionDrawable.startTransition(TiColorAnimation.this.duration);
+					}
+				}
+
+				public void onAnimationEnd(Animation animation)
+				{
+				}
+			});
 		}
 	}
 
@@ -568,7 +621,6 @@ public class TiAnimationBuilder
 	{
 		public void onAnimationEnd(Animation a)
 		{
-
 			if (relayoutChild) {
 				LayoutParams params = (LayoutParams) view.getLayoutParams();
 				TiConvert.fillLayout(options, params);
@@ -577,22 +629,23 @@ public class TiAnimationBuilder
 				relayoutChild = false;
 			}
 
-			if (applyOpacity) {
-				// There is an android bug where animations still occur after this method. We clear it from the view to
+			if (applyOpacity && (autoreverse == null || !autoreverse.booleanValue())) {
+				// There is an android bug where animations still occur after
+				// this method. We clear it from the view to
 				// correct this.
 				view.clearAnimation();
 				if (toOpacity.floatValue() == 0) {
 					view.setVisibility(View.INVISIBLE);
-					
+
 				} else {
 					if (view.getVisibility() == View.INVISIBLE) {
 						view.setVisibility(View.VISIBLE);
 					}
-					// this is apparently the only way to apply an opacity to the entire view and have it stick
+					// this is apparently the only way to apply an opacity to
+					// the entire view and have it stick
 					AlphaAnimation aa = new AlphaAnimation(toOpacity.floatValue(), toOpacity.floatValue());
 					aa.setDuration(1);
 					aa.setFillAfter(true);
-					aa.setFillEnabled(true);
 					view.setLayoutParams(view.getLayoutParams());
 					view.startAnimation(aa);
 				}
@@ -606,9 +659,11 @@ public class TiAnimationBuilder
 				}
 
 				if (animationProxy != null) {
-					// In versions prior to Honeycomb, don't fire the event until the message queue
-					// is empty.  There appears to be a bug in versions before Honeycomb where this
-					// onAnimationEnd listener can be called even before the animation is really complete.
+					// In versions prior to Honeycomb, don't fire the event
+					// until the message queue is empty. There appears to be
+					// a bug in versions before Honeycomb where this
+					// onAnimationEnd listener can be called even before the
+					// animation is really complete.
 					if (Build.VERSION.SDK_INT >= TiC.API_LEVEL_HONEYCOMB) {
 						animationProxy.fireEvent(TiC.EVENT_COMPLETE, null);
 					} else {
@@ -624,7 +679,7 @@ public class TiAnimationBuilder
 			}
 		}
 
-		public void onAnimationRepeat(Animation a) 
+		public void onAnimationRepeat(Animation a)
 		{
 		}
 

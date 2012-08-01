@@ -37,6 +37,7 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
 import android.os.Messenger;
@@ -81,7 +82,6 @@ public abstract class TiBaseActivity extends Activity
 	public TiWindowProxy lwWindow;
 	public boolean isResumed = false;
 
-
 	public void addWindowToStack(TiBaseWindowProxy proxy)
 	{
 		if (windowStack.contains(proxy)) {
@@ -94,19 +94,17 @@ public abstract class TiBaseActivity extends Activity
 		}
 		windowStack.add(proxy);
 		if (!isEmpty) { 
-			proxy.fireEvent(TiC.EVENT_FOCUS, null);
+			proxy.fireEvent(TiC.EVENT_FOCUS, null, false);
 		}
-
-		
 	}
-	
+
 	public void removeWindowFromStack(TiBaseWindowProxy proxy)
 	{
 		proxy.fireEvent(TiC.EVENT_BLUR, null);
 		windowStack.remove(proxy);
 		if (!windowStack.empty()) {
 			TiBaseWindowProxy nextWindow = windowStack.peek();
-			nextWindow.fireEvent(TiC.EVENT_FOCUS, null);
+			nextWindow.fireEvent(TiC.EVENT_FOCUS, null, false);
 		}
 	}
 
@@ -155,10 +153,22 @@ public abstract class TiBaseActivity extends Activity
 	public void setWindowProxy(TiWindowProxy proxy)
 	{
 		this.window = proxy;
-		layout.setProxy(proxy);
+		setLayoutProxy(proxy);
 		updateTitle();
 	}
-	
+
+	/**
+	 * Sets the proxy for our layout (used for post layout event)
+	 * 
+	 * @param proxy
+	 */
+	protected void setLayoutProxy(TiViewProxy proxy)
+	{
+		if (layout != null) {
+			layout.setProxy(proxy);
+		}
+	}
+
 	/**
 	 * Sets the view proxy.
 	 * @param proxy
@@ -311,8 +321,12 @@ public abstract class TiBaseActivity extends Activity
 	protected void setNavBarHidden(boolean hidden)
 	{
 		if (!hidden) {
-			this.requestWindowFeature(Window.FEATURE_LEFT_ICON); // TODO Keep?
-			this.requestWindowFeature(Window.FEATURE_RIGHT_ICON);
+			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+				// Do not enable these features on Honeycomb or later since it will break the action bar.
+				this.requestWindowFeature(Window.FEATURE_LEFT_ICON);
+				this.requestWindowFeature(Window.FEATURE_RIGHT_ICON);
+			}
+
 			this.requestWindowFeature(Window.FEATURE_PROGRESS);
 			this.requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
@@ -755,7 +769,7 @@ public abstract class TiBaseActivity extends Activity
 		}
 
 		if (!windowStack.empty()) {
-			windowStack.peek().fireEvent(TiC.EVENT_FOCUS, null);
+			windowStack.peek().fireEvent(TiC.EVENT_FOCUS, null, false);
 		} 
 		
 		tiApp.setCurrentActivity(this, this);
@@ -788,6 +802,10 @@ public abstract class TiBaseActivity extends Activity
 	protected void onStart()
 	{
 		super.onStart();
+
+		// Newer versions of Android appear to turn this on by default.
+		// Turn if off until an activity indicator is shown.
+		setProgressBarIndeterminateVisibility(false);
 
 		if (DBG) {
 			Log.d(TAG, "Activity " + this + " onStart");

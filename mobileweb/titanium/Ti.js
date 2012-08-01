@@ -13,8 +13,8 @@
  */
 
 define(
-	["Ti/_", "Ti/API", "Ti/_/analytics", "Ti/App", "Ti/_/Evented", "Ti/_/lang", "Ti/_/ready", "Ti/_/style", "Ti/Buffer", "Ti/Platform", "Ti/UI", "Ti/Locale", "Ti/_/include"],
-	function(_, API, analytics, App, Evented, lang, ready, style, Buffer, Platform, UI) {
+	["Ti/_", "Ti/API", "Ti/_/analytics", "Ti/App", "Ti/_/Evented", "Ti/_/has", "Ti/_/lang", "Ti/_/ready", "Ti/_/style", "Ti/Buffer", "Ti/Platform", "Ti/UI", "Ti/Locale", "Ti/_/include"],
+	function(_, API, analytics, App, Evented, has, lang, ready, style, Buffer, Platform, UI) {
 
 	var global = window,
 		req = require,
@@ -22,7 +22,6 @@ define(
 		deployType = App.deployType,
 		ver = cfg.ti.version,
 		is = req.is,
-		has = req.has,
 		on = req.on,
 		loaded,
 		unloaded,
@@ -71,9 +70,6 @@ define(
 			}
 		}),
 		loadAppjs = Ti.deferStart();
-
-	// add has() tests
-	has.add("devmode", deployType === "development");
 
 	// Object.defineProperty() shim
 	if (!has("object-defineproperty")) {
@@ -398,7 +394,7 @@ define(
 
 			// app start event
 			analytics.add("ti.start", "ti.start", {
-				tz: (new Date()).getTimezoneOffset(),
+				tz: (new Date).getTimezoneOffset(),
 				deploytype: deployType,
 				os: Platform.osname,
 				osver: Platform.ostype,
@@ -415,7 +411,7 @@ define(
 		}
 
 		// load app.js when ti and dom is ready
-		ready(loadAppjs);
+		setTimeout(loadAppjs, 1);
 	});
 
 	return Ti;

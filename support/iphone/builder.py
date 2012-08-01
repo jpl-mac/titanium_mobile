@@ -279,42 +279,6 @@ def xcode_version():
 		versionLine = output.split('\n')[0]
 		return float(versionLine.split(' ')[1].rpartition('.')[0])
 
-def distribute_xc3(uuid, provisioning_profile, name, log):
-	# starting in 4.0, apple now requires submission through XCode
-	# this code mimics what xcode does on its own to package the 
-	# application for the app uploader process
-	log.write("Creating distribution for xcode3...\n");
-	archive_uuid = str(uuid.uuid4()).upper()
-	archive_dir = os.path.join(os.path.expanduser("~/Library/MobileDevice/Archived Applications"),archive_uuid)
-	archive_app_dir = os.path.join(archive_dir,"%s.app" % name)
-	archive_appdsym_dir = os.path.join(archive_dir,"%s.app.dSYM" % name)
-	os.makedirs(archive_app_dir)
-	os.makedirs(archive_appdsym_dir)
-	
-	os.system('ditto "%s.app" "%s"' % (name,archive_app_dir))
-	os.system('ditto "%s.app.dSYM" "%s"' % (name,archive_appdsym_dir))
-	
-	archive_plist = os.path.join(archive_dir,'ArchiveInfo.plist')
-	log.write("Writing archive plist to: %s\n\n" % archive_plist)
-	
-	profile_uuid = get_profile_uuid(provisioning_profile)
-	
-	os.system("/usr/bin/plutil -convert xml1 -o \"%s\" \"%s\"" % (os.path.join(archive_dir,'Info.xml.plist'),os.path.join(archive_app_dir,'Info.plist')))
-	p = plistlib.readPlist(os.path.join(archive_dir,'Info.xml.plist'))
-	archive_metadata = {
-		'CFBundleIdentifier':p['CFBundleIdentifier'],
-		'CFBundleVersion':p['CFBundleVersion'],
-		'XCApplicationFilename':'%s.app' %name,
-		'XCApplicationName':name,
-		'XCArchivedDate': time.time() - 978307200.0,
-		'XCArchiveUUID':archive_uuid,
-		'XCInfoPlist' : p,
-		'XCProfileUUID': profile_uuid
-	}
-	log.write("%s\n\n" % archive_metadata)
-	plistlib.writePlist(archive_metadata,archive_plist)
-	os.remove(os.path.join(archive_dir,'Info.xml.plist'))	
-
 def distribute_xc4(name, icon, log):
 	# Locations of bundle, app binary, dsym info
 	log.write("Creating distribution for xcode4...\n");	
@@ -485,7 +449,8 @@ def copy_tiapp_properties(project_dir):
 	if (len(tiapp.findall("property")) > 0) :
 		impf.write("\n    return _property;\n}")
 	else: 
-		impf.write("\n    return NULL;\n}")
+		impf.write("\n    [_property release];")
+		impf.write("\n    return nil;\n}")
 	impf.write(FOOTER)
 	impf.close()
 	if open(appl_default,'r').read() == open('ApplicationDefaults.m','r').read():
@@ -537,6 +502,14 @@ def cleanup_app_logfiles(tiapp, log_id, iphone_version):
 		for i in results.splitlines(False):
 			print "[DEBUG] removing old log file: %s" % i
 			os.remove(i)
+
+def find_name_conflicts(project_dir, project_name):
+	for root, dirs, files in os.walk(project_dir):
+		for name in dirs:
+			if name == project_name:
+				print "[ERROR] Project name %s conflicts with resource named %s: Cannot build. Please change one." % (project_name, os.path.join(root, name))
+				exit(1)
+	pass
 
 #
 # this script is invoked from our tooling but you can run from command line too if 
@@ -683,11 +656,14 @@ def main(args):
 		if command == 'distribute':
 			iphone_version = check_iphone_sdk(iphone_version)
 			link_version = iphone_version
+			dist_keychain = None
 			appuuid = dequote(args[6].decode("utf-8"))
 			dist_name = dequote(args[7].decode("utf-8"))
 			output_dir = os.path.expanduser(dequote(args[8].decode("utf-8")))
 			if argc > 9:
 				devicefamily = dequote(args[9].decode("utf-8"))
+			if argc > 10:
+				dist_keychain = dequote(args[10].decode("utf-8"))
 			print "[INFO] Switching to production mode for distribution"
 			deploytype = 'production'
 		elif command in ['simulator', 'build']:
@@ -716,18 +692,13 @@ def main(args):
 		elif command in ['install', 'adhoc']:
 			iphone_version = check_iphone_sdk(iphone_version)
 			link_version = iphone_version
+			dist_keychain = None
 			appuuid = dequote(args[6].decode("utf-8"))
 			dist_name = dequote(args[7].decode("utf-8"))
 			if argc > 8:
 				devicefamily = dequote(args[8].decode("utf-8"))
 			if argc > 9:
-				# this is host:port from the debugger
-				debughost = dequote(args[9].decode("utf-8"))
-				if debughost=='':
-					debughost=None
-					debugport=None
-				else:
-					debughost,debugport = debughost.split(":")
+				dist_keychain = dequote(args[9].decode("utf-8"))
 			if command == 'install':
 				target = 'Debug'
 				deploytype = 'test'
@@ -747,6 +718,9 @@ def main(args):
 		infoplist = os.path.join(iphone_dir,'Info.plist')
 		githash = None
 		custom_fonts = []
+
+		# Before doing a single thing, we want to check for conflicts and bail out if necessary.
+		find_name_conflicts(project_dir, app_name)
 
 		# if we're not running in the simulator we want to clean out the build directory
 		if command!='simulator' and os.path.exists(build_out_dir):
@@ -967,8 +941,13 @@ def main(args):
 				o.write("Performing full rebuild\n")
 				print "[INFO] Performing full rebuild. This will take a little bit. Hold tight..."
 				sys.stdout.flush()
-				project = Projector(name,sdk_version,template_dir,project_dir,appid)
-				project.create(template_dir,iphone_dir)	
+
+				# In order to avoid dual-mangling, we need to make sure that if we're re-projecting,
+				# there is NOT an existing xcodeproj file.
+				if not os.path.exists(os.path.join(iphone_dir, "%s.xcodeproj" % name)):
+					project = Projector(name,sdk_version,template_dir,project_dir,appid)
+					project.create(template_dir,iphone_dir)
+				
 				force_xcode = True
 				if os.path.exists(app_dir): shutil.rmtree(app_dir)
 				# we have to re-copy if we have a custom version
@@ -1120,10 +1099,22 @@ def main(args):
 			try:		
 				os.chdir(iphone_dir)
 
-				# we always target backwards to 4.0 even when we use a later
-				# version iOS SDK. this ensures our code will run on old devices
-				# no matter which SDK we compile with
-				deploy_target = "IPHONEOS_DEPLOYMENT_TARGET=4.0"
+				# target the requested value if provided; otherwise, target minimum (4.0)
+				# or maximum iphone_version
+
+				if 'min-ios-ver' in ti.ios:
+					min_ver = ti.ios['min-ios-ver']
+					if min_ver < 4.0:
+						print "[INFO] Minimum iOS version %s is lower than 4.0: Using 4.0 as minimum" % min_ver
+						min_ver = 4.0
+					elif min_ver > float(iphone_version):
+						print "[INFO] Minimum iOS version %s is greater than %s (iphone_version): Using %s as minimum" % (min_ver, iphone_version, iphone_version)
+						min_ver = float(iphone_version)
+				else:
+					min_ver = 4.0
+
+				print "[INFO] Minimum iOS version: %s" % min_ver
+				deploy_target = "IPHONEOS_DEPLOYMENT_TARGET=%s" % min_ver
 				device_target = 'TARGETED_DEVICE_FAMILY=1'  # this is non-sensical, but you can't pass empty string
 
 				# clean means we need to nuke the build 
@@ -1477,6 +1468,10 @@ def main(args):
 						args += ["CODE_SIGN_IDENTITY=iPhone Developer: %s" % dist_name]
 					elif command == 'adhoc':
 						args += ["CODE_SIGN_IDENTITY=iPhone Distribution: %s" % dist_name]
+
+					if dist_keychain is not None:
+						args += ["OTHER_CODE_SIGN_FLAGS=--keychain %s" % dist_keychain]
+
 					args += ["DEPLOYMENT_POSTPROCESSING=YES"]
 
 					execute_xcode("iphoneos%s" % iphone_version,args,False)
@@ -1549,14 +1544,15 @@ def main(args):
 						"CODE_SIGN_IDENTITY=iPhone Distribution: %s" % dist_name,
 						"DEPLOYMENT_POSTPROCESSING=YES"
 					]
+
+					if dist_keychain is not None:
+						args += ["OTHER_CODE_SIGN_FLAGS=--keychain %s" % dist_keychain]
+					
 					execute_xcode("iphoneos%s" % iphone_version,args,False)
 
 					# switch to app_bundle for zip
 					os.chdir(build_dir)
-					if xcode_version() >= 4.0:
-						distribute_xc4(name, applogo, o)
-					else:
-						distribute_xc3(uuid, provisioning_profile, name, o)
+					distribute_xc4(name, applogo, o)
 
 					# open xcode + organizer after packaging
 					# Have to force the right xcode open...

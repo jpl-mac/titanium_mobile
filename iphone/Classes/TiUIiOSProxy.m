@@ -17,8 +17,9 @@
 #endif
 
 #ifdef USE_TI_UIIOS3DMATRIX
-	#import "TiUIiOS3DMatrix.h"
+	#import "Ti3DMatrix.h"
 #endif
+
 #ifdef USE_TI_UIIOSCOVERFLOWVIEW
 	#import "TiUIiOSCoverFlowViewProxy.h"
 #endif
@@ -27,6 +28,10 @@
 #endif
 #ifdef USE_TI_UIIOSTABBEDBAR
 	#import "TiUIiOSTabbedBarProxy.h"
+#endif
+
+#if defined(USE_TI_UIIPADDOCUMENTVIEWER) || defined(USE_TI_UIIOSDOCUMENTVIEWER)
+    #import "TiUIiOSDocumentViewerProxy.h"
 #endif
 
 @implementation TiUIiOSProxy
@@ -53,12 +58,13 @@
 #ifdef USE_TI_UIIOS3DMATRIX
 -(id)create3DMatrix:(id)args
 {
-	if (args==nil || [args count] == 0)
+	DEPRECATED_REPLACED(@"UI.iOS.create3DMatrix()", @"2.1.0", @"Ti.UI.create3DMatrix()");
+    if (args==nil || [args count] == 0)
 	{
-		return [[[TiUIiOS3DMatrix alloc] init] autorelease];
+		return [[[Ti3DMatrix alloc] init] autorelease];
 	}
 	ENSURE_SINGLE_ARG(args,NSDictionary);
-	TiUIiOS3DMatrix *matrix = [[TiUIiOS3DMatrix alloc] initWithProperties:args];
+	Ti3DMatrix *matrix = [[Ti3DMatrix alloc] initWithProperties:args];
 	return [matrix autorelease];
 }
 #endif
@@ -81,11 +87,27 @@
     return [[[TiUIiOSTabbedBarProxy alloc] _initWithPageContext:[self executionContext] args:args] autorelease];
 }
 #endif
+
+#if defined(USE_TI_UIIPADDOCUMENTVIEWER) || defined(USE_TI_UIIOSDOCUMENTVIEWER)
+-(id)createDocumentViewer:(id)args
+{
+	return [[[TiUIiOSDocumentViewerProxy alloc] _initWithPageContext:[self executionContext] args:args] autorelease];
+}
+#endif
+
+
 #ifdef USE_TI_UIIOS
-MAKE_SYSTEM_PROP(ANIMATION_CURVE_EASE_IN_OUT,UIViewAnimationCurveEaseInOut);
-MAKE_SYSTEM_PROP(ANIMATION_CURVE_EASE_IN,UIViewAnimationCurveEaseIn);
-MAKE_SYSTEM_PROP(ANIMATION_CURVE_EASE_OUT,UIViewAnimationCurveEaseOut);
-MAKE_SYSTEM_PROP(ANIMATION_CURVE_LINEAR,UIViewAnimationCurveLinear);
+MAKE_SYSTEM_PROP_DEPRECATED_REPLACED(ANIMATION_CURVE_EASE_IN_OUT, UIViewAnimationOptionCurveEaseInOut, @"UI.iOS.ANIMATION_CURVE_EASE_IN_OUT", @"2.1.0", @"Ti.UI.ANIMATION_CURVE_EASE_IN_OUT");
+MAKE_SYSTEM_PROP_DEPRECATED_REPLACED(ANIMATION_CURVE_EASE_IN, UIViewAnimationOptionCurveEaseIn, @"UI.iOS.ANIMATION_CURVE_EASE_IN", @"2.1.0", @"Ti.UI.ANIMATION_CURVE_EASE_IN");
+MAKE_SYSTEM_PROP_DEPRECATED_REPLACED(ANIMATION_CURVE_EASE_OUT,UIViewAnimationOptionCurveEaseOut,  @"UI.iOS.ANIMATION_CURVE_EASE_OUT", @"2.1.0", @"Ti.UI.ANIMATION_CURVE_EASE_OUT");
+MAKE_SYSTEM_PROP_DEPRECATED_REPLACED(ANIMATION_CURVE_LINEAR,UIViewAnimationOptionCurveLinear, @"UI.iOS.ANIMATION_CURVE_LINEAR", @"2.1.0", @"Ti.UI.ANIMATION_CURVE_LINEAR");
+
+MAKE_SYSTEM_PROP_DEPRECATED_REPLACED(AUTODETECT_NONE,UIDataDetectorTypeNone, @"UI.iOS.AUTODETECT_NONE", @"2.2.0", @"Ti.UI.AUTOLINK_NONE");
+MAKE_SYSTEM_PROP_DEPRECATED_REPLACED(AUTODETECT_ALL,UIDataDetectorTypeAll, @"UI.iOS.AUTODETECT_ALL", @"2.2.0", @"Ti.UI.AUTOLINK_ALL");
+MAKE_SYSTEM_PROP_DEPRECATED_REPLACED(AUTODETECT_PHONE,UIDataDetectorTypePhoneNumber, @"UI.iOS.AUTODETECT_PHONE", @"2.2.0", @"Ti.UI.AUTOLINK_PHONE_NUMBERS");
+MAKE_SYSTEM_PROP_DEPRECATED_REPLACED(AUTODETECT_LINK,UIDataDetectorTypeLink, @"UI.iOS.AUTODETECT_LINK", @"2.2.0", @"Ti.UI.AUTOLINK_URLS");
+MAKE_SYSTEM_PROP_DEPRECATED_REPLACED(AUTODETECT_ADDRESS,UIDataDetectorTypeAddress, @"UI.iOS.AUTODETECT_ADDRESS", @"2.2.0", @"Ti.UI.AUTOLINK_MAP_ADDRESSES");
+MAKE_SYSTEM_PROP_DEPRECATED_REPLACED(AUTODETECT_CALENDAR,UIDataDetectorTypeCalendarEvent, @"UI.iOS.AUTODETECT_CALENDAR", @"2.2.0", @"Ti.UI.AUTOLINK_CALENDAR");
 
 MAKE_SYSTEM_PROP(BLEND_MODE_NORMAL,kCGBlendModeNormal);
 MAKE_SYSTEM_PROP(BLEND_MODE_MULTIPLY,kCGBlendModeMultiply);
@@ -116,12 +138,6 @@ MAKE_SYSTEM_PROP(BLEND_MODE_XOR,kCGBlendModeXOR);
 MAKE_SYSTEM_PROP(BLEND_MODE_PLUS_DARKER,kCGBlendModePlusDarker);
 MAKE_SYSTEM_PROP(BLEND_MODE_PLUS_LIGHTER,kCGBlendModePlusLighter);
 
-MAKE_SYSTEM_PROP(AUTODETECT_NONE,UIDataDetectorTypeNone);
-MAKE_SYSTEM_PROP(AUTODETECT_ALL,UIDataDetectorTypeAll);
-MAKE_SYSTEM_PROP(AUTODETECT_PHONE,UIDataDetectorTypePhoneNumber);
-MAKE_SYSTEM_PROP(AUTODETECT_LINK,UIDataDetectorTypeLink);
-MAKE_SYSTEM_PROP(AUTODETECT_ADDRESS,UIDataDetectorTypeAddress);
-MAKE_SYSTEM_PROP(AUTODETECT_CALENDAR,UIDataDetectorTypeCalendarEvent);
 
 MAKE_SYSTEM_STR(COLOR_SCROLLVIEW_BACKGROUND, IOS_COLOR_SCROLLVIEW_TEXTURED_BACKGROUND);
 MAKE_SYSTEM_STR(COLOR_VIEW_FLIPSIDE_BACKGROUND, IOS_COLOR_VIEW_FLIPSIDE_BACKGROUND);

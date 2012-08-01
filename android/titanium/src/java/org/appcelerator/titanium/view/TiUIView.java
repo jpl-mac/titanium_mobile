@@ -6,7 +6,6 @@
  */
 package org.appcelerator.titanium.view;
 
-
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -32,11 +31,14 @@ import org.appcelerator.titanium.util.TiUIHelper;
 import org.appcelerator.titanium.view.TiCompositeLayout.LayoutParams;
 import org.appcelerator.titanium.view.TiGradientDrawable.GradientType;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.util.Pair;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.KeyEvent;
@@ -50,6 +52,7 @@ import android.view.View.OnKeyListener;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.inputmethod.InputMethodManager;
@@ -84,16 +87,16 @@ public abstract class TiUIView
 	protected TiBackgroundDrawable background;
 
 	// Since Android doesn't have a property to check to indicate
-	// the current animated x/y scale (from ScaleAnimation), we track it here
+	// the current animated x/y scale (from a scale animation), we track it here
 	// so if another scale animation is done we can gleen the fromX and fromY values
 	// rather than starting the next animation always from scale 1.0f (i.e., normal scale).
 	// This gives us parity with iPhone for scale animations that use the 2-argument variant
 	// of Ti2DMatrix.scale().
-	private float animatedXScale = 1f;
-	private float animatedYScale = 1f; // 1 = regular size.
+	private Pair<Float, Float> animatedScaleValues = Pair.create(Float.valueOf(1f), Float.valueOf(1f)); // default = full size (1f)
 
-	// Same for rotation animation.
+	// Same for rotation animation and for alpha animation.
 	private float animatedRotationDegrees = 0f; // i.e., no rotation.
+	private float animatedAlpha = Float.MIN_VALUE; // i.e., no animated alpha.
 
 	private KrollDict lastUpEvent = new KrollDict(2);
 	// In the case of heavy-weight windows, the "nativeView" is null,
@@ -104,6 +107,7 @@ public abstract class TiUIView
 	private Method mSetLayerTypeMethod = null; // Honeycomb, for turning off hw acceleration.
 
 	private boolean zIndexChanged = false;
+	private TiBorderWrapperView borderView;
 
 	/**
 	 * Constructs a TiUIView object with the associated proxy.
@@ -127,7 +131,7 @@ public abstract class TiUIView
 	public void add(TiUIView child)
 	{
 		if (child != null) {
-			View cv = child.getNativeView();
+			View cv = child.getOuterView();
 			if (cv != null) {
 				View nv = getNativeView();
 				if (nv instanceof ViewGroup) {
@@ -148,7 +152,7 @@ public abstract class TiUIView
 	public void remove(TiUIView child)
 	{
 		if (child != null) {
-			View cv = child.getNativeView();
+			View cv = child.getOuterView();
 			if (cv != null) {
 				View nv = getNativeView();
 				if (nv instanceof ViewGroup) {
@@ -245,15 +249,64 @@ public abstract class TiUIView
 	 */
 	public void animate()
 	{
-		TiAnimationBuilder builder = proxy.getPendingAnimation();
-		if (builder != null && nativeView != null) {
-			AnimationSet as = builder.render(proxy, nativeView);
-			if (DBG) {
-				Log.d(LCAT, "starting animation: "+as);
+		if (nativeView == null) {
+			return;
+		}
+
+		// Pre-honeycomb, if one animation clobbers another you get a problem whereby the background of the
+		// animated view's parent (or the grandparent) bleeds through.  It seems to improve if you cancel and clear
+		// the older animation.  So here we cancel and clear, then re-queue the desired animation.
+		if (Build.VERSION.SDK_INT < TiC.API_LEVEL_HONEYCOMB) {
+			Animation currentAnimation = nativeView.getAnimation();
+			if (currentAnimation != null && currentAnimation.hasStarted() && !currentAnimation.hasEnded()) {
+				// Cancel existing animation and
+				// re-queue desired animation.
+				currentAnimation.cancel();
+				nativeView.clearAnimation();
+				proxy.handlePendingAnimation(true);
+				return;
 			}
-			nativeView.startAnimation(as);
-			// Clean up proxy
-			proxy.clearAnimation(builder);
+
+		}
+
+		TiAnimationBuilder builder = proxy.getPendingAnimation();
+		if (builder == null) {
+			return;
+		}
+
+		proxy.clearAnimation(builder);
+		AnimationSet as = builder.render(proxy, nativeView);
+
+		// If a view is "visible" but not currently seen (such as because it's covered or
+		// its position is currently set to be fully outside its parent's region),
+		// then Android might not animate it immediately because by default it animates
+		// "on first frame" and apparently "first frame" won't happen right away if the
+		// view has no visible rectangle on screen.  In that case invalidate its parent, which will
+		// kick off the pending animation.
+		boolean invalidateParent = false;
+		ViewParent viewParent = nativeView.getParent();
+
+		if (nativeView.getVisibility() == View.VISIBLE && viewParent instanceof View) {
+			int width = nativeView.getWidth();
+			int height = nativeView.getHeight();
+
+			if (width == 0 || height == 0) {
+				// Could be animating from nothing to something
+				invalidateParent = true;
+			} else {
+				Rect r = new Rect(0, 0, width, height);
+				Point p = new Point(0, 0);
+				invalidateParent = !(viewParent.getChildVisibleRect(nativeView, r, p));
+			}
+		}
+
+		if (DBG) {
+			Log.d(LCAT, "starting animation: " + as);
+		}
+		nativeView.startAnimation(as);
+
+		if (invalidateParent) {
+			((View) viewParent).postInvalidate();
 		}
 	}
 
@@ -362,6 +415,7 @@ public abstract class TiUIView
 	public void propertyChanged(String key, Object oldValue, Object newValue, KrollProxy proxy)
 	{
 		if (key.equals(TiC.PROPERTY_LEFT)) {
+			resetPostAnimationValues();
 			if (newValue != null) {
 				layoutParams.optionLeft = TiConvert.toTiDimension(TiConvert.toString(newValue), TiDimension.TYPE_LEFT);
 			} else {
@@ -369,6 +423,7 @@ public abstract class TiUIView
 			}
 			layoutNativeView();
 		} else if (key.equals(TiC.PROPERTY_TOP)) {
+			resetPostAnimationValues();
 			if (newValue != null) {
 				layoutParams.optionTop = TiConvert.toTiDimension(TiConvert.toString(newValue), TiDimension.TYPE_TOP);
 			} else {
@@ -376,9 +431,11 @@ public abstract class TiUIView
 			}
 			layoutNativeView();
 		} else if (key.equals(TiC.PROPERTY_CENTER)) {
+			resetPostAnimationValues();
 			TiConvert.updateLayoutCenter(newValue, layoutParams);
 			layoutNativeView();
 		} else if (key.equals(TiC.PROPERTY_RIGHT)) {
+			resetPostAnimationValues();
 			if (newValue != null) {
 				layoutParams.optionRight = TiConvert.toTiDimension(TiConvert.toString(newValue), TiDimension.TYPE_RIGHT);
 			} else {
@@ -386,6 +443,7 @@ public abstract class TiUIView
 			}
 			layoutNativeView();
 		} else if (key.equals(TiC.PROPERTY_BOTTOM)) {
+			resetPostAnimationValues();
 			if (newValue != null) {
 				layoutParams.optionBottom = TiConvert.toTiDimension(TiConvert.toString(newValue), TiDimension.TYPE_BOTTOM);
 			} else {
@@ -401,26 +459,40 @@ public abstract class TiUIView
 				Log.w(LCAT, "Unsupported property type ("+(newValue.getClass().getSimpleName())+") for key: " + key+". Must be an object/dictionary");
 			}
 		} else if (key.equals(TiC.PROPERTY_HEIGHT)) {
+			resetPostAnimationValues();
 			if (newValue != null) {
-				if (!newValue.equals(TiC.SIZE_AUTO)) {
-					layoutParams.optionHeight = TiConvert.toTiDimension(TiConvert.toString(newValue), TiDimension.TYPE_HEIGHT);
+				layoutParams.optionHeight = null;
+				layoutParams.sizeOrFillHeightEnabled = true;
+				if (newValue.equals(TiC.LAYOUT_SIZE)) {
+					layoutParams.autoFillsHeight = false;
+				} else if (newValue.equals(TiC.LAYOUT_FILL)) {
+					layoutParams.autoFillsHeight = true;
+				} else if (!newValue.equals(TiC.SIZE_AUTO)) {
+					layoutParams.optionHeight = TiConvert.toTiDimension(TiConvert.toString(newValue),
+						TiDimension.TYPE_HEIGHT);
 					layoutParams.sizeOrFillHeightEnabled = false;
-				} else {
-					layoutParams.optionHeight = null;
-					layoutParams.sizeOrFillHeightEnabled = true;
 				}
 			} else {
 				layoutParams.optionHeight = null;
 			}
 			layoutNativeView();
+		} else if (key.equals(TiC.PROPERTY_HORIZONTAL_WRAP)) {
+			if (nativeView instanceof TiCompositeLayout) {
+				((TiCompositeLayout) nativeView).setEnableHorizontalWrap(TiConvert.toBoolean(newValue));
+			}
+			layoutNativeView();
 		} else if (key.equals(TiC.PROPERTY_WIDTH)) {
+			resetPostAnimationValues();
 			if (newValue != null) {
-				if (!newValue.equals(TiC.SIZE_AUTO)) {
+				layoutParams.optionWidth = null;
+				layoutParams.sizeOrFillWidthEnabled = true;
+				if (newValue.equals(TiC.LAYOUT_SIZE)) {
+					layoutParams.autoFillsWidth = false;
+				} else if (newValue.equals(TiC.LAYOUT_FILL)) {
+					layoutParams.autoFillsWidth = true;
+				} else if (!newValue.equals(TiC.SIZE_AUTO)) {
 					layoutParams.optionWidth = TiConvert.toTiDimension(TiConvert.toString(newValue), TiDimension.TYPE_WIDTH);
 					layoutParams.sizeOrFillWidthEnabled = false;
-				} else {
-					layoutParams.optionWidth = null;
-					layoutParams.sizeOrFillWidthEnabled = true;
 				}
 			} else {
 				layoutParams.optionWidth = null;
@@ -517,8 +589,13 @@ public abstract class TiUIView
 				}
 
 				if (hasBorder) {
-					if (newBackground) {
+					if (borderView == null && parent != null) {
+						// Since we have to create a new border wrapper view, we need to remove this view, and re-add it.
+						// This will ensure the border wrapper view is added correctly.
+						TiUIView parentView = parent.getOrCreateView();
+						parentView.remove(this);
 						initializeBorder(d, bgColor);
+						parentView.add(this);
 					} else if (key.startsWith(TiC.PROPERTY_BORDER_PREFIX)) {
 						handleBorderProperty(key, newValue);
 					}
@@ -566,20 +643,38 @@ public abstract class TiUIView
 		}
 		if (TiConvert.fillLayout(d, layoutParams) && !nativeViewNull) {
 			nativeView.requestLayout();
+		}
 
+		if (d.containsKey(TiC.PROPERTY_HORIZONTAL_WRAP)) {
+			if (nativeView instanceof TiCompositeLayout) {
+				((TiCompositeLayout) nativeView).setEnableHorizontalWrap(TiConvert.toBoolean(d, TiC.PROPERTY_HORIZONTAL_WRAP));
+			}
 		}
 
 		Integer bgColor = null;
 
 		// Default background processing.
 		// Prefer image to color.
-		if (hasImage(d) || hasColorState(d) || hasBorder(d) || hasGradient(d)) {
+		if (hasImage(d) || hasColorState(d) || hasGradient(d)) {
 			handleBackgroundImage(d);
+
 		} else if (d.containsKey(TiC.PROPERTY_BACKGROUND_COLOR) && !nativeViewNull) {
 			bgColor = TiConvert.toColor(d, TiC.PROPERTY_BACKGROUND_COLOR);
-			nativeView.setBackgroundColor(bgColor);
+
+			// Set the background color on the view directly only
+			// if there is no border. If a border is present we must
+			// use the TiBackgroundDrawable.
+			if (hasBorder(d)) {
+				if (background == null) {
+					applyCustomBackground(false);
+				}
+				background.setBackgroundColor(bgColor);
+
+			} else {
+				nativeView.setBackgroundColor(bgColor);
+			}
 		}
-		
+
 		if (d.containsKey(TiC.PROPERTY_VISIBLE) && !nativeViewNull) {
 			nativeView.setVisibility(TiConvert.toBoolean(d, TiC.PROPERTY_VISIBLE) ? View.VISIBLE : View.INVISIBLE);
 			
@@ -766,14 +861,14 @@ public abstract class TiUIView
 	private void handleBackgroundImage(KrollDict d)
 	{
 		String bg = d.getString(TiC.PROPERTY_BACKGROUND_IMAGE);
-		String bgSelected = d.getString(TiC.PROPERTY_BACKGROUND_SELECTED_IMAGE);
-		String bgFocused = d.getString(TiC.PROPERTY_BACKGROUND_FOCUSED_IMAGE);
-		String bgDisabled = d.getString(TiC.PROPERTY_BACKGROUND_DISABLED_IMAGE);
+		String bgSelected = d.optString(TiC.PROPERTY_BACKGROUND_SELECTED_IMAGE, bg);
+		String bgFocused = d.optString(TiC.PROPERTY_BACKGROUND_FOCUSED_IMAGE, bg);
+		String bgDisabled = d.optString(TiC.PROPERTY_BACKGROUND_DISABLED_IMAGE, bg);
 		
 		String bgColor = d.getString(TiC.PROPERTY_BACKGROUND_COLOR);
-		String bgSelectedColor = d.getString(TiC.PROPERTY_BACKGROUND_SELECTED_COLOR);
-		String bgFocusedColor = d.getString(TiC.PROPERTY_BACKGROUND_FOCUSED_COLOR);
-		String bgDisabledColor = d.getString(TiC.PROPERTY_BACKGROUND_DISABLED_COLOR);
+		String bgSelectedColor = d.optString(TiC.PROPERTY_BACKGROUND_SELECTED_COLOR, bgColor);
+		String bgFocusedColor = d.optString(TiC.PROPERTY_BACKGROUND_FOCUSED_COLOR, bgColor);
+		String bgDisabledColor = d.optString(TiC.PROPERTY_BACKGROUND_DISABLED_COLOR, bgColor);
 
 		if (bg != null) {
 			bg = resolveImageUrl(bg);
@@ -791,10 +886,15 @@ public abstract class TiUIView
 		TiGradientDrawable gradientDrawable = null;
 		KrollDict gradientProperties = d.getKrollDict(TiC.PROPERTY_BACKGROUND_GRADIENT);
 		if (gradientProperties != null) {
-			gradientDrawable = new TiGradientDrawable(nativeView, gradientProperties);
-			if (gradientDrawable.getGradientType() == GradientType.RADIAL_GRADIENT) {
-				// TODO: Remove this once we support radial gradients.
-				Log.w(LCAT, "Android does not support radial gradients.");
+			try {
+				gradientDrawable = new TiGradientDrawable(nativeView, gradientProperties);
+				if (gradientDrawable.getGradientType() == GradientType.RADIAL_GRADIENT) {
+					// TODO: Remove this once we support radial gradients.
+					Log.w(LCAT, "Android does not support radial gradients.");
+					gradientDrawable = null;
+				}
+			}
+			catch (IllegalArgumentException e) {
 				gradientDrawable = null;
 			}
 		}
@@ -824,66 +924,61 @@ public abstract class TiUIView
 
 	private void initializeBorder(KrollDict d, Integer bgColor)
 	{
-		if (d.containsKey(TiC.PROPERTY_BORDER_RADIUS)
-			|| d.containsKey(TiC.PROPERTY_BORDER_COLOR)
-			|| d.containsKey(TiC.PROPERTY_BORDER_WIDTH)) {
+		if (hasBorder(d)) {
 
 			if(nativeView != null) {
-				if (background == null) {
-					applyCustomBackground();
-				}
 
-				if (background.getBorder() == null) {
-					background.setBorder(new TiBackgroundDrawable.Border());
-				}
+				if (borderView == null) {
+					Activity currentActivity = proxy.getActivity();
+					if (currentActivity == null) {
+						currentActivity = TiApplication.getAppCurrentActivity();
+					}
+					borderView = new TiBorderWrapperView(currentActivity);
 
-				TiBackgroundDrawable.Border border = background.getBorder();
+					// Create new layout params for the child view since we just want the
+					// wrapper to control the layout
+					LayoutParams params = new LayoutParams();
+					params.height = android.widget.FrameLayout.LayoutParams.MATCH_PARENT;
+					params.width = android.widget.FrameLayout.LayoutParams.MATCH_PARENT;
+					borderView.addView(nativeView, params);
+				}
 
 				if (d.containsKey(TiC.PROPERTY_BORDER_RADIUS)) {
 					float radius = TiConvert.toFloat(d, TiC.PROPERTY_BORDER_RADIUS, 0f);
 					if (radius > 0f && HONEYCOMB_OR_GREATER) {
 						disableHWAcceleration();
 					}
-					border.setRadius(radius);
+					borderView.setRadius(radius);
 				}
 				if (d.containsKey(TiC.PROPERTY_BORDER_COLOR) || d.containsKey(TiC.PROPERTY_BORDER_WIDTH)) {
 					if (d.containsKey(TiC.PROPERTY_BORDER_COLOR)) {
-						border.setColor(TiConvert.toColor(d, TiC.PROPERTY_BORDER_COLOR));
+						borderView.setColor(TiConvert.toColor(d, TiC.PROPERTY_BORDER_COLOR));
 					} else {
 						if (bgColor != null) {
-							border.setColor(bgColor);
+							borderView.setColor(bgColor);
 						}
 					}
 					if (d.containsKey(TiC.PROPERTY_BORDER_WIDTH)) {
-						border.setWidth(TiConvert.toFloat(d, TiC.PROPERTY_BORDER_WIDTH, 0f));
+						borderView.setBorderWidth(TiConvert.toFloat(d, TiC.PROPERTY_BORDER_WIDTH, 0f));
 					}
 				}
-				//applyCustomBackground();
 			}
 		}
 	}
 
 	private void handleBorderProperty(String property, Object value)
 	{
-		if (background.getBorder() == null) {
-			background.setBorder(new TiBackgroundDrawable.Border());
-		}
-		TiBackgroundDrawable.Border border = background.getBorder();
-
-		if (property.equals(TiC.PROPERTY_BORDER_COLOR)) {
-			border.setColor(TiConvert.toColor(value.toString()));
-		} else if (property.equals(TiC.PROPERTY_BORDER_RADIUS)) {
+		if (TiC.PROPERTY_BORDER_COLOR.equals(property)) {
+			borderView.setColor(TiConvert.toColor(value.toString()));
+		} else if (TiC.PROPERTY_BORDER_RADIUS.equals(property)) {
 			float radius = TiConvert.toFloat(value, 0f);
 			if (radius > 0f && HONEYCOMB_OR_GREATER) {
 				disableHWAcceleration();
 			}
-			border.setRadius(radius);
-		} else if (property.equals(TiC.PROPERTY_BORDER_WIDTH)) {
-			border.setWidth(TiConvert.toFloat(value, 0f));
+			borderView.setRadius(radius);
+		} else if (TiC.PROPERTY_BORDER_WIDTH.equals(property)) {
+			borderView.setBorderWidth(TiConvert.toFloat(value, 0f));
 		}
-		//recalculate bounds since border is changed.
-		background.onBoundsChange(background.getBounds());
-		applyCustomBackground();
 	}
 
 	private static HashMap<Integer, String> motionEvents = new HashMap<Integer,String>();
@@ -923,6 +1018,14 @@ public abstract class TiUIView
 	protected boolean allowRegisterForTouch()
 	{
 		return true;
+	}
+
+	public View getOuterView()
+	{
+		if (borderView == null) {
+			return nativeView;
+		}
+		return borderView;
 	}
 
 	public void registerForTouch()
@@ -1114,7 +1217,6 @@ public abstract class TiUIView
 		}
 	}
 
-	
 	public void clearOpacity(View view)
 	{
 		Drawable d = view.getBackground();
@@ -1254,39 +1356,21 @@ public abstract class TiUIView
 	}
 
 	/**
-	 * Store the animated x scale (from a ScaleAnimation) since Android provides no property for
-	 * looking it up.
+	 * Retrieve the saved animated scale values, which we store here since Android provides no property
+	 * for looking them up.
 	 */
-	public void setAnimatedXScale(float scale)
+	public Pair<Float, Float> getAnimatedScaleValues()
 	{
-		animatedXScale = scale;
+		return animatedScaleValues;
 	}
 
 	/**
-	 * Retrieve the animated x scale, which we store here since Android provides no property
-	 * for looking it up.
+	 * Store the animated x and y scale values (i.e., the scale after an animation)
+	 * since Android provides no property for looking them up.
 	 */
-	public float getAnimatedXScale()
+	public void setAnimatedScaleValues(Pair<Float, Float> newValues)
 	{
-		return animatedXScale;
-	}
-
-	/**
-	 * Store the animated y scale (from a ScaleAnimation) since Android provides no property for
-	 * looking it up.
-	 */
-	public void setAnimatedYScale(float scale)
-	{
-		animatedYScale = scale;
-	}
-
-	/**
-	 * Retrieve the animated y scale, which we store here since Android provides no property
-	 * for looking it up.
-	 */
-	public float getAnimatedYScale()
-	{
-		return animatedYScale;
+		animatedScaleValues = newValues;
 	}
 
 	/**
@@ -1305,4 +1389,32 @@ public abstract class TiUIView
 	{
 		return animatedRotationDegrees;
 	}
+
+	/**
+	 * Set the animated alpha values, since Android provides no property for looking it up.
+	 */
+	public void setAnimatedAlpha(float alpha)
+	{
+		animatedAlpha = alpha;
+	}
+
+	/**
+	 * Retrieve the animated alpha value, which we store here since Android provides no property
+	 * for looking it up.
+	 */
+	public float getAnimatedAlpha()
+	{
+		return animatedAlpha;
+	}
+
+	/**
+	 * "Forget" the values we save after scale and rotation and alpha animations.
+	 */
+	private void resetPostAnimationValues()
+	{
+		animatedRotationDegrees = 0f; // i.e., no rotation.
+		animatedScaleValues = Pair.create(Float.valueOf(1f), Float.valueOf(1f)); // 1 means no scaling
+		animatedAlpha = Float.MIN_VALUE; // we use min val to signal no val.
+	}
+
 }

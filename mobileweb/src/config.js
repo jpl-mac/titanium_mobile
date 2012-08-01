@@ -5,7 +5,7 @@ var require = {
 		deployType: "${deploy_type | jsQuoteEscapeFilter}",
 		description: "${app_description | jsQuoteEscapeFilter}",
 		guid: "${app_guid | jsQuoteEscapeFilter}",
-		id: "${app_name | jsQuoteEscapeFilter}",
+		id: "${app_id | jsQuoteEscapeFilter}",
 		name: "${app_name | jsQuoteEscapeFilter}",
 		names: ${app_names},
 		publisher: "${app_publisher | jsQuoteEscapeFilter}",
@@ -47,6 +47,7 @@ var require = {
 	ti: {
 		buildHash: "${ti_githash | jsQuoteEscapeFilter}",
 		buildDate: "${ti_timestamp | jsQuoteEscapeFilter}",
+		colorsModule: "Ti/_/colors",
 		filesystem: {
 			registry: "${ti_fs_registry}"
 		},

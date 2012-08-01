@@ -301,6 +301,34 @@ TiProxy * DeepScanForProxyOfViewContainingPoint(UIView * targetView, CGPoint poi
 	[self replaceValue:value forKey:@"height" notification:YES];
 }
 
+-(id) backgroundLeftCap
+{
+    return [self valueForUndefinedKey:@"backgroundLeftCap"];
+}
+
+-(void)setBackgroundLeftCap:(id)value
+{
+    leftCap = TiDimensionFromObject(value);
+    [self replaceValue:value forKey:@"backgroundLeftCap" notification:NO];
+    if (callbackCell != nil) {
+        [self configureBackground:callbackCell];
+    }
+}
+
+-(id) backgroundTopCap
+{
+    return [self valueForUndefinedKey:@"backgroundTopCap"];
+}
+
+-(void)setBackgroundTopCap:(id)value
+{
+    topCap = TiDimensionFromObject(value);
+    [self replaceValue:value forKey:@"backgroundTopCap" notification:NO];
+    if (callbackCell != nil) {
+        [self configureBackground:callbackCell];
+    }
+}
+
 // Special handling to try and avoid Apple's detection of private API 'layout'
 -(void)setValue:(id)value forUndefinedKey:(NSString *)key
 {
@@ -475,7 +503,7 @@ TiProxy * DeepScanForProxyOfViewContainingPoint(UIView * targetView, CGPoint poi
 	if (bgImage!=nil)
 	{
 		NSURL *url = [TiUtils toURL:bgImage proxy:(TiProxy*)table.proxy];
-		UIImage *image = [[ImageLoader sharedLoader] loadImmediateImage:url];
+		UIImage *image = [[ImageLoader sharedLoader] loadImmediateStretchableImage:url withLeftCap:leftCap topCap:topCap];
 		if ([cell.backgroundView isKindOfClass:[UIImageView class]]==NO)
 		{
 			UIImageView *view_ = [[[UIImageView alloc] initWithFrame:CGRectZero] autorelease];
@@ -495,7 +523,7 @@ TiProxy * DeepScanForProxyOfViewContainingPoint(UIView * targetView, CGPoint poi
 	if (selBgImage!=nil)
 	{
 		NSURL *url = [TiUtils toURL:selBgImage proxy:(TiProxy*)table.proxy];
-		UIImage *image = [[ImageLoader sharedLoader] loadImmediateImage:url];
+		UIImage *image = [[ImageLoader sharedLoader] loadImmediateStretchableImage:url withLeftCap:leftCap topCap:topCap];
 		if ([cell.selectedBackgroundView isKindOfClass:[UIImageView class]]==NO)
 		{
 			UIImageView *view_ = [[[UIImageView alloc] initWithFrame:CGRectZero] autorelease];
@@ -638,22 +666,14 @@ TiProxy * DeepScanForProxyOfViewContainingPoint(UIView * targetView, CGPoint poi
 {
 	return nil;
 }
-
-+(void)clearTableRowCell:(UITableViewCell *)cell
+    
+- (void)prepareTableRowForReuse
 {
-	NSArray* cellSubviews = [[cell contentView] subviews];
-    
-	// Clear out the old cell view
-	for (UIView* view in cellSubviews) {
-        if ([view isKindOfClass:[TiUITableViewRowContainer class]]) {
-            [view removeFromSuperview];
-        }
-	}
-    
+	RELEASE_TO_NIL(rowContainerView);
+
     // ... But that's not enough. We need to detatch the views
     // for all children of the row, to clean up memory.
-    NSArray* children = [[(TiUITableViewCell*)cell proxy] children];
-    for (TiViewProxy* child in children) {
+    for (TiViewProxy* child in [self children]) {
         [child detachView];
     }
 }
@@ -683,9 +703,17 @@ TiProxy * DeepScanForProxyOfViewContainingPoint(UIView * targetView, CGPoint poi
             [contentView setFrame:rect];
         }
 		rect.origin = CGPointZero;
-        [rowContainerView removeFromSuperview];
-		[rowContainerView release];
-		rowContainerView = [[TiUITableViewRowContainer alloc] initWithFrame:rect];
+		RELEASE_TO_NIL(rowContainerView);
+		for (UIView* subview in [[cell contentView] subviews]) {
+			if ([subview isKindOfClass:[TiUITableViewRowContainer class]]) {
+				rowContainerView = [subview retain];
+				break;
+			}
+		}
+		if (rowContainerView == nil) {
+			rowContainerView = [[TiUITableViewRowContainer alloc] initWithFrame:rect];
+			[contentView addSubview:rowContainerView];
+		}
 		[rowContainerView setBackgroundColor:[UIColor clearColor]];
 		[rowContainerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight];
 		
@@ -702,7 +730,6 @@ TiProxy * DeepScanForProxyOfViewContainingPoint(UIView * targetView, CGPoint poi
 			[rowContainerView addSubview:uiview];
 			[proxy setReproxying:NO];
 		}
-		[contentView addSubview:rowContainerView];
 	}
 	configuredChildren = YES;
 }

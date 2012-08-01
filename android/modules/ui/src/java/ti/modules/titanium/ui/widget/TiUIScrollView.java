@@ -22,6 +22,8 @@ import org.appcelerator.titanium.view.TiUIView;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.view.GestureDetector;
+import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,6 +41,7 @@ public class TiUIScrollView extends TiUIView
 	private static final boolean DBG = TiConfig.LOGD;
 	private int offsetX = 0, offsetY = 0;
 	private boolean setInitialOffset = false;
+	private boolean mScrollingEnabled = true;
 
 	private class TiScrollViewLayout extends TiCompositeLayout
 	{
@@ -46,10 +49,20 @@ public class TiUIScrollView extends TiUIView
 		private int parentWidth = 0;
 		private int parentHeight = 0;
 		private boolean canCancelEvents = true;
+		private GestureDetector gestureDetector;
 
 		public TiScrollViewLayout(Context context, LayoutArrangement arrangement)
 		{
 			super(context, arrangement, proxy);
+			gestureDetector = new GestureDetector(new SimpleOnGestureListener()
+			{
+				@Override
+				public void onLongPress(MotionEvent e)
+				{
+					// Only do this for long presses to match iOS behavior
+					requestDisallowInterceptTouchEvent(true);
+				}
+			});
 		}
 
 		public void setParentWidth(int width)
@@ -71,11 +84,10 @@ public class TiUIScrollView extends TiUIView
 		public boolean dispatchTouchEvent(MotionEvent ev)
 		{
 			// If canCancelEvents is false, then we want to prevent the scroll view from canceling the touch
-			// events of the child view
+			// events of the child view by calling requestDisallowInterceptTouchEvent(true)
 			if (!canCancelEvents) {
-				requestDisallowInterceptTouchEvent(true);
+				gestureDetector.onTouchEvent(ev);
 			}
-
 			return super.dispatchTouchEvent(ev);
 		}
 
@@ -180,6 +192,23 @@ public class TiUIScrollView extends TiUIView
 		}
 
 		@Override
+		public boolean onTouchEvent(MotionEvent event) {
+			if (event.getAction() == MotionEvent.ACTION_MOVE && !mScrollingEnabled) {
+				return false;
+			}
+			return super.onTouchEvent(event);
+		}
+		
+		@Override
+		public boolean onInterceptTouchEvent(MotionEvent event) {
+			if (mScrollingEnabled) {
+				return super.onInterceptTouchEvent(event);
+			}
+
+			return false;
+		}
+		
+		@Override
 		public void addView(View child, android.view.ViewGroup.LayoutParams params)
 		{
 			layout.addView(child, params);
@@ -260,6 +289,23 @@ public class TiUIScrollView extends TiUIView
 		public TiScrollViewLayout getLayout()
 		{
 			return layout;
+		}
+
+		@Override
+		public boolean onTouchEvent(MotionEvent event) {
+			if (event.getAction() == MotionEvent.ACTION_MOVE && !mScrollingEnabled) {
+				return false;
+			}
+			return super.onTouchEvent(event);
+		}
+		
+		@Override
+		public boolean onInterceptTouchEvent(MotionEvent event) {
+			if (mScrollingEnabled) {
+				return super.onInterceptTouchEvent(event);
+			}
+
+			return false;
 		}
 
 		@Override
@@ -371,6 +417,9 @@ public class TiUIScrollView extends TiUIView
 				((TiVerticalScrollView) view).getLayout().setCanCancelEvents(canCancelEvents);
 			}
 		}
+		if (TiC.PROPERTY_SCROLLING_ENABLED.equals(key)) {
+			setScrollingEnabled(newValue);
+		}
 		super.propertyChanged(key, oldValue, newValue, proxy);
 	}
 
@@ -379,6 +428,10 @@ public class TiUIScrollView extends TiUIView
 	{
 		boolean showHorizontalScrollBar = false;
 		boolean showVerticalScrollBar = false;
+
+		if (d.containsKey(TiC.PROPERTY_SCROLLING_ENABLED)) {
+			setScrollingEnabled(d.get(TiC.PROPERTY_SCROLLING_ENABLED));
+		}
 
 		if (d.containsKey(TiC.PROPERTY_SHOW_HORIZONTAL_SCROLL_INDICATOR)) {
 			showHorizontalScrollBar = TiConvert.toBoolean(d, TiC.PROPERTY_SHOW_HORIZONTAL_SCROLL_INDICATOR);
@@ -483,6 +536,20 @@ public class TiUIScrollView extends TiUIView
 		}
 	}
 
+	public void setScrollingEnabled(Object value)
+	{
+		try {
+			mScrollingEnabled = TiConvert.toBoolean(value);
+		} catch (IllegalArgumentException e) {
+			mScrollingEnabled = true;
+		}
+	}
+
+	public boolean getScrollingEnabled()
+	{
+		return mScrollingEnabled;
+	}
+
 	public void scrollTo(int x, int y)
 	{
 		getNativeView().scrollTo(x, y);
@@ -518,7 +585,7 @@ public class TiUIScrollView extends TiUIView
 	public void remove(TiUIView child)
 	{
 		if (child != null) {
-			View cv = child.getNativeView();
+			View cv = child.getOuterView();
 			if (cv != null) {
 				View nv = getLayout();
 				if (nv instanceof ViewGroup) {

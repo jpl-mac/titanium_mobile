@@ -16,3 +16,4 @@ xcuserdata
 *.o
 x86
 arm
+anvil/driver/config.js

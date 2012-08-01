@@ -34,7 +34,11 @@ import android.os.Message;
 import android.os.Messenger;
 import android.widget.TabHost.TabSpec;
 
-@Kroll.proxy(creatableInModule=UIModule.class)
+@Kroll.proxy(creatableInModule=UIModule.class, propertyAccessors={
+	TiC.PROPERTY_TABS_BACKGROUND_COLOR,
+	TiC.PROPERTY_TABS_BACKGROUND_SELECTED_COLOR	
+})
+
 public class TabGroupProxy extends TiWindowProxy
 {
 	private static final String LCAT = "TabGroupProxy";
@@ -70,6 +74,22 @@ public class TabGroupProxy extends TiWindowProxy
 	public TiUIView getOrCreateView()
 	{
 		throw new IllegalStateException("call to getView on a Window");
+	}
+
+	public String getTabsBackgroundColor() {
+		if (hasProperty(TiC.PROPERTY_TABS_BACKGROUND_COLOR)) {
+			return getProperty(TiC.PROPERTY_TABS_BACKGROUND_COLOR).toString();
+		} else {
+			return null;
+		}
+	}
+	
+	public String getTabsBackgroundSelectedColor() {
+		if (hasProperty(TiC.PROPERTY_TABS_BACKGROUND_SELECTED_COLOR)) {
+			return getProperty(TiC.PROPERTY_TABS_BACKGROUND_SELECTED_COLOR).toString();
+		} else {
+			return null;
+		}
 	}
 
 	@Override
@@ -233,6 +253,23 @@ public class TabGroupProxy extends TiWindowProxy
 		}
 	}
 
+	@Override
+	public void handleCreationDict(KrollDict options) {
+		super.handleCreationDict(options);
+
+		// Support setting orientation modes at creation.
+		Object orientationModes = options.get(TiC.PROPERTY_ORIENTATION_MODES);
+		if (orientationModes != null && orientationModes instanceof Object[]) {
+			try {
+				int[] modes = TiConvert.toIntArray((Object[]) orientationModes);
+				setOrientationModes(modes);
+
+			} catch (ClassCastException e) {
+				Log.e(LCAT, "Invalid orientationMode array. Must only contain orientation mode constants.");
+			}
+		}
+	}
+
 	@Kroll.getProperty @Kroll.method
 	public TabProxy getActiveTab()
 	{
@@ -298,6 +335,9 @@ public class TabGroupProxy extends TiWindowProxy
 				addTabToGroup(tg, tab);
 			}
 		}
+
+		// Setup the new tab activity like setting orientation modes.
+		onWindowActivityCreated();
 		
 		tg.changeActiveTab(initialActiveTab);
 		// Make sure the tab indicator is selected. We need to force it to be selected due to TIMOB-7832.
@@ -434,8 +474,20 @@ public class TabGroupProxy extends TiWindowProxy
 	}
 
 	@Override
-	protected Activity handleGetActivity()
+	protected Activity getWindowActivity()
 	{
-		return weakActivity.get();
+		if (weakActivity != null) {
+			return weakActivity.get();
+		}
+
+		return null;
+	}
+
+	@Kroll.method @Kroll.setProperty
+	@Override
+	public void setOrientationModes(int[] modes) {
+		// Unlike Windows this setter is not defined in JavaScript.
+		// We need to expose it here with an annotation.
+		super.setOrientationModes(modes);
 	}
 }
