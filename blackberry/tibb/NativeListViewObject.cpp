@@ -42,51 +42,6 @@ int NativeListViewObject::initialize()
     return NATIVE_ERROR_OK;
 }
 
-int NativeListViewObject::setWidth(TiObject* obj)
-{
-    float width;
-    int error = NativeControlObject::getFloat(obj, &width);
-    if (!N_SUCCEEDED(error))
-    {
-        return error;
-    }
-    listView_->setMaxWidth(width);
-    listView_->setMinWidth(width);
-    return NATIVE_ERROR_OK;
-}
-
-int NativeListViewObject::setLeft(TiObject* obj)
-{
-    bb::cascades::AbsoluteLayoutProperties* pProp = new bb::cascades::AbsoluteLayoutProperties;
-    float left;
-    int error = NativeControlObject::getFloat(obj, &left);
-    if (!N_SUCCEEDED(error))
-    {
-        return error;
-    }
-    left_ = left;
-    pProp->setPositionX(left_);
-    pProp->setPositionY(top_);
-    listView_->setLayoutProperties(pProp);
-    return NATIVE_ERROR_OK;
-}
-
-int NativeListViewObject::setTop(TiObject* obj)
-{
-    bb::cascades::AbsoluteLayoutProperties* pProp = new bb::cascades::AbsoluteLayoutProperties;
-    float top;
-    int error = NativeControlObject::getFloat(obj, &top);
-    if (!N_SUCCEEDED(error))
-    {
-        return error;
-    }
-    top_ = top;
-    pProp->setPositionX(left_);
-    pProp->setPositionY(top_);
-    listView_->setLayoutProperties(pProp);
-    return NATIVE_ERROR_OK;
-}
-
 int NativeListViewObject::setData(TiObject* obj)
 {
     QVector<QVariant> dataModel;

@@ -38,9 +38,6 @@ class NativeListViewObject : public NativeControlObject
 public:
     static NativeListViewObject* createListView();
     virtual int getObjectType() const;
-    virtual int setTop(TiObject* obj);
-    virtual int setLeft(TiObject* obj);
-    virtual int setWidth(TiObject* obj);
     virtual int setData(TiObject* obj);
     virtual int initialize();
     virtual QVariant getListViewElementFromIndex(QVariantList var);

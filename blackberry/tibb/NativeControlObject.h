@@ -11,11 +11,13 @@
 #include "NativeProxyObject.h"
 
 #include <bb/cascades/Color>
+#include <QRect>
 
 
 class QString;
 class TiObject;
 class UIViewEventHandler;
+class NativeLayoutHandler;
 
 namespace bb
 {
@@ -68,10 +70,12 @@ public:
     virtual int initialize();
     virtual int addChildNativeObject(NativeObject* obj);
     virtual int removeChildNativeObject(NativeObject* obj);
-
-    virtual int setPropertyValue(size_t propertyNumber, TiObject* obj);
     virtual int getPropertyValue(size_t propertyNumber, TiObject* obj);
-    virtual int setVisibility(bool visible);
+    virtual int getHeight(TiObject* obj);
+    virtual int getLeft(TiObject* obj);
+    virtual int getTop(TiObject* obj);
+    virtual int getVisible(TiObject* obj);
+    virtual int getWidth(TiObject* obj);
     virtual int setAnchorPoint(TiObject* obj);
     virtual int setBackgroundColor(TiObject* obj);
     virtual int setBackgroundDisableColor(TiObject* obj);
@@ -92,6 +96,7 @@ public:
     virtual int setMinDate(TiObject* obj);
     virtual int setOpacity(TiObject* obj);
     virtual int setOptions(TiObject* obj);
+    virtual int setPropertyValue(size_t propertyNumber, TiObject* obj);
     virtual int setRight(TiObject* obj);
     virtual int setSelectedIndex(TiObject* obj);
     virtual int setText(TiObject* obj);
@@ -100,8 +105,8 @@ public:
     virtual int setType(TiObject* obj);
     virtual int setTop(TiObject* obj);
     virtual int setValue(TiObject* obj);
+    virtual int setVisibility(bool visible);
     virtual int setVisible(TiObject* obj);
-    virtual int getVisible(TiObject* obj);
     virtual int setWidth(TiObject* obj);
     virtual int setWindow(TiObject* obj);
 
@@ -115,6 +120,7 @@ public:
     static int getPoint(TiObject* obj, float* x, float* y);
     static int getDataModel(TiObject* obj, QVector<QVariant>& dataModel);
     static int getDateTime(TiObject* obj, QDateTime& dt);
+    void updateLayout(QRectF rect);
 
 protected:
     NativeControlObject();
@@ -134,8 +140,12 @@ private:
     bb::cascades::AbsoluteLayoutProperties* layout_;
     bb::cascades::Color backgroundColor_;
     bb::cascades::Color disabledBackgroundColor_;
+    NativeLayoutHandler* layoutHandler_;
     float left_;
     float top_;
+    float width_;
+    float height_;
+    QRectF rect_;
 };
 
 // Event handler for Ti.UI.View

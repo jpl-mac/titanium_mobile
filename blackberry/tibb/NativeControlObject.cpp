@@ -7,6 +7,7 @@
 
 #include "NativeControlObject.h"
 
+#include "NativeLayoutHandler.h"
 #include "PersistentV8Value.h"
 #include "TiEventContainer.h"
 #include "TiObject.h"
@@ -17,8 +18,10 @@
 #include <bb/cascades/AbsoluteLayoutProperties>
 #include <bb/cascades/Color>
 #include <bb/cascades/Container>
+#include <bb/cascades/LayoutUpdateHandler>
 #include <bb/device/Display>
 #include <QColor>
+#include <QRectF>
 
 // 25.4mm in 1"
 #define INCHES_TO_MM_MUL                25.4f
@@ -132,8 +135,11 @@ NativeControlObject::NativeControlObject() :
     container_(NULL),
     control_(NULL),
     layout_(NULL),
+    layoutHandler_(0),
     left_(0),
-    top_(0)
+    top_(0),
+    width_(0),
+    height_(0)
 {
     if ((g_width <= 0) || (g_height <= 0))
     {
@@ -174,6 +180,11 @@ NAHANDLE NativeControlObject::getNativeHandle() const
     return container_;
 }
 
+void NativeControlObject::updateLayout(QRectF rect)
+{
+    rect_ = rect;
+}
+
 int NativeControlObject::initialize()
 {
     /* Special case: UI.View only needs the container */
@@ -191,6 +202,8 @@ void NativeControlObject::setControl(bb::cascades::Control* control)
         container_->setLayoutProperties(layout_);
     }
     container_->add(control);
+    layoutHandler_ = new NativeLayoutHandler(this);
+    bb::cascades::LayoutUpdateHandler::create(container_).onLayoutFrameChanged(layoutHandler_, SLOT(handleLayoutFrameUpdated(QRectF)));
     control_ = control;
 }
 
@@ -360,17 +373,17 @@ PROP_SETGET(setHeight)
 int NativeControlObject::setHeight(TiObject* obj)
 {
     Q_ASSERT(container_ != NULL);
-    float height;
-    // TODO: get the current width of the parent control
+    // TODO:we need the parent height to calculate percentage values and
+    // to use that value as max instead of g_height
     float max = g_height; // TODO: Remove this
     int error = getMeasurementInfo(obj, max,
-                                   (float)g_height / g_physicalHeight, &height);
+                                   (float)g_height / g_physicalHeight, &height_);
     if (error != NATIVE_ERROR_OK)
     {
         return error;
     }
-    container_->setMaxHeight(height);
-    container_->setMinHeight(height);
+    container_->setMaxHeight(height_);
+    container_->setMinHeight(height_);
     return NATIVE_ERROR_OK;
 }
 
@@ -396,13 +409,12 @@ PROP_SETGET(setLeft)
 int NativeControlObject::setLeft(TiObject* obj)
 {
     Q_ASSERT(container_ != NULL);
-    float value = 0;
-    int error = NativeControlObject::getFloat(obj, &value);
+    int error = NativeControlObject::getFloat(obj, &left_);
     if (!N_SUCCEEDED(error))
     {
         return error;
     }
-    layout_->setPositionX(value);
+    layout_->setPositionX(left_);
     container_->setLayoutProperties(layout_);
     return NATIVE_ERROR_OK;
 }
@@ -483,13 +495,12 @@ PROP_SETGET(setTop)
 int NativeControlObject::setTop(TiObject* obj)
 {
     Q_ASSERT(container_ != NULL);
-    float value = 0;
-    int error = NativeControlObject::getFloat(obj, &value);
+    int error = NativeControlObject::getFloat(obj, &top_);
     if (!N_SUCCEEDED(error))
     {
         return error;
     }
-    layout_->setPositionY(value);
+    layout_->setPositionY(top_);
     container_->setLayoutProperties(layout_);
     return NATIVE_ERROR_OK;
 }
@@ -520,21 +531,49 @@ int NativeControlObject::getVisible(TiObject* obj)
     return NATIVE_ERROR_OK;
 }
 
+PROP_SETGET(getWidth)
+int NativeControlObject::getWidth(TiObject* obj)
+{
+    obj->setValue(Number::New(width_));
+    return NATIVE_ERROR_OK;
+}
+
+PROP_SETGET(getHeight)
+int NativeControlObject::getHeight(TiObject* obj)
+{
+    obj->setValue(Number::New(height_));
+    return NATIVE_ERROR_OK;
+}
+
+PROP_SETGET(getTop)
+int NativeControlObject::getTop(TiObject* obj)
+{
+    obj->setValue(Number::New(top_));
+    return NATIVE_ERROR_OK;
+}
+
+PROP_SETGET(getLeft)
+int NativeControlObject::getLeft(TiObject* obj)
+{
+    obj->setValue(Number::New(left_));
+    return NATIVE_ERROR_OK;
+}
+
 PROP_SETGET(setWidth)
 int NativeControlObject::setWidth(TiObject* obj)
 {
     Q_ASSERT(container_ != NULL);
-    float width;
-    // TODO: get the current width of the parent control
+    // TODO:we need the parent width to calculate percentage values and
+    // to use that value as max instead of g_height
     float max = g_width; // TODO: Remove this
     int error = getMeasurementInfo(obj, max,
-                                   (float)g_width / g_physicalWidth, &width);
+                                   (float)g_width / g_physicalWidth, &width_);
     if (error != NATIVE_ERROR_OK)
     {
         return error;
     }
-    container_->setMaxWidth(width);
-    container_->setMinWidth(width);
+    container_->setMaxWidth(width_);
+    container_->setMinWidth(width_);
     return NATIVE_ERROR_OK;
 }
 
@@ -580,12 +619,12 @@ const static NATIVE_PROPSETGET_SETTING g_propSetGet[] =
     {N_PROP_DATA, PROP_SETGET_FUNCTION(setData), NULL},
     {N_PROP_ENABLED, PROP_SETGET_FUNCTION(setEnabled), NULL},
     {N_PROP_FONT, PROP_SETGET_FUNCTION(setFont), NULL},
-    {N_PROP_HEIGHT, PROP_SETGET_FUNCTION(setHeight), NULL},
+    {N_PROP_HEIGHT, PROP_SETGET_FUNCTION(setHeight), PROP_SETGET_FUNCTION(getHeight)},
     {N_PROP_HINT_TEXT, PROP_SETGET_FUNCTION(setHintText), NULL},
     {N_PROP_ICON, PROP_SETGET_FUNCTION(setIcon), NULL},
     {N_PROP_IMAGE, PROP_SETGET_FUNCTION(setImage), NULL},
     {N_PROP_LABEL, PROP_SETGET_FUNCTION(setLabel), NULL},
-    {N_PROP_LEFT, PROP_SETGET_FUNCTION(setLeft), NULL},
+    {N_PROP_LEFT, PROP_SETGET_FUNCTION(setLeft), PROP_SETGET_FUNCTION(getLeft)},
     {N_PROP_MAX, PROP_SETGET_FUNCTION(setMax), NULL},
     {N_PROP_MAXDATE, PROP_SETGET_FUNCTION(setMaxDate), NULL},
     {N_PROP_MESSAGE, PROP_SETGET_FUNCTION(setMessage), NULL},
@@ -597,11 +636,11 @@ const static NATIVE_PROPSETGET_SETTING g_propSetGet[] =
     {N_PROP_TEXT, PROP_SETGET_FUNCTION(setText), NULL},
     {N_PROP_TEXT_ALIGN, PROP_SETGET_FUNCTION(setTextAlign), NULL},
     {N_PROP_TITLE, PROP_SETGET_FUNCTION(setTitle), NULL},
-    {N_PROP_TOP, PROP_SETGET_FUNCTION(setTop), NULL},
+    {N_PROP_TOP, PROP_SETGET_FUNCTION(setTop), PROP_SETGET_FUNCTION(getTop)},
     {N_PROP_TYPE, PROP_SETGET_FUNCTION(setType), NULL},
     {N_PROP_VALUE, PROP_SETGET_FUNCTION(setValue), NULL},
     {N_PROP_VISIBLE, PROP_SETGET_FUNCTION(setVisible), PROP_SETGET_FUNCTION(getVisible)},
-    {N_PROP_WIDTH, PROP_SETGET_FUNCTION(setWidth), NULL},
+    {N_PROP_WIDTH, PROP_SETGET_FUNCTION(setWidth), PROP_SETGET_FUNCTION(getWidth)},
     {N_PROP_WINDOW, PROP_SETGET_FUNCTION(setWindow), NULL}
 };
 
