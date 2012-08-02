@@ -145,7 +145,7 @@ const static TiProperty g_tiProperties[] =
     },
 
     {
-        "opacity", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        "opacity", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE | 0,
         N_PROP_OPACITY
     },
 
@@ -251,7 +251,7 @@ void TiUIBase::setTiMappingProperties(const TiProperty* props, int propertyCount
     for (int i = 0; i < propertyCount; i++)
     {
         TiObject* value = TiPropertyMapObject::addProperty(this, props[i].propertyName, props[i].nativePropertyNumber,
-                          _valueModify, _getValue, this);
+                          _valueModify, (props[i].permissions & TI_PROP_FLAG_NO_BRIDGE) ? NULL : _getValue, this);
         // For all properties that have write permissions, add a setter method, e.g., myLabel.text=<my text>; myLabel.setText(<my text>);
         if (props[i].permissions & TI_PROP_PERMISSION_WRITE)
         {
@@ -261,6 +261,8 @@ void TiUIBase::setTiMappingProperties(const TiProperty* props, int propertyCount
             name += props[i].propertyName + 1;
             TiPropertySetFunctionObject::addPropertySetter(this, value, name.c_str());
         }
+
+
         // For all properties that have read permissions, add a getter method, e.g., var test=myLabel.text; var test=myLabel.getText();
         if (props[i].permissions & TI_PROP_PERMISSION_READ)
         {

@@ -78,6 +78,7 @@ enum VALUE_MODIFY
 #define TI_PROP_PERMISSION_READ         1
 #define TI_PROP_PERMISSION_WRITE        2
 #define TI_PROP_PERMISSION_DELETE       4
+#define TI_PROP_FLAG_NO_BRIDGE          8
 
 struct TiProperty
 {

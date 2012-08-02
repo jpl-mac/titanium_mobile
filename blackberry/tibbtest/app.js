@@ -48,10 +48,10 @@ var slider1=Ti.UI.createSlider
 var sliderListener=function(e)
 {
 	progress1.value=100-e.value;
-	label1.text='Slider value: '+e.value;
 	label1.top=e.value;
 	mybutton.opacity=e.value/100.0;
 	mybutton.left=e.value;
+	label1.text='Opacity value: '+mybutton.opacity;
 };
 
 slider1.addEventListener('change',sliderListener);

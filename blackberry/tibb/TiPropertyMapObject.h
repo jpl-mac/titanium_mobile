@@ -42,7 +42,6 @@ private:
     void* context_;
     NativeObject* nativeObject_;
     TiUIBase* parentObject_;
-
 };
 
 #endif /* TIPROPERTYMAPOBJECT_H_ */
