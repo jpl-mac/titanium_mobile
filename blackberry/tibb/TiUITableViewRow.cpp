@@ -20,7 +20,7 @@ TiUITableViewRow::~TiUITableViewRow()
 TiUITableViewRow* TiUITableViewRow::createTableViewRow(NativeObjectFactory* nativeObjectFactory)
 {
     TiUITableViewRow* obj = new TiUITableViewRow;
-    obj->setNativeObjectFactory(nativeObjectFactory);
+    //obj->setNativeObjectFactory(nativeObjectFactory);
     obj->initializeTiObject(NULL);
     return obj;
 }
@@ -30,13 +30,13 @@ void TiUITableViewRow::initializeTiObject(TiObject* parentContext)
     if (!isInitialized())
     {
         TiUIBase::initializeTiObject(parentContext);
-        NativeObject* obj = getNativeObjectFactory()->createNativeObject(N_TYPE_LIST_ITEM);
-        setNativeObject(obj);
-        obj->release();
+        //NativeObject* obj = getNativeObjectFactory()->createNativeObject(N_TYPE_LIST_ITEM);
+        //setNativeObject(obj);
+        //obj->release();
     }
 }
 
-void TiUITableViewRow::onCreateStaticMembers()
+/*void TiUITableViewRow::onCreateStaticMembers()
 {
     TiUIBase::onCreateStaticMembers();
-}
+}*/

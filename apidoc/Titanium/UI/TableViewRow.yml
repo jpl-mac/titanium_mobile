@@ -39,7 +39,7 @@ description: |
     be different without the need for a new class name, though. For example, if the text is the only 
     difference between two rows, both row instances should have identical class names.
 
-	On BlackBerry NYI
+    On BlackBerry NYI
 
     #### Platform Implementation Notes
     
@@ -54,7 +54,7 @@ description: |
     On Mobile Web, they are used to relatively position the row, treating the `TableView` as if it 
     were a horizontal layout.
 
-	On BlackBerry NYI
+    On BlackBerry NYI
     
     Also, note that the selected text color, `selectedColor`, can only be set on iOS and 
     Mobile Web. On Android, the text color does not change when the row is selected.
@@ -86,7 +86,7 @@ events:
             Indicates whether the detail button was clicked. Only `true` if `row.hasDetail` is 
             `true` and the detail button was clicked.
         type: Boolean
-		platforms: [android, iphone, ipad, mobileweb]
+        platforms: [android, iphone, ipad, mobileweb]
         
       - name: globalPoint
         summary: |
@@ -100,37 +100,37 @@ events:
       - name: index
         summary: Row index.
         type: Number
-		platforms: [android, iphone, ipad, mobileweb, blackberry]
+        platforms: [android, iphone, ipad, mobileweb, blackberry]
         
       - name: row
         summary: Table view row object.
         type: Titanium.UI.TableViewRow
-		platforms: [android, iphone, ipad, mobileweb]
+        platforms: [android, iphone, ipad, mobileweb]
     
       - name: rowData
         summary: Dictionary containing the properties set on the row.
         type: Dictionary<Titanium.UI.TableViewRow>
-		platforms: [android, iphone, ipad, mobileweb, blackberry]
+        platforms: [android, iphone, ipad, mobileweb, blackberry]
         
       - name: searchMode
         summary: Boolean to indicate if the table is in search mode.
         type: Boolean
-		platforms: [android, iphone, ipad, mobileweb]
+        platforms: [android, iphone, ipad, mobileweb]
         
       - name: section
         summary: Table view section object, if the clicked row is contained in a section.
         type: Titanium.UI.TableViewSection
-		platforms: [android, iphone, ipad, mobileweb]
+        platforms: [android, iphone, ipad, mobileweb]
         
       - name: x
         summary: X coordinate of the event from the `source` view's coordinate system.
         type: Number
-		platforms: [android, iphone, ipad, mobileweb]
+        platforms: [android, iphone, ipad, mobileweb]
         
       - name: y
         summary: Y coordinate of the event from the `source` view's coordinate system.
         type: Number
-		platforms: [android, iphone, ipad, mobileweb]
+        platforms: [android, iphone, ipad, mobileweb]
     
   - name: swipe
     summary: Fired when the device detects a swipe gesture against the view.
@@ -261,7 +261,7 @@ properties:
         
         This property exists on Mobile Web, but is ignored.
     type: String
-	platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: color
     summary: Default text color of the row when not selected, as a color name or hex triplet.
@@ -270,7 +270,7 @@ properties:
         
         On Android, `selectedColor` is not supported, so the text is always displayed in this color.
     type: String
-	platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: editable
     summary: |
@@ -294,7 +294,7 @@ properties:
         associated with the wrong row as the table scrolls. This is a known issue.
     type: Font
     default: System default font.
-	platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: hasCheck
     summary: |
@@ -302,7 +302,7 @@ properties:
         the row.
     type: Boolean
     default: false
-	platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: hasChild
     summary: |
@@ -315,7 +315,7 @@ properties:
         in a heirarchy of table views.
     type: Boolean
     default: false
-	platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: hasDetail
     summary: |
@@ -346,7 +346,7 @@ properties:
   - name: leftImage
     summary: Image to render in the left image area of the row, specified as a local path or URL.
     type: String
-	platforms: [android, iphone, ipad, mobileweb, blackberry]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
 
   - name: moveable
     summary: |
@@ -366,19 +366,19 @@ properties:
   - name: rightImage
     summary: Image to render in the right image area of the row, specified as a local path or URL.
     type: String
-	platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: selectedBackgroundColor
     summary: Background color to render when the row is selected, as a color name or hex triplet.
     description: |
         For information about color values, see the "Colors" section of <Titanium.UI>. 
     type: String
-	platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: selectedBackgroundImage
     summary: Background image to render when the row is selected.
     type: String
-	platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb]
     
   - name: selectedColor
     summary: Color of the row text when the row is selected, as a color name or hex triplet.
@@ -398,7 +398,7 @@ properties:
     summary: Text to display on the row. 
     description: Do not specify if using views as children of the row.
     type: String
-	platforms: [android, iphone, ipad, mobileweb, blackberry]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
 
 examples:
   - title: Simple Table View Row example

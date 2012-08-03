@@ -419,11 +419,11 @@ int NativeControlObject::setLeft(TiObject* obj)
     return NATIVE_ERROR_OK;
 }
 
-PROP_SETGET(setLeftImage)
+/*PROP_SETGET(setLeftImage)
 int NativeControlObject::setLeftImage(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
-}
+}*/
 
 PROP_SETGET(setMax)
 int NativeControlObject::setMax(TiObject*)
@@ -631,7 +631,7 @@ const static NATIVE_PROPSETGET_SETTING g_propSetGet[] =
     {N_PROP_IMAGE, PROP_SETGET_FUNCTION(setImage), NULL},
     {N_PROP_LABEL, PROP_SETGET_FUNCTION(setLabel), NULL},
     {N_PROP_LEFT, PROP_SETGET_FUNCTION(setLeft), PROP_SETGET_FUNCTION(getLeft)},
-    {N_PROP_LEFT_IMAGE, PROP_SETGET_FUNCTION(setLeftImage), NULL},
+    //{N_PROP_LEFT_IMAGE, PROP_SETGET_FUNCTION(setLeftImage), NULL},
     {N_PROP_MAX, PROP_SETGET_FUNCTION(setMax), NULL},
     {N_PROP_MAXDATE, PROP_SETGET_FUNCTION(setMaxDate), NULL},
     {N_PROP_MESSAGE, PROP_SETGET_FUNCTION(setMessage), NULL},

@@ -26,7 +26,7 @@ public:
 protected:
     virtual ~TiUITableViewRow();
     virtual void initializeTiObject(TiObject* parentContext);
-    virtual void onCreateStaticMembers();
+//    virtual void onCreateStaticMembers();
 
 private:
     TiUITableViewRow();
