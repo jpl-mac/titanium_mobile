@@ -73,5 +73,24 @@ var progress1=Ti.UI.createProgressBar({
 
 win1.add(progress1);
 
+var myView = Ti.UI.createView({
+    top:300,
+    backgroundColor:'yellow',
+});
+
+var tvr1 = Ti.UI.createTableViewRow({title:'JP', leftImage:'someimage.png'});
+var tableData = [ {title: 'Apples'}, {title: 'Bananas'}, {title: 'Carrots'}, {title: 'Potatoes'}, tvr1 ];
+    
+var table = Ti.UI.createTableView({
+      data: tableData
+});
+myView.add(table);
+Ti.API.info(String.format('JP tvr1=%s tvr1.title=%s tvr1.leftImage=%s', tvr1, tvr1.title, tvr1.leftImage));
+Ti.API.info(String.format('JP tvr1.opacity=%s', tvr1.opacity));
+
+
+
+win1.add(myView);
+
 // open window
 win1.open();

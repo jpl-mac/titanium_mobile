@@ -55,6 +55,16 @@ const static TiProperty g_tiProperties[] =
     },
 
     {
+        "data", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        N_PROP_DATA
+    },
+
+    {
+        "enabled", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        N_PROP_ENABLED
+    },
+
+    {
         "font", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
         N_PROP_FONT
     },
@@ -80,16 +90,6 @@ const static TiProperty g_tiProperties[] =
     },
 
     {
-        "data", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
-        N_PROP_DATA
-    },
-
-    {
-        "enabled", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
-        N_PROP_ENABLED
-    },
-
-    {
         "label", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
         N_PROP_LABEL
     },
@@ -100,7 +100,7 @@ const static TiProperty g_tiProperties[] =
     },
 
     {
-        "leftImage", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,//TODO: add NO_BRIDGE flag here
+        "leftImage", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE | TI_PROP_FLAG_RW_NO_BRIDGE,
         NULL
     },
 
@@ -145,7 +145,7 @@ const static TiProperty g_tiProperties[] =
     },
 
     {
-        "opacity", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE | 0,
+        "opacity", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
         N_PROP_OPACITY
     },
 
@@ -160,7 +160,7 @@ const static TiProperty g_tiProperties[] =
     },
 
     {
-        "title", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        "title", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE | TI_PROP_FLAG_RW_NO_BRIDGE,
         N_PROP_TITLE
     },
 
@@ -251,7 +251,8 @@ void TiUIBase::setTiMappingProperties(const TiProperty* props, int propertyCount
     for (int i = 0; i < propertyCount; i++)
     {
         TiObject* value = TiPropertyMapObject::addProperty(this, props[i].propertyName, props[i].nativePropertyNumber,
-                          _valueModify, (props[i].permissions & TI_PROP_FLAG_NO_BRIDGE) ? NULL : _getValue, this);
+                          (props[i].permissions & TI_PROP_FLAG_WRITE_NO_BRIDGE) ? NULL : _valueModify,
+                          (props[i].permissions & TI_PROP_FLAG_READ_NO_BRIDGE) ? NULL : _getValue, this);
         // For all properties that have write permissions, add a setter method, e.g., myLabel.text=<my text>; myLabel.setText(<my text>);
         if (props[i].permissions & TI_PROP_PERMISSION_WRITE)
         {
