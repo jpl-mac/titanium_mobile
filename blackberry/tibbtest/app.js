@@ -12,7 +12,8 @@ var label1 = Ti.UI.createLabel({
 	textAlign : 'center',
 	font: {fontSize:12},
 	color:'green',
-	top: 200
+	top: 200,
+	zIndex: 5
 });
 
 var label2 = Ti.UI.createLabel({
@@ -103,6 +104,18 @@ var testbutton2=Ti.UI.createButton
 	{top: 550,left:50,title: 'Button 2'}
 );
 win1.add(testbutton2);
+
+var testbutton3=Ti.UI.createButton
+(
+	{top: 600,left:100,title: 'Button 3',zIndex:25}
+);
+win1.add(testbutton3);
+
+var testbutton4=Ti.UI.createButton
+(
+	{top: 650,left:150,title: 'Button 4'}
+);
+win1.add(testbutton4);
 
 // open window
 win1.open();
