@@ -40,7 +40,7 @@ description: |
     
 extends: Titanium.Module
 since: "1.7"
-platforms: [android, iphone, ipad, mobileweb]
+platforms: [android, iphone, ipad, mobileweb, blackberry]
 
 properties:
   - name: CHARSET_ASCII
@@ -151,6 +151,7 @@ methods:
         See "Byte Order" in the main discussion of <Titanium.Codec> for more information.
 
         On Mobile Web, this property always returns <Titanium.Codec.LITTLE_ENDIAN>.
+	platforms: [android, iphone, ipad, mobileweb]
     returns:
         type: Number
         summary: OS native byte order.
@@ -171,6 +172,7 @@ methods:
             is used -- otherwise, the native byte order is assumed.
         
         On Mobile Web, `position` is not supported.
+	platforms: [android, iphone, ipad, mobileweb]
     parameters:
       - name: options
         summary: Named parameters.
@@ -224,6 +226,7 @@ methods:
         Throws an exception if `source` is null, or `position` is greater than `source.length`
 
         On Mobile Web, `position` and `byteOrder` are not supported.
+	platforms: [android, iphone, ipad, mobileweb]
     parameters:
       - name: options
         summary: Named parameters.
@@ -284,6 +287,7 @@ methods:
         `sourcePosition`+`sourceLength` is greater than `source.length`.
 
         On Mobile Web, the `charset` option is not supported. All strings are treated as UTF-8.
+	platforms: [android, iphone, ipad, mobileweb]
     parameters:
 
       - name: options
@@ -342,6 +346,7 @@ methods:
         or either `position`, `length`, or `position`+`length` is greater than `source.length`.
 
         On Mobile Web, `charset` is not supported. All strings are treated as UTF-8.
+	platforms: [android, iphone, ipad, mobileweb]
     parameters:
 
       - name: options
@@ -371,6 +376,7 @@ methods:
 ---
 name: EncodeNumberDict
 summary: Named parameters for <Titanium.Codec.encodeNumber>.
+platforms: [android, iphone, ipad, mobileweb]
 properties:
 
   - name: source
@@ -407,6 +413,7 @@ properties:
 ---
 name: DecodeNumberDict
 summary: Named parameters for <Titanium.Codec.decodeNumber>.
+platforms: [android, iphone, ipad, mobileweb]
 properties:
 
   - name: source
@@ -439,6 +446,7 @@ properties:
 ---
 name: EncodeStringDict
 summary: Named parameters for <Titanium.Codec.encodeString>.
+platforms: [android, iphone, ipad, mobileweb]
 properties:
   - name: source
     type: String
@@ -477,6 +485,7 @@ properties:
 ---
 name: DecodeStringDict
 summary: Named parameters for <Titanium.Codec.decodeString>.
+platforms: [android, iphone, ipad, mobileweb]
 properties:
 
   - name: source

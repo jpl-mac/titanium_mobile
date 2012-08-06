@@ -7,7 +7,7 @@ description: |
     Use the <Titanium.createBuffer> method to create a buffer.
 extends: Titanium.Proxy
 since: "1.7"
-platforms: [android, iphone, ipad, mobileweb]
+platforms: [android, iphone, ipad, mobileweb, blackberry]
 
 properties:
   - name: length
@@ -225,3 +225,4 @@ methods:
     returns:
         type: Titanium.Blob
     summary: Converts this buffer to a <Titanium.Blob>.
+	platforms: [android, iphone, ipad, mobileweb]
