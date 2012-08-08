@@ -12,8 +12,7 @@ var label1 = Ti.UI.createLabel({
 	textAlign : 'center',
 	font: {fontSize:12},
 	color:'green',
-	top: 200,
-	zIndex: 5
+	top: 200
 });
 
 var label2 = Ti.UI.createLabel({
@@ -21,7 +20,7 @@ var label2 = Ti.UI.createLabel({
 	font: {fontSize:20},
 	color:'blue',
 	top: 0,
-	text: 'ZOrder',
+	text: 'ZIndex',
 });
 
 win1.add(label1);
@@ -38,17 +37,7 @@ mybutton.addEventListener
 	function(e)
 	{
 		e.source.title='Pushed!';
-		if(testbutton1.zIndex===undefined)
-		{
-			testbutton1.zIndex=200;
-		}
-		else
-		{
-			if(testbutton2.zIndex===undefined)
-			{
-				testbutton2.zIndex=500;
-			}
-		}
+		testbutton1.zIndex=15;
 	}
 );
 
@@ -95,13 +84,13 @@ win1.add(progress1);
 
 var testbutton1=Ti.UI.createButton
 (
-	{top: 500,left:0,title: 'Button 1'}
+	{top: 500,left:0,title: 'Button 1',zIndex:0}
 );
 win1.add(testbutton1);
 
 var testbutton2=Ti.UI.createButton
 (
-	{top: 550,left:50,title: 'Button 2'}
+	{top: 550,left:50,title: 'Button 2',zIndex:20}
 );
 win1.add(testbutton2);
 
@@ -113,7 +102,7 @@ win1.add(testbutton3);
 
 var testbutton4=Ti.UI.createButton
 (
-	{top: 650,left:150,title: 'Button 4'}
+	{top: 650,left:150,title: 'Button 4',zIndex:10}
 );
 win1.add(testbutton4);
 
@@ -123,5 +112,13 @@ win1.open();
 var timer=setInterval(function()
 {
 	label2.text='ZIndex of button1='+testbutton1.zIndex+', Zindex of button2='+testbutton2.zIndex;
-},500
+	testbutton1.top=500+Math.floor(Math.random()*500);
+	testbutton1.left=Math.floor(Math.random()*500);
+	testbutton2.top=500+Math.floor(Math.random()*500);
+	testbutton2.left=Math.floor(Math.random()*500);
+	testbutton3.top=500+Math.floor(Math.random()*500);
+	testbutton3.left=Math.floor(Math.random()*500);
+	testbutton4.top=500+Math.floor(Math.random()*500);
+	testbutton4.left=Math.floor(Math.random()*500);
+},5000
 );
