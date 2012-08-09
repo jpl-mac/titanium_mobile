@@ -74,8 +74,8 @@ public:
     virtual int getPropertyValue(size_t propertyNumber, TiObject* obj);
     virtual int getHeight(TiObject* obj);
     virtual int getLeft(TiObject* obj);
-    virtual int getRect(TiObject* obj);
     virtual int getRight(TiObject* obj);
+    virtual int getRect(TiObject* obj);
     virtual int getSize(TiObject* obj);
     virtual int getTop(TiObject* obj);
     virtual int getVisible(TiObject* obj);
@@ -150,12 +150,12 @@ private:
     bb::cascades::Color backgroundColor_;
     bb::cascades::Color disabledBackgroundColor_;
     NativeLayoutHandler* layoutHandler_;
-    float bottom_;
-    float left_;
-    float top_;
-    float width_;
-    float height_;
-    float right_;
+    TiObject* bottom_;
+    TiObject* left_;
+    TiObject* top_;
+    TiObject* width_;
+    TiObject* height_;
+    TiObject* right_;
     QRectF rect_;
 };
 
