@@ -490,6 +490,7 @@ def help(args=[],suppress_banner=False):
 			print "  --id=i              	project id (ie com.companyName.project"
 			print "  --ver=i             	platform version"
 			print "  --android=sdk_folder	For android module - the Android SDK folder"
+			print "  --blackberry=ndk_path	For blackberry module - the BlackBerry NDK folder"
 		elif cmd == 'build':
 			print "Usage: %s build [--dir=d]" % os.path.basename(sys.argv[0])
 			print 
