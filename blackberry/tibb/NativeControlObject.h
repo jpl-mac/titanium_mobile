@@ -70,6 +70,7 @@ public:
     virtual int initialize();
     virtual int addChildNativeObject(NativeObject* obj);
     virtual int removeChildNativeObject(NativeObject* obj);
+    virtual int finishLayout();
     virtual int getBottom(TiObject* obj);
     virtual int getButtonNames(TiObject* obj);
     virtual int getCancel(TiObject* obj);
@@ -119,6 +120,7 @@ public:
     virtual int setVisible(TiObject* obj);
     virtual int setWidth(TiObject* obj);
     virtual int setWindow(TiObject* obj);
+    virtual int startLayout();
     virtual int setZIndex(TiObject* obj);
 
     static int getColorComponents(TiObject* obj, float* r, float* g, float* b, float* a);
@@ -147,6 +149,19 @@ private:
     friend class NativePageObject;
     static int getMeasurementInfo(TiObject* obj, float maxPixels, float dotsPerMillimeter,
                                   float* calculatedValue);
+    void updateViewLayout();
+    int updateHeight();
+    int updateWidth();
+    int updateLeft();
+    int updateTop();
+    int updateRight();
+    int updateBottom();
+    bool heightIsUpdated;
+    bool widthIsUpdated;
+    bool leftIsUpdated;
+    bool topIsUpdated;
+    bool rightIsUpdated;
+    bool bottomIsUpdate;
 
     bb::cascades::Container* container_;
     bb::cascades::Control* control_;
@@ -161,6 +176,7 @@ private:
     TiObject* height_;
     TiObject* right_;
     QRectF rect_;
+    bool batchUpdating_;
 };
 
 // Event handler for Ti.UI.View

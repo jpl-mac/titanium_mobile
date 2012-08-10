@@ -143,7 +143,14 @@ NativeControlObject::NativeControlObject() :
     top_(0),
     width_(0),
     height_(0),
-    right_(0)
+    right_(0),
+    batchUpdating_(false),
+    heightIsUpdated(false),
+    widthIsUpdated(false),
+    leftIsUpdated(false),
+    topIsUpdated(false),
+    rightIsUpdated(false),
+    bottomIsUpdate(false)
 {
     if ((g_width <= 0) || (g_height <= 0))
     {
@@ -327,6 +334,56 @@ int NativeControlObject::setVisibility(bool visible)
     return NATIVE_ERROR_OK;
 }
 
+int NativeControlObject::startLayout()
+{
+    batchUpdating_ = true;
+    return NATIVE_ERROR_OK;
+}
+
+int NativeControlObject::finishLayout()
+{
+    if (batchUpdating_)
+    {
+        batchUpdating_ = false;
+        updateViewLayout();
+    }
+    return NATIVE_ERROR_OK;
+}
+
+void NativeControlObject::updateViewLayout()
+{
+    if (widthIsUpdated)
+    {
+        updateWidth();
+        widthIsUpdated = false;
+    }
+    if (heightIsUpdated)
+    {
+        updateHeight();
+        heightIsUpdated = false;
+    }
+    if (leftIsUpdated)
+    {
+        updateLeft();
+        leftIsUpdated = false;
+    }
+    if (topIsUpdated)
+    {
+        updateTop();
+        topIsUpdated = false;
+    }
+    if (rightIsUpdated)
+    {
+        updateRight();
+        rightIsUpdated = false;
+    }
+    if (bottomIsUpdate)
+    {
+        updateBottom();
+        bottomIsUpdate = false;
+    }
+    //TODO: need to verify if other UI.View properties needs to be updated as well
+}
 
 // PROP_SETTER creates a static version of functions which
 // calls the non-static on method on the NativeControlObject
@@ -444,6 +501,24 @@ int NativeControlObject::setHeight(TiObject* obj)
         height_->release();
     }
     height_ = obj;
+    if (!batchUpdating_)
+    {
+        return updateHeight();
+    }
+    else
+    {
+        heightIsUpdated = true;
+    }
+    return NATIVE_ERROR_OK;
+}
+
+int NativeControlObject::updateHeight()
+{
+    if (height_ == NULL)
+    {
+        //height wasn't set, just leave as it is
+        return NATIVE_ERROR_OK;
+    }
     float height = 0;
     // TODO:we need the parent height to calculate percentage values and
     // to use that value as max instead of g_height
@@ -488,6 +563,24 @@ int NativeControlObject::setLeft(TiObject* obj)
         left_->release();
     }
     left_ = obj;
+    if (!batchUpdating_)
+    {
+        return updateLeft();
+    }
+    else
+    {
+        leftIsUpdated = true;
+    }
+    return NATIVE_ERROR_OK;
+}
+
+int NativeControlObject::updateLeft()
+{
+    if (left_ == NULL)
+    {
+        //left wasn't set, just leave as it is
+        return NATIVE_ERROR_OK;
+    }
     float left = 0;
     int error = NativeControlObject::getFloat(left_, &left);
     if (!N_SUCCEEDED(error))
@@ -510,6 +603,24 @@ int NativeControlObject::setBottom(TiObject* obj)
         bottom_->release();
     }
     bottom_ = obj;
+    if (!batchUpdating_)
+    {
+        return updateBottom();
+    }
+    else
+    {
+        bottomIsUpdate = true;
+    }
+    return NATIVE_ERROR_OK;
+}
+
+int NativeControlObject::updateBottom()
+{
+    if (bottom_ == NULL)
+    {
+        //bottom wasn't set, just leave as it is
+        return NATIVE_ERROR_OK;
+    }
     float bottom = 0;
     int error = NativeControlObject::getFloat(bottom_, &bottom);
     if (!N_SUCCEEDED(error))
@@ -555,6 +666,24 @@ int NativeControlObject::setRight(TiObject* obj)
         right_->release();
     }
     right_ = obj;
+    if (batchUpdating_)
+    {
+        return updateRight();
+    }
+    else
+    {
+        rightIsUpdated = true;
+    }
+    return NATIVE_ERROR_OK;
+}
+
+int NativeControlObject::updateRight()
+{
+    if (right_ == NULL)
+    {
+        //right wasn't set, just leave as it is
+        return NATIVE_ERROR_OK;
+    }
     float right = 0;
     int error = NativeControlObject::getFloat(right_, &right);
     if (!N_SUCCEEDED(error))
@@ -643,11 +772,29 @@ int NativeControlObject::setTop(TiObject* obj)
     Q_ASSERT(container_ != NULL);
     Q_ASSERT(obj != NULL);
     obj->addRef();
-    if (top_)
+    if (top_ != NULL)
     {
         top_->release();
     }
     top_ = obj;
+    if (!batchUpdating_)
+    {
+        return updateTop();
+    }
+    else
+    {
+        topIsUpdated = true;
+    }
+    return NATIVE_ERROR_OK;
+}
+
+int NativeControlObject::updateTop()
+{
+    if (top_ == NULL)
+    {
+        //top wasn't set, just leave as it is
+        return NATIVE_ERROR_OK;
+    }
     float top = 0;
     int error = NativeControlObject::getFloat(top_, &top);
     if (!N_SUCCEEDED(error))
@@ -691,14 +838,7 @@ int NativeControlObject::getWidth(TiObject* obj)
     Q_ASSERT(obj != NULL);
     if (width_ != NULL)
     {
-        if (width_->getValue()->IsNumber())
-        {
-            obj->setValue(Handle<Number>::Cast(width_->getValue()));
-        }
-        else
-        {
-            obj->setValue(width_->getValue());
-        }
+        obj->setValue(width_->getValue());
     }
     return NATIVE_ERROR_OK;
 }
@@ -709,14 +849,7 @@ int NativeControlObject::getHeight(TiObject* obj)
     Q_ASSERT(obj != NULL);
     if (height_ != NULL)
     {
-        if (height_->getValue()->IsNumber())
-        {
-            obj->setValue(Handle<Number>::Cast(height_->getValue()));
-        }
-        else
-        {
-            obj->setValue(height_->getValue());
-        }
+        obj->setValue(height_->getValue());
     }
     return NATIVE_ERROR_OK;
 }
@@ -727,14 +860,7 @@ int NativeControlObject::getTop(TiObject* obj)
     Q_ASSERT(obj != NULL);
     if (top_ != NULL)
     {
-        if (top_->getValue()->IsNumber())
-        {
-            obj->setValue(Handle<Number>::Cast(top_->getValue()));
-        }
-        else
-        {
-            obj->setValue(top_->getValue());
-        }
+        obj->setValue(top_->getValue());
     }
     return NATIVE_ERROR_OK;
 }
@@ -745,14 +871,7 @@ int NativeControlObject::getLeft(TiObject* obj)
     Q_ASSERT(obj != NULL);
     if (left_ != NULL)
     {
-        if (left_->getValue()->IsNumber())
-        {
-            obj->setValue(Handle<Number>::Cast(left_->getValue()));
-        }
-        else
-        {
-            obj->setValue(left_->getValue());
-        }
+        obj->setValue(left_->getValue());
     }
     return NATIVE_ERROR_OK;
 }
@@ -764,14 +883,7 @@ int NativeControlObject::getBottom(TiObject* obj)
     Q_ASSERT(obj != NULL);
     if (bottom_ != NULL)
     {
-        if (bottom_->getValue()->IsNumber())
-        {
-            obj->setValue(Handle<Number>::Cast(bottom_->getValue()));
-        }
-        else
-        {
-            obj->setValue(bottom_->getValue());
-        }
+        obj->setValue(bottom_->getValue());
     }
     return NATIVE_ERROR_OK;
 }
@@ -782,14 +894,7 @@ int NativeControlObject::getRight(TiObject* obj)
     Q_ASSERT(obj != NULL);
     if (right_ != NULL)
     {
-        if (right_->getValue()->IsNumber())
-        {
-            obj->setValue(Handle<Number>::Cast(right_->getValue()));
-        }
-        else
-        {
-            obj->setValue(right_->getValue());
-        }
+        obj->setValue(right_->getValue());
     }
     return NATIVE_ERROR_OK;
 }
@@ -829,6 +934,24 @@ int NativeControlObject::setWidth(TiObject* obj)
         width_->release();
     }
     width_ = obj;
+    if (!batchUpdating_)
+    {
+        return updateWidth();
+    }
+    else
+    {
+        widthIsUpdated = true;
+    }
+    return NATIVE_ERROR_OK;
+}
+
+int NativeControlObject::updateWidth()
+{
+    if (width_ == NULL)
+    {
+        //width wasn't set, just leave as it is
+        return NATIVE_ERROR_OK;
+    }
     float width = 0;
     // TODO:we need the parent width to calculate percentage values and
     // to use that value as max instead of g_height

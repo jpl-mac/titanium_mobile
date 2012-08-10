@@ -151,8 +151,10 @@ public:
     virtual int getPropertyValue(std::size_t propertyNumber, TiObject* obj);
     virtual int addChildNativeObject(NativeObject* obj);
     virtual NAHANDLE getNativeHandle() const;
+    virtual int finishLayout();
     virtual int open();
     virtual int start();
+    virtual int startLayout();
     virtual int stop();
     virtual int openWindowOnTab(NativeObject* obj);
     virtual void completeInitialization();
