@@ -40,7 +40,7 @@ description: |
     
 extends: Titanium.Module
 since: "1.7"
-platforms: [android, iphone, ipad, mobileweb]
+platforms: [android, iphone, ipad, mobileweb, blackberry]
 
 properties:
   - name: CHARSET_ASCII
@@ -50,6 +50,7 @@ properties:
         See also: [ASCII](http://en.wikipedia.org/wiki/ASCII) on Wikipedia.
     value: "ascii"
     permission: read-only
+	platforms: [android, iphone, ipad, mobileweb]
 
   - name: CHARSET_ISO_LATIN_1
     type: String
@@ -58,6 +59,7 @@ properties:
         See also: [ISO/IEC 8859-1](http://en.wikipedia.org/wiki/ISO/IEC_8859-1) on Wikipedia.
     value: "iso-latin-1"
     permission: read-only
+	platforms: [android, iphone, ipad, mobileweb]
 
   - name: CHARSET_UTF8
     type: String
@@ -66,6 +68,7 @@ properties:
         See also: [UTF-8](http://en.wikipedia.org/wiki/UTF-8) on Wikipedia.
     value: "utf8"
     permission: read-only
+	platforms: [android, iphone, ipad, mobileweb]
 
   - name: CHARSET_UTF16
     type: String
@@ -74,6 +77,7 @@ properties:
         See also: [UTF-16/UCS2](http://en.wikipedia.org/wiki/UTF-16/UCS-2) on Wikipedia.
     value: "utf16"
     permission: read-only
+	platforms: [android, iphone, ipad, mobileweb]
 
   - name: CHARSET_UTF16BE
     type: String
@@ -82,6 +86,7 @@ properties:
         See also: [UTF-16/UCS2](http://en.wikipedia.org/wiki/UTF-16/UCS-2) on Wikipedia.
     value: "utf16be"
     permission: read-only
+	platforms: [android, iphone, ipad, mobileweb]
 
   - name: CHARSET_UTF16LE
     type: String
@@ -90,42 +95,49 @@ properties:
         See also: [UTF-16/UCS2](http://en.wikipedia.org/wiki/UTF-16/UCS-2) on Wikipedia.
     value: "utf16le"
     permission: read-only
+	platforms: [android, iphone, ipad, mobileweb]
 
   - name: TYPE_BYTE
     type: String
     summary: 8-bit integer encoding type.
     value: "byte"
     permission: read-only
+	platforms: [android, iphone, ipad, mobileweb]
 
   - name: TYPE_SHORT
     type: String
     summary: 16-bit integer encoding type.
     value: "short"
     permission: read-only
+	platforms: [android, iphone, ipad, mobileweb]
 
   - name: TYPE_INT
     type: String
     summary: 32-bit integer encoding type.
     value: "int"
     permission: read-only
+	platforms: [android, iphone, ipad, mobileweb]
 
   - name: TYPE_FLOAT
     type: String
     summary: 32-bit single precision floating-point type.
     value: "float"
     permission: read-only
+	platforms: [android, iphone, ipad, mobileweb]
 
   - name: TYPE_LONG
     type: String
     summary: 64-bit integer encoding type.
     value: "long"
     permission: read-only
+	platforms: [android, iphone, ipad, mobileweb]
 
   - name: TYPE_DOUBLE
     type: String
     summary: 64-bit double precision floating-point type.
     value: "double"
     permission: read-only
+	platforms: [android, iphone, ipad, mobileweb]
 
   - name: BIG_ENDIAN
     type: Number
@@ -133,6 +145,7 @@ properties:
     description: |
         See "Byte Order" in the main discussion of <Titanium.Codec> for more information.
     permission: read-only
+	platforms: [android, iphone, ipad, mobileweb, blackberry]
 
   - name: LITTLE_ENDIAN
     type: Number
@@ -140,6 +153,7 @@ properties:
     description: |
         See "Byte Order" in the main discussion of <Titanium.Codec> for more information.
     permission: read-only
+	platforms: [android, iphone, ipad, mobileweb, blackberry]
 
 methods:
 
@@ -151,6 +165,7 @@ methods:
         See "Byte Order" in the main discussion of <Titanium.Codec> for more information.
 
         On Mobile Web, this property always returns <Titanium.Codec.LITTLE_ENDIAN>.
+	platforms: [android, iphone, ipad, mobileweb]
     returns:
         type: Number
         summary: OS native byte order.
@@ -171,6 +186,7 @@ methods:
             is used -- otherwise, the native byte order is assumed.
         
         On Mobile Web, `position` is not supported.
+	platforms: [android, iphone, ipad, mobileweb]
     parameters:
       - name: options
         summary: Named parameters.
@@ -224,6 +240,7 @@ methods:
         Throws an exception if `source` is null, or `position` is greater than `source.length`
 
         On Mobile Web, `position` and `byteOrder` are not supported.
+	platforms: [android, iphone, ipad, mobileweb]
     parameters:
       - name: options
         summary: Named parameters.
@@ -284,6 +301,7 @@ methods:
         `sourcePosition`+`sourceLength` is greater than `source.length`.
 
         On Mobile Web, the `charset` option is not supported. All strings are treated as UTF-8.
+	platforms: [android, iphone, ipad, mobileweb]
     parameters:
 
       - name: options
@@ -342,6 +360,7 @@ methods:
         or either `position`, `length`, or `position`+`length` is greater than `source.length`.
 
         On Mobile Web, `charset` is not supported. All strings are treated as UTF-8.
+	platforms: [android, iphone, ipad, mobileweb]
     parameters:
 
       - name: options
@@ -371,6 +390,7 @@ methods:
 ---
 name: EncodeNumberDict
 summary: Named parameters for <Titanium.Codec.encodeNumber>.
+platforms: [android, iphone, ipad, mobileweb]
 properties:
 
   - name: source
@@ -407,6 +427,7 @@ properties:
 ---
 name: DecodeNumberDict
 summary: Named parameters for <Titanium.Codec.decodeNumber>.
+platforms: [android, iphone, ipad, mobileweb]
 properties:
 
   - name: source
@@ -439,6 +460,7 @@ properties:
 ---
 name: EncodeStringDict
 summary: Named parameters for <Titanium.Codec.encodeString>.
+platforms: [android, iphone, ipad, mobileweb]
 properties:
   - name: source
     type: String
@@ -477,6 +499,7 @@ properties:
 ---
 name: DecodeStringDict
 summary: Named parameters for <Titanium.Codec.decodeString>.
+platforms: [android, iphone, ipad, mobileweb]
 properties:
 
   - name: source

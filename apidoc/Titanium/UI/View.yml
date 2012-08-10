@@ -550,7 +550,7 @@ methods:
     
   - name: finishLayout
     since: "2.0.0"
-    platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     summary: |
         Finishes a batch update of the View's layout properties and schedules a layout pass of the 
         view tree.
@@ -580,7 +580,7 @@ methods:
     
   - name: startLayout
     summary: Starts a batch update of this view's layout properties.
-    platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     description: |
         To prevent a layout pass each time a property is modified, call `startLayout` before 
         changing any properties that may change this view's layout. This initiates a batch update 
@@ -633,7 +633,7 @@ methods:
         optional: true
         
   - name: updateLayout
-    platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     summary: |
         Performs a batch update of all supplied layout properties and schedules a layout pass after 
         they have been updated.

@@ -7,7 +7,7 @@ description: |
     Use the <Titanium.createBuffer> method to create a buffer.
 extends: Titanium.Proxy
 since: "1.7"
-platforms: [android, iphone, ipad, mobileweb]
+platforms: [android, iphone, ipad, mobileweb, blackberry]
 
 properties:
   - name: length
@@ -40,6 +40,7 @@ properties:
         
         When `value` is a String, specify a `CHARSET` constant from <Titanium.Codec>.
     default: For string values, defaults to [CHARSET_UTF8](Titanium.Codec.CHARSET_UTF8).
+	platforms: [android, iphone, ipad, mobileweb]
 
   - name: byteOrder
     type: Number
@@ -215,6 +216,7 @@ methods:
     summary: Releases the space allocated to the buffer, and sets its length to 0.  
     description: |
         This is effectively the same as `buffer.length = 0`.
+	platforms: [android, iphone, ipad, mobileweb]
 
   - name: toString
     returns:
@@ -225,3 +227,4 @@ methods:
     returns:
         type: Titanium.Blob
     summary: Converts this buffer to a <Titanium.Blob>.
+	platforms: [android, iphone, ipad, mobileweb]
