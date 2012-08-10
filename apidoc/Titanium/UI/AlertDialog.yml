@@ -54,7 +54,7 @@ since: "0.8"
 events:
   - name: click
     summary: Fired when a button in the dialog is clicked.
-    platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     properties:
       - name: cancel
         summary: |
@@ -77,9 +77,11 @@ events:
 methods:
   - name: show
     summary: Shows this dialog.
+	platforms: [android, iphone, ipad, mobileweb, blackberry]
 
   - name: hide
     summary: Hides this dialog.
+	platforms: [android, iphone, ipad, mobileweb, blackberry]
 
 properties:
   - name: androidView
@@ -89,20 +91,24 @@ properties:
     
   - name: buttonNames
     summary: Name of each button to create.
-    platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     description: |
         On iOS, a button will automatically be created if none are explicitly defined, because 
         without it users would be unable to dismiss the dialog. Conversely, a dialog with no 
         buttons may be created on Android, as the hardware `back` button may be used instead.
         
         A maximum of 3 buttons is supported on Android.
+
+		On BlackBerry, a confirm and cancel button automatically will be created if none are
+		explicitly defined. Providing buttonNames will omit the confirm and cancel buttons and
+		will use provided instead.
     type: Array<String>
     default: null (Android), ['OK'] (iOS)
     availability: creation
 
   - name: cancel
     summary: Index to define the cancel button.
-    platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     description: |
         On iOS and Mobile Web, set to `-1` to disable the cancel option.
     type: Number
@@ -110,16 +116,18 @@ properties:
     
   - name: message
     summary: Dialog message.
+	platforms: [android, iphone, ipad, mobileweb, blackberry]
     type: String
 
   - name: messageid
     summary: Key identifying a string in the locale file to use for the message text.
     type: String
     accessors: false
-    platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
 
   - name: title
     summary: Title of the dialog.
+	platforms: [android, iphone, ipad, mobileweb, blackberry]
     description: If not set, a dialog with no title bar will be created.
     type: String
 
