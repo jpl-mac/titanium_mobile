@@ -18,7 +18,7 @@ description: |
 
 extends: Titanium.Module
 since: "1.7"
-platforms: [android, iphone, ipad]
+platforms: [android, iphone, ipad, blackberry]
 examples: 
   - title: Stream.pump Example
     example: |
@@ -58,6 +58,7 @@ properties:
         Use with [createStream](Titanium.Stream.createStream) to open a stream in read
         mode.
     permission: read-only
+    platforms: [android, iphone, ipad]
 
   - name: MODE_WRITE
     type: Number
@@ -65,6 +66,7 @@ properties:
         Use with [createStream](Titanium.Stream.createStream) to open a stream in write
         mode.
     permission: read-only
+    platforms: [android, iphone, ipad]
 
   - name: MODE_APPEND
     type: Number
@@ -72,6 +74,7 @@ properties:
         Use with [createStream](Titanium.Stream.createStream) to open a stream in append
         mode.
     permission: read-only
+    platforms: [android, iphone, ipad]
 
 methods:
   - name: createStream
@@ -90,6 +93,7 @@ methods:
       - name: params
         summary: Parameter object, for specifying the source object and mode.
         type: CreateStreamArgs
+        platforms: [android, iphone, ipad]
 
   - name: read
     summary: |
@@ -139,6 +143,7 @@ methods:
       - name: resultsCallback
         summary: Function to call with the results of the read operation.
         type: Callback<ReadCallbackArgs>
+    platforms: [android, iphone, ipad]
 
   - name: readAll
     summary: Reads all data from the specified [IOStream](Titanium.IOStream).
@@ -174,6 +179,7 @@ methods:
             If specified, `resultsCallback` must be specified as well.
         type: Callback<ReadCallbackArgs>
         optional: true
+    platforms: [android, iphone, ipad]
 
     returns:
       - type: Titanium.Buffer
@@ -224,6 +230,7 @@ methods:
       - name: resultsCallback
         summary: Function to call with the results of the write operation.
         type: Callback<WriteCallbackArgs>
+    platforms: [android, iphone, ipad]
 
   - name: writeStream
     summary: Writes all data from an input stream to an output stream.
@@ -262,6 +269,7 @@ methods:
         summary: Function to call with the results of the `writeStream` operation.
         type: Callback<WriteStreamCallbackArgs>
         optional: true
+    platforms: [android, iphone, ipad]
 
   - name: pump
     summary: Reads data from input stream and passes it to a handler method.
@@ -289,11 +297,13 @@ methods:
         type: Boolean
         optional: true
         default: false
+    platforms: [android, iphone, ipad]
 
 ---
 name: CreateStreamArgs
 summary: Argument passed to [createStream](Titanium.Stream.createStream).
 since: "1.7"
+platforms: [android, iphone, ipad]
 
 properties:
 
@@ -316,6 +326,7 @@ summary: |
     Argument passed to the read callback when an asynchronous [read](Titanium.Stream.read) operation
     finishes.
 since: "1.7"
+platforms: [android, iphone, ipad]
 
 properties:
   - name: source
@@ -345,6 +356,7 @@ summary: |
     [write](Titanium.Stream.write) operation
     finishes.
 since: "1.7"
+platforms: [android, iphone, ipad]
 
 properties:
   - name: source
@@ -373,6 +385,7 @@ summary: |
     [writeStream](Titanium.Stream.writeStream) operation finishes.
 
 since: "1.7"
+platforms: [android, iphone, ipad]
 
 properties:
   - name: fromStream
@@ -408,6 +421,7 @@ description: |
     pump operation, either because of an error or because the end of the
     stream has been reached.
 since: "1.7"
+platforms: [android, iphone, ipad]
 
 properties:
   - name: source
