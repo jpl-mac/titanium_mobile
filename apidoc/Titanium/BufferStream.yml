@@ -6,6 +6,8 @@ summary: |
 description: |
     Use the <Titanium.Stream.createStream> method to create a `BufferStream` instance from a
     `Buffer`.
+
+    On BlackBerry, the <Titanium.IOStream> functions are NYI
 since: "1.7"
 createable: false
-platforms: [android, iphone, ipad, mobileweb]
+platforms: [android, iphone, ipad, mobileweb, blackberry]

@@ -77,11 +77,11 @@ events:
 methods:
   - name: show
     summary: Shows this dialog.
-	platforms: [android, iphone, ipad, mobileweb, blackberry]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
 
   - name: hide
     summary: Hides this dialog.
-	platforms: [android, iphone, ipad, mobileweb, blackberry]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
 
 properties:
   - name: androidView
@@ -99,9 +99,9 @@ properties:
         
         A maximum of 3 buttons is supported on Android.
 
-		On BlackBerry, a confirm and cancel button automatically will be created if none are
-		explicitly defined. Providing buttonNames will omit the confirm and cancel buttons and
-		will use provided instead.
+        On BlackBerry, a confirm and cancel button automatically will be created if none are
+        explicitly defined. Providing buttonNames will omit the confirm and cancel buttons and
+        will use provided instead.
     type: Array<String>
     default: null (Android), ['OK'] (iOS)
     availability: creation
@@ -116,7 +116,7 @@ properties:
     
   - name: message
     summary: Dialog message.
-	platforms: [android, iphone, ipad, mobileweb, blackberry]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     type: String
 
   - name: messageid
@@ -127,7 +127,7 @@ properties:
 
   - name: title
     summary: Title of the dialog.
-	platforms: [android, iphone, ipad, mobileweb, blackberry]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     description: If not set, a dialog with no title bar will be created.
     type: String
 

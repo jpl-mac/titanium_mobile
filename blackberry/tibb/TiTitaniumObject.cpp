@@ -6,14 +6,17 @@
  */
 
 #include "TiTitaniumObject.h"
+
 #include "TiAPIObject.h"
 #include "TiAppObject.h"
 #include "TiBufferObject.h"
+#include "TiBufferStreamObject.h"
 #include "TiCodecObject.h"
-#include "TiPlatformObject.h"
 #include "TiGenericFunctionObject.h"
 #include "TiLogger.h"
 #include "TiMessageStrings.h"
+#include "TiPlatformObject.h"
+#include "TiStreamObject.h"
 #include "TiUIObject.h"
 #include "TiNetwork.h"
 
@@ -49,6 +52,8 @@ void TiTitaniumObject::onCreateStaticMembers()
     TiPlatformObject::addObjectToParent(this);
     TiCodecObject::addObjectToParent(this);
     TiNetwork::addObjectToParent(this, objectFactory_);
+    TiBufferStreamObject::addObjectToParent(this);
+    TiStreamObject::addObjectToParent(this);
 }
 
 bool TiTitaniumObject::canAddMembers() const
