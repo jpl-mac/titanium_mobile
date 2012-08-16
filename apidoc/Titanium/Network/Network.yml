@@ -98,7 +98,7 @@ methods:
         type: Dictionary<Titanium.Network.TCPSocket>
   - name: decodeURIComponent
     summary: Returns a decoded version of a URI encoded value.
-	platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb]
     returns:
         type: String
     parameters:
@@ -107,7 +107,7 @@ methods:
         type: String
   - name: encodeURIComponent
     summary: Returns a URI encoded version of the specified URI component.
-	platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb]
     description: |
         On iOS, this also escapes the following characters, which are allowed in a 
         URL but may not be allowed or desirable inside a path component:
@@ -143,6 +143,7 @@ methods:
     platforms: [iphone, ipad]
   - name: unregisterForPushNotifications
     summary: Unregisters the application for push notifications.
+    platforms: [iphone, ipad]
     description: |
         Per Apple's documentation, it is rarely necessary to call this method. See:
         [unregisterForRemoteNotifications in the UIApplication Class
@@ -190,7 +191,6 @@ properties:
         [change](Titanium.Network.change) event.
     type: Number
     permission: read-only
-	platforms: [android, iphone, ipad, mobileweb]
   - name: NETWORK_MOBILE
     summary: |
         A [networkType](Titanium.Network.networkType) value indicating that the device is
@@ -200,7 +200,7 @@ properties:
         [change](Titanium.Network.change) event.
     type: Number
     permission: read-only
-	platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb]
   - name: NETWORK_NONE
     summary: |
         A [networkType](Titanium.Network.networkType) value indicating that no 
@@ -210,7 +210,7 @@ properties:
         [change](Titanium.Network.change) event.
     type: Number
     permission: read-only
-	platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb]
   - name: NETWORK_UNKNOWN
     summary: |
         A [networkType](Titanium.Network.networkType) value indicating that the  
@@ -220,7 +220,7 @@ properties:
         [change](Titanium.Network.change) event.
     type: Number
     permission: read-only
-	platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb]
   - name: NETWORK_WIFI
     summary: |
         A [networkType](Titanium.Network.networkType) value indicating that the  
@@ -230,7 +230,7 @@ properties:
         [change](Titanium.Network.change) event.
     type: Number
     permission: read-only
-	platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb]
   - name: NOTIFICATION_TYPE_ALERT
     summary: Constant value for an Alert style push notification.
     platforms: [iphone, ipad]
@@ -360,12 +360,12 @@ properties:
         One of the `NETWORK` constants defined in <Titanium.Network>.
     type: Number
     permission: read-only
-	platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb]
   - name: networkTypeName
     summary: Network type as a String. Returns one of `NONE`, `WIFI`, `LAN`, `MOBILE`, or `UNKNOWN`.
     type: String
     permission: read-only
-	platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb]
   - name: online
     summary: Boolean value indicating if the device can reach the Internet.
     description: |
@@ -373,7 +373,7 @@ properties:
         using either WiFi, mobile network or LAN.
     type: Boolean
     permission: read-only
-	platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb]
   - name: remoteDeviceUUID
     summary: |
         Remote device UUID if the device is registered with the Apple Push Notification
@@ -410,7 +410,7 @@ name: PushNotificationConfig
 summary: |
     Simple object for specifying push notification options to
     [registerForPushNotifications](Titanium.Network.registerForPushNotifications).
-platforms: [android, iphone, ipad, mobileweb]
+platforms: [iphone, ipad]
 properties:
   - name: types 
     summary: Array of `NOTIFICATION_TYPE` constants that the application would like to receive.
@@ -432,7 +432,7 @@ name: PushNotificationSuccessArg
 summary: |
     A simple object passed to the 
     [registerForPushNotifications](Titanium.Network.registerForPushNotifications) success callback.
-platforms: [android, iphone, ipad, mobileweb]
+platforms: [iphone, ipad]
 properties: 
   - name: type
     summary: The value of this string is always "remote".
@@ -446,7 +446,7 @@ name: PushNotificationErrorArg
 summary: |
     A simple object passed to the 
     [registerForPushNotifications](Titanium.Network.registerForPushNotifications) error callback.
-platforms: [android, iphone, ipad, mobileweb]
+platforms: [iphone, ipad]
 properties: 
   - name: type
     summary: The value of this string is always "remote".
@@ -458,7 +458,7 @@ properties:
 ---
 name: PushNotificationData
 summary: A simple object representing a push notification.
-platforms: [android, iphone, ipad, mobileweb]
+platforms: [iphone, ipad]
 properties: 
   - name: data
     summary: The `userinfo` dictionary passed to the Apple Push Notification Service.
