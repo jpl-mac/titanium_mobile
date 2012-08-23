@@ -58,7 +58,7 @@ properties:
         Use with [createStream](Titanium.Stream.createStream) to open a stream in read
         mode.
     permission: read-only
-    platforms: [android, iphone, ipad]
+    platforms: [android, iphone, ipad, blackberry]
 
   - name: MODE_WRITE
     type: Number
@@ -66,7 +66,7 @@ properties:
         Use with [createStream](Titanium.Stream.createStream) to open a stream in write
         mode.
     permission: read-only
-    platforms: [android, iphone, ipad]
+    platforms: [android, iphone, ipad, blackberry]
 
   - name: MODE_APPEND
     type: Number
@@ -74,7 +74,7 @@ properties:
         Use with [createStream](Titanium.Stream.createStream) to open a stream in append
         mode.
     permission: read-only
-    platforms: [android, iphone, ipad]
+    platforms: [android, iphone, ipad, blackberry]
 
 methods:
   - name: createStream
@@ -88,6 +88,8 @@ methods:
        
         `Blob` obects are read only. Throws an exception if `MODE_WRITE` or `MODE_APPEND` is 
         specified along with a blob object.
+
+        On BlackBerry, <Titanium.BlobStream> is NYI.
     parameters:
 
       - name: params
@@ -308,6 +310,7 @@ properties:
   - name: source
     summary: Object that the stream will read from or write to.
     type: [Titanium.Blob, Titanium.Buffer]
+    platforms: [android, iphone, ipad, blackberry]
 
   - name: mode
     summary: Mode to open the stream in.
@@ -317,7 +320,7 @@ properties:
 
         For `Blob` objects, only `MODE_READ` is supported.
     type: Number
-    platforms: [android, iphone, ipad]
+    platforms: [android, iphone, ipad, blackberry]
 
 ---
 name: ReadCallbackArgs
