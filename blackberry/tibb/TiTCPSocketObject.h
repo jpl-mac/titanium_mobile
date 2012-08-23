@@ -8,7 +8,7 @@
 #ifndef TITCPSOCKETOBJECT_H_
 #define TITCPSOCKETOBJECT_H_
 
-#include "TiProxy.h"
+#include "TiIOStreamObject.h"
 
 /*
  * TiTCPSocketObject
@@ -18,8 +18,7 @@
  * Titanium.Network.Socket.TCP namespace
  */
 
-// TODO: Need to be inherited from Titanium.IOStream
-class TiTCPSocketObject : public TiProxy
+class TiTCPSocketObject : public TiIOStreamObject
 {
 public:
     static void addObjectToParent(TiObject* parent);
@@ -41,6 +40,10 @@ private:
 
     static Handle<Value> _connect(void* userContext, TiObject* caller, const Arguments& args);
     static Handle<Value> _close(void* userContext, TiObject* caller, const Arguments& args);
+    static Handle<Value> _accept(void* userContext, TiObject* caller, const Arguments& args);
+    static Handle<Value> _listen(void* userContext, TiObject* caller, const Arguments& args);
+    static Handle<Value> _write(void* userContext, TiObject* caller, const Arguments& args);
+    static Handle<Value> _read(void* userContext, TiObject* caller, const Arguments& args);
 };
 
 

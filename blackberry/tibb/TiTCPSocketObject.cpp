@@ -7,25 +7,52 @@
 
 #include "TiTCPSocketObject.h"
 
+#include "NativeException.h"
 #include "NativeTCPSocketObject.h"
+#include "TiBufferObject.h"
 #include "TiGenericFunctionObject.h"
 #include "TiPropertyGetFunctionObject.h"
 #include "TiPropertyMapObject.h"
 #include "TiPropertySetFunctionObject.h"
+#include "TiMessageStrings.h"
 
 const static TiProperty g_tiProperties[] =
 {
+    {
+        "accepted", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE, N_SOCKET_PROP_ACCEPTED
+    },
+
+    {
+        "connected", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE, N_SOCKET_PROP_CONNECTED
+    },
+
+    {
+        "error", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE, N_SOCKET_PROP_ERROR
+    },
+
     {
         "host", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE, N_SOCKET_PROP_HOST
     },
 
     {
+        "listenQueueSize", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE, N_SOCKET_PROP_LISTENQUEUESIZE
+    },
+
+    {
         "port", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE, N_SOCKET_PROP_PORT
     },
+
+    {
+        "state", TI_PROP_PERMISSION_READ, N_SOCKET_PROP_STATE
+    },
+
+    {
+        "timeout", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE, N_SOCKET_PROP_TIMEOUT
+    }
 };
 
 TiTCPSocketObject::TiTCPSocketObject()
-    : TiProxy("TCP")
+    : TiIOStreamObject("TCP")
 {
 }
 
@@ -52,7 +79,7 @@ void TiTCPSocketObject::initializeTiObject(TiObject* parentContext)
 {
     if (!isInitialized())
     {
-        TiProxy::initializeTiObject(parentContext);
+        TiIOStreamObject::initializeTiObject(parentContext);
         NativeObject* obj = getNativeObjectFactory()->createNativeObject(N_TYPE_TCPSOCKET);
         setNativeObject(obj);
         obj->release();
@@ -61,11 +88,15 @@ void TiTCPSocketObject::initializeTiObject(TiObject* parentContext)
 
 void TiTCPSocketObject::onCreateStaticMembers()
 {
-    TiProxy::onCreateStaticMembers();
+    TiIOStreamObject::onCreateStaticMembers();
     setTiBufferMappingProperties(g_tiProperties, sizeof(g_tiProperties) / sizeof(*g_tiProperties));
 
     TiGenericFunctionObject::addGenericFunctionToParent(this, "connect", this, _connect);
     TiGenericFunctionObject::addGenericFunctionToParent(this, "close", this, _close);
+    TiGenericFunctionObject::addGenericFunctionToParent(this, "accept", this, _accept);
+    TiGenericFunctionObject::addGenericFunctionToParent(this, "listen", this, _listen);
+    TiGenericFunctionObject::addGenericFunctionToParent(this, "write", this, _write);
+    TiGenericFunctionObject::addGenericFunctionToParent(this, "read", this, _read);
 }
 
 void TiTCPSocketObject::setTiBufferMappingProperties(const TiProperty* props, int propertyCount)
@@ -102,11 +133,11 @@ void TiTCPSocketObject::setTiBufferMappingProperties(const TiProperty* props, in
 Handle<Value> TiTCPSocketObject::_getValue(int propertyNumber, void* context)
 {
     TiTCPSocketObject* self = (TiTCPSocketObject*) context;
-    NativeObject* object = self->getNativeObject();
+    NativeTCPSocketObject* object = (NativeTCPSocketObject*)self->getNativeObject();
     TiObject value;
     if (object != NULL)
     {
-        object->getPropertyValue(propertyNumber, &value);
+        object->getPropertyValue(propertyNumber, &value, context);
     }
     return value.getValue();
 }
@@ -114,13 +145,13 @@ Handle<Value> TiTCPSocketObject::_getValue(int propertyNumber, void* context)
 VALUE_MODIFY TiTCPSocketObject::_valueModify(int propertyNumber, TiObject* value, void* context)
 {
     TiTCPSocketObject* self = (TiTCPSocketObject*) context;
-    NativeObject* object = self->getNativeObject();
+    NativeTCPSocketObject* object = (NativeTCPSocketObject*)self->getNativeObject();
     if (object == NULL)
     {
         return VALUE_MODIFY_NOT_SUPPORTED;
     }
     VALUE_MODIFY modify = VALUE_MODIFY_ALLOW;
-    switch (object->setPropertyValue(propertyNumber, value))
+    switch (object->setPropertyValue(propertyNumber, value, self))
     {
     case NATIVE_ERROR_OK:
         modify = VALUE_MODIFY_ALLOW;
@@ -138,21 +169,183 @@ VALUE_MODIFY TiTCPSocketObject::_valueModify(int propertyNumber, TiObject* value
 
 Handle<Value> TiTCPSocketObject::_connect(void* userContext, TiObject* /*caller*/, const Arguments& /*args*/)
 {
-    // TODO: Throws an exception if the socket is in a CONNECTED or LISTENING state.
-    // Throws an exception if a valid host and port has not been set on this socket.
     HandleScope handleScope;
     TiTCPSocketObject* obj = (TiTCPSocketObject*) userContext;
     NativeTCPSocketObject* ntcp = (NativeTCPSocketObject*) obj->getNativeObject();
-    ntcp->connect();
+    try
+    {
+        ntcp->connect();
+    }
+    catch (NativeException& ne)
+    {
+        return ThrowException(String::New(ne.what()));
+    }
     return Undefined();
 }
 
 Handle<Value> TiTCPSocketObject::_close(void* userContext, TiObject* /*caller*/, const Arguments& /*args*/)
 {
-    // TODO: Throws exception if the socket is not in a CONNECTED or LISTENING state. Blocking.
     HandleScope handleScope;
     TiTCPSocketObject* obj = (TiTCPSocketObject*) userContext;
     NativeTCPSocketObject* ntcp = (NativeTCPSocketObject*) obj->getNativeObject();
-    ntcp->close();
+    try
+    {
+        ntcp->close();
+    }
+    catch (NativeException& ne)
+    {
+        return ThrowException(String::New(ne.what()));
+    }
     return Undefined();
+}
+
+Handle<Value> TiTCPSocketObject::_accept(void* userContext, TiObject* /*caller*/, const Arguments& args)
+{
+    if (args.Length() < 1)
+    {
+        return ThrowException(String::New(Ti::Msg::Missing_argument));
+    }
+    HandleScope handleScope;
+    TiTCPSocketObject* obj = (TiTCPSocketObject*) userContext;
+    NativeTCPSocketObject* ntcp = (NativeTCPSocketObject*) obj->getNativeObject();
+    try
+    {
+        // TODO: Parse accept parameters
+        ntcp->accept(NULL, 0);
+    }
+    catch (NativeException& ne)
+    {
+        return ThrowException(String::New(ne.what()));
+    }
+    return Undefined();
+}
+
+Handle<Value> TiTCPSocketObject::_listen(void* userContext, TiObject* /*caller*/, const Arguments& /*args*/)
+{
+    HandleScope handleScope;
+    TiTCPSocketObject* obj = (TiTCPSocketObject*) userContext;
+    NativeTCPSocketObject* ntcp = (NativeTCPSocketObject*) obj->getNativeObject();
+    try
+    {
+        ntcp->listen();
+    }
+    catch (NativeException& ne)
+    {
+        return ThrowException(String::New(ne.what()));
+    }
+    return Undefined();
+}
+
+Handle<Value> TiTCPSocketObject::_write(void* userContext, TiObject* /*caller*/, const Arguments& args)
+{
+    if (args.Length() < 1)
+    {
+        return ThrowException(String::New(Ti::Msg::Missing_argument));
+    }
+
+    HandleScope handleScope;
+    TiTCPSocketObject* obj = (TiTCPSocketObject*) userContext;
+    NativeTCPSocketObject* ntcp = (NativeTCPSocketObject*) obj->getNativeObject();
+
+    NativeBufferObject* nboSource = NULL;
+    if (args[0]->IsObject())
+    {
+        TiBufferObject* objSource = dynamic_cast<TiBufferObject*>(getTiObjectFromJsObject(args[0]));
+        if (objSource != NULL)
+        {
+            nboSource = (NativeBufferObject*) objSource->getNativeObject();
+        }
+    }
+
+    // Invalid argument passed
+    if (nboSource == NULL)
+    {
+        return ThrowException(String::New(Ti::Msg::Invalid_arguments));
+    }
+
+    // Optional arguments provided
+    int sourceOffset = -1, sourceLength = -1;
+    if (args.Length() > 1)
+    {
+        // Should provided both offset and length
+        if (args.Length() < 3)
+        {
+            return ThrowException(String::New(Ti::Msg::Missing_argument));
+        }
+
+        Handle<Number> sourceOffsetNum = Handle<Number>::Cast(args[1]);
+        Handle<Number> sourceLengthNum = Handle<Number>::Cast(args[2]);
+        sourceOffset = (int)sourceOffsetNum->Value();
+        sourceLength = (int)sourceLengthNum->Value();
+    }
+
+    int bytesWritten = 0;
+    try
+    {
+        bytesWritten = ntcp->write(nboSource, sourceOffset, sourceLength);
+    }
+    catch (NativeException& ne)
+    {
+        return ThrowException(String::New(ne.what()));
+    }
+
+    Handle<Number> result = Number::New(bytesWritten);
+    return handleScope.Close(result);
+}
+
+Handle<Value> TiTCPSocketObject::_read(void* userContext, TiObject* /*caller*/, const Arguments& args)
+{
+    if (args.Length() < 1)
+    {
+        return ThrowException(String::New(Ti::Msg::Missing_argument));
+    }
+
+    HandleScope handleScope;
+    TiTCPSocketObject* obj = (TiTCPSocketObject*) userContext;
+    NativeTCPSocketObject* ntcp = (NativeTCPSocketObject*) obj->getNativeObject();
+
+    NativeBufferObject* nboSource = NULL;
+    if (args[0]->IsObject())
+    {
+        TiBufferObject* objSource = dynamic_cast<TiBufferObject*>(getTiObjectFromJsObject(args[0]));
+        if (objSource != NULL)
+        {
+            nboSource = (NativeBufferObject*) objSource->getNativeObject();
+        }
+    }
+
+    // Invalid argument passed
+    if (nboSource == NULL)
+    {
+        return ThrowException(String::New(Ti::Msg::Invalid_arguments));
+    }
+
+    // Optional arguments provided
+    int sourceOffset = -1, sourceLength = -1;
+    if (args.Length() > 1)
+    {
+        // Should provided both offset and length
+        if (args.Length() < 3)
+        {
+            return ThrowException(String::New(Ti::Msg::Missing_argument));
+        }
+
+        Handle<Number> sourceOffsetNum = Handle<Number>::Cast(args[1]);
+        Handle<Number> sourceLengthNum = Handle<Number>::Cast(args[2]);
+        sourceOffset = (int)sourceOffsetNum->Value();
+        sourceLength = (int)sourceLengthNum->Value();
+    }
+
+    int bytesRead = 0;
+    try
+    {
+        bytesRead = ntcp->read(nboSource, sourceOffset, sourceLength);
+    }
+    catch (NativeException& ne)
+    {
+        return ThrowException(String::New(ne.what()));
+    }
+
+    Handle<Number> result = Number::New(bytesRead);
+    return handleScope.Close(result);
 }
