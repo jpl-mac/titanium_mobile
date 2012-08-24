@@ -20,3 +20,59 @@ L = function(key, hint)
 Ti.BufferStream.demoFunc = function() {
     Ti.API.debug("demoFunc is being run");
 };
+
+Ti.Stream.pump = function(inputStream, handler, maxChunkSize, isAsync)
+{
+    if (isAsync === undefined)
+    {
+        isAsync = false;
+    }
+    var buffer = Ti.createBuffer({ length: maxChunkSize });
+    var pumpCallBackArgs  = {
+        buffer: buffer,
+        bytesProcessed: -1,
+        errorDescription: '',
+        errorState: 0,
+        source: inputStream,
+        totalBytesProcessed: 0,
+    };
+
+    var readHelper = function() {
+        buffer.clear();
+        pumpCallBackArgs.bytesProcessed = -1;
+        try
+        {
+            pumpCallBackArgs.bytesProcessed = inputStream.read(buffer, 0, maxChunkSize);
+        }
+        catch(err)
+        {
+            pumpCallBackArgs.errorDescription = err;
+            pumpCallBackArgs.errorState = 1;
+        }
+        if (pumpCallBackArgs.bytesProcessed >= 0)
+        {
+            pumpCallBackArgs.totalBytesProcessed += pumpCallBackArgs.bytesProcessed;
+        }
+        handler(pumpCallBackArgs);
+    };
+
+    if (isAsync)
+    {
+        var pumpHelper = function()
+        {
+            readHelper();
+            if (pumpCallBackArgs.bytesProcessed >= 0)
+            {
+                setTimeout(pumpHelper, 1);
+            }
+        };
+        setTimeout(pumpHelper, 1);
+    }
+    else
+    {
+        do
+        {
+            readHelper();
+        } while (pumpCallBackArgs.bytesProcessed >= 0);
+    }
+};
