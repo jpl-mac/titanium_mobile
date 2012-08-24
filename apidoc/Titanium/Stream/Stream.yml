@@ -297,7 +297,7 @@ methods:
         type: Boolean
         optional: true
         default: false
-    platforms: [android, iphone, ipad]
+    platforms: [android, iphone, ipad, blackberry]
 
 ---
 name: CreateStreamArgs
@@ -421,7 +421,7 @@ description: |
     pump operation, either because of an error or because the end of the
     stream has been reached.
 since: "1.7"
-platforms: [android, iphone, ipad]
+platforms: [android, iphone, ipad, blackberry]
 
 properties:
   - name: source
