@@ -709,7 +709,6 @@ properties:
     
   - name: animatedCenterPoint
     summary: Current position of the view during an animation.
-    platforms: [android, iphone, ipad, blackberry]
     type: Point
     permission: read-only
     platforms: [android, iphone, ipad]
@@ -722,7 +721,6 @@ properties:
     
   - name: backgroundDisabledColor
     summary: Disabled background color of the view, as a color name or hex triplet.
-    platforms: [android, blackberry]
     description: |
         For information about color values, see the "Colors" section of <Titanium.UI>. 
     type: String

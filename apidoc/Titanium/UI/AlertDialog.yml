@@ -99,9 +99,8 @@ properties:
         
         A maximum of 3 buttons is supported on Android.
 
-        On BlackBerry, a 'Cancel' and 'OK' button automatically will be created if none are
-        explicitly defined. Providing buttonNames will omit the confirm and cancel buttons and
-        will use those provided instead.
+        On BlackBerry, 'Cancel' and 'OK' buttons will be automatically created if none are explicitly
+        defined. Providing buttonNames will omit these buttons and use those provided instead.
     type: Array<String>
     default: null (Android), ['OK'] (iOS), undefined (BlackBerry)
     availability: creation
