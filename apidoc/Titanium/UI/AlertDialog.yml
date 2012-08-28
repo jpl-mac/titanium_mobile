@@ -99,11 +99,11 @@ properties:
         
         A maximum of 3 buttons is supported on Android.
 
-        On BlackBerry, a confirm and cancel button automatically will be created if none are
+        On BlackBerry, a 'Cancel' and 'OK' button automatically will be created if none are
         explicitly defined. Providing buttonNames will omit the confirm and cancel buttons and
-        will use provided instead.
+        will use those provided instead.
     type: Array<String>
-    default: null (Android), ['OK'] (iOS)
+    default: null (Android), ['OK'] (iOS), undefined (BlackBerry)
     availability: creation
 
   - name: cancel
@@ -112,7 +112,7 @@ properties:
     description: |
         On iOS and Mobile Web, set to `-1` to disable the cancel option.
     type: Number
-    default: undefined (Android), -1 (iOS, Mobile Web)
+    default: undefined (Android, BlackBerry), -1 (iOS, Mobile Web)
     
   - name: message
     summary: Dialog message.
