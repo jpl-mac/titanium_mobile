@@ -36,7 +36,7 @@ class Builder(object):
 		self.project_tiappxml = os.path.join(self.top_dir, 'tiapp.xml')
 		self.tiappxml = TiAppXML(self.project_tiappxml)
 		self.name = self.tiappxml.properties['name']
-		self.buildDir = os.path.join(self.top_dir, 'build', 'blackberry', self.name)
+		self.buildDir = os.path.join(self.top_dir, 'build', 'blackberry')
 		self.project_deltafy = Deltafy(self.top_dir)
 
 		if useLogFile:
@@ -49,7 +49,7 @@ class Builder(object):
 				self.tiappxml = TiAppXML(self.project_tiappxml)
 				sys.stdout = oldStdout
 		self.name = self.tiappxml.properties['name']
-		self.buildDir = os.path.join(self.top_dir, 'build', 'blackberry', self.name)
+		self.buildDir = os.path.join(self.top_dir, 'build', 'blackberry')
 
 	def getPackage(self):
 		return os.path.join(self.buildDir, self.cpu, self.variant, '%s.bar' % self.name)
@@ -101,7 +101,10 @@ class Builder(object):
 	
 	def build(self):
 		info('Building')
-		return self.ndk.build(self.buildDir, self.cpu, self.variant)
+		return self.ndk.build(self.buildDir, self.cpu, self.variant, self.name)
+
+	def uninstallApp(self, ipAddress):
+		return self.ndk.uninstallApp(ipAddress, self.getPackage())
 
 	def terminateApp(self, ipAddress):
 		return self.ndk.terminateApp(ipAddress, self.getPackage())
@@ -139,14 +142,14 @@ def error(msg):
 if __name__ == "__main__":
 
 	# Setup script usage using optparse
-	parser = OptionParser(usage='<command: build | run | terminateApp | isAppRunning | printExitCode | getFile | putFile | appLog> -t TYPE -d PROJECT_PATH [-p NDK_PATH] [-i IP_ADDRESS] [-s DEVICE_PASSWORD] [--host_file HOST_FILE] [--device_file DEVICE_FILE]')
+	parser = OptionParser(usage='<command: build | run | uninstallApp | terminateApp | isAppRunning | printExitCode | getFile | putFile | appLog> -t TYPE -d PROJECT_PATH [-p NDK_PATH] [-i IP_ADDRESS] [-s DEVICE_PASSWORD] [--host_file HOST_FILE] [--device_file DEVICE_FILE]')
 
 	commonGroup = parser.add_option_group('Common options')
 	commonGroup.add_option('-t', '--type', choices=['simulator', 'device', 'deploy'], help='simulator | device | deploy', dest='type')
 	commonGroup.add_option('-d', '--project_path', help='project directory path', dest='project_path')
 	commonGroup.add_option('-p', '--ndk_path', help='blackberry ndk path', dest='ndk_path')
 
-	runEtcGroup = parser.add_option_group('run, terminateApp, isAppRunning, printExitCode, getFile, putFile, appLog options')
+	runEtcGroup = parser.add_option_group('run, uninstallApp, terminateApp, isAppRunning, printExitCode, getFile, putFile, appLog options')
 	runEtcGroup.add_option('-i', '--ip_address', help='(simulator | device) ip address', dest='ip_address')
 	runEtcGroup.add_option('-s', '--device_password', help='(simulator | device) protection password', dest='device_password')
 
@@ -164,6 +167,7 @@ if __name__ == "__main__":
 
 	buildUsage = 'Usage: %s build -t TYPE -d PROJECT_PATH [-p NDK_PATH]' %os.path.basename(sys.argv[0])
 	runUsage = 'Usage: %s run -t TYPE -d PROJECT_PATH [-p NDK_PATH] -i IP_ADDRESS [-s DEVICE_PASSWORD] [--debug_token DEBUG_TOKEN]' %os.path.basename(sys.argv[0])
+	uninstallAppUsage = 'Usage: %s uninstallApp -t TYPE -d PROJECT_PATH [-p NDK_PATH] -i IP_ADDRESS [-s DEVICE_PASSWORD]' %os.path.basename(sys.argv[0])
 	terminateAppUsage = 'Usage: %s terminateApp -t TYPE -d PROJECT_PATH [-p NDK_PATH] -i IP_ADDRESS [-s DEVICE_PASSWORD]' %os.path.basename(sys.argv[0])
 	isAppRunningUsage = 'Usage: %s isAppRunning -t TYPE -d PROJECT_PATH [-p NDK_PATH] -i IP_ADDRESS [-s DEVICE_PASSWORD]' %os.path.basename(sys.argv[0])
 	printExitCodeUsage = 'Usage: %s printExitCode -t TYPE -d PROJECT_PATH [-p NDK_PATH] -i IP_ADDRESS [-s DEVICE_PASSWORD]' %os.path.basename(sys.argv[0])
@@ -193,9 +197,11 @@ if __name__ == "__main__":
 			parser.error(runUsage)
 			sys.exit(1)
 		useLogFile = True
-	elif args[0] in ['terminateApp', 'isAppRunning', 'printExitCode', 'appLog']:
+	elif args[0] in ['uninstallApp', 'terminateApp', 'isAppRunning', 'printExitCode', 'appLog']:
 		if type == None or projectPath == None or ipAddress == None:
-			if args[0] == 'terminateApp':
+			if args[0] == 'uninstallApp':
+				parser.error(uninstallAppUsage)
+			elif args[0] == 'terminateApp':
 				parser.error(terminateAppUsage)
 			elif args[0] == 'isAppRunning':
 				parser.error(isAppRunningUsage)
@@ -233,6 +239,8 @@ if __name__ == "__main__":
 		retCode = builder.build()
 	elif (args[0] == 'run'):
 		retCode = builder.run(ipAddress, devicePassword, debugToken)
+	elif (args[0] == 'uninstallApp'):
+		retCode = builder.uninstallApp(ipAddress)
 	elif (args[0] == 'terminateApp'):
 		retCode = builder.terminateApp(ipAddress)
 	elif (args[0] == 'isAppRunning'):

@@ -158,15 +158,16 @@ class BlackberryNDK:
 		command = [self.qde, '-nosplash', '-application', 'org.eclipse.cdt.managedbuilder.core.headlessbuild', '-consoleLog', '-data', workspace, '-import', project]
 		self._run(command)
 
-	def build(self, project, cpu, variant):
+	def build(self, project, cpu, variant, name):
 		assert os.path.exists(project)
 		templateDir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
+		tiappName = 'TIAPP_NAME=' + name
 		cpuList = 'CPULIST=' + cpu
 		bbRoot = 'BB_ROOT=' + templateDir
 		variant = 'VARIANTLIST=' + ('g' if variant.endswith('-g') else '')
 		oldPath = os.getcwd()
 		os.chdir(project)
-		command = ['make', cpuList, bbRoot, variant]
+		command = ['make', tiappName, cpuList, bbRoot, variant]
 		retCode = self._run(command)
 		os.chdir(oldPath)
 		return retCode
@@ -174,7 +175,7 @@ class BlackberryNDK:
 	def package(self, package, appFile, projectName, type, debugToken, isUnitTest = False):
 		templateDir = os.path.abspath(os.path.dirname(sys._getframe(0).f_code.co_filename))
 		buildDir = os.path.abspath(os.path.join(appFile, '..', '..', '..'))
-		projectDir = os.path.abspath(os.path.join(buildDir, '..', '..', '..'))
+		projectDir = os.path.abspath(os.path.join(buildDir, '..', '..'))
 
 		# Copy the framework's JavaScript
 		frameworkDir = os.path.join(buildDir, 'framework')
@@ -225,6 +226,10 @@ class BlackberryNDK:
 		if password != None:
 			command.append('-password')
 			command.append(password)
+		return self._run(command)
+
+	def uninstallApp(self, deviceIP, package):
+		command = [self.deployProgram, '-uninstallApp', '-device', deviceIP, '-package', package]
 		return self._run(command)
 
 	def terminateApp(self, deviceIP, package):
@@ -325,7 +330,7 @@ def __runUnitTests(ipAddress = None):
 
 	with UnitTest('Test build project (x86)..'):
 		cpu = 'x86'
-		ndk.build(project, cpu)
+		ndk.build(project, cpu, projectName)
 		assert os.path.exists(os.path.join(project, 'x86', 'o', projectName))
 		assert os.path.exists(os.path.join(project, 'x86', 'o-g', projectName))
 
@@ -346,7 +351,7 @@ def __runUnitTests(ipAddress = None):
 
 	with UnitTest('Test build project (arm)..'):
 		cpu = 'arm'
-		ndk.build(project, cpu)
+		ndk.build(project, cpu, projectName)
 		assert os.path.exists(os.path.join(project, 'arm', 'o.le-v7', projectName))
 		assert os.path.exists(os.path.join(project, 'arm', 'o.le-v7-g', projectName))
 
