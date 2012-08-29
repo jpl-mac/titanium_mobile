@@ -93,7 +93,6 @@ methods:
       - name: params
         summary: Parameter object, for specifying the source object and mode.
         type: CreateStreamArgs
-        platforms: [android, iphone, ipad]
 
   - name: read
     summary: |
@@ -303,7 +302,6 @@ methods:
 name: CreateStreamArgs
 summary: Argument passed to [createStream](Titanium.Stream.createStream).
 since: "1.7"
-platforms: [android, iphone, ipad]
 
 properties:
 
@@ -319,6 +317,7 @@ properties:
 
         For `Blob` objects, only `MODE_READ` is supported.
     type: Number
+    platforms: [android, iphone, ipad]
 
 ---
 name: ReadCallbackArgs
