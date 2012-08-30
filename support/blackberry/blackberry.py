@@ -28,9 +28,8 @@ class Blackberry(object):
 
 	def create(self, dir):
 		project_dir = os.path.join(dir, self.name)
-		# Creates directory named as project name.
-		# mkbuild utility uses path's last component as project name. So, project directory should be named as project
-		build_dir = os.path.join(project_dir, 'build', 'blackberry', self.name)
+		# Creates build directory
+		build_dir = os.path.join(project_dir, 'build', 'blackberry')
 
 		if not os.path.exists(build_dir):
 			os.makedirs(build_dir)
