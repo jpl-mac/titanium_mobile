@@ -260,4 +260,4 @@ properties:
   - name: value
     summary: Current value of the slider.
     type: String
-    platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
