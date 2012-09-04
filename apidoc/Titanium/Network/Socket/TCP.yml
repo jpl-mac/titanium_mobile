@@ -192,7 +192,7 @@ properties:
   - name: timeout
     type: Number
     summary: Timeout, in milliseconds, for `connect` and all `write` operations. 
-	platforms: [android, iphone, ipad]
+    platforms: [android, iphone, ipad]
     description: |
         Can only be modified when this socket is in the [INITIALIZED](Titanium.Network.Socket.INITIALIZED) state. 
 
