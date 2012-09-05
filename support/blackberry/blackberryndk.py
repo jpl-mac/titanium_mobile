@@ -228,46 +228,70 @@ class BlackberryNDK:
 			command.append(password)
 		return self._run(command)
 
-	def uninstallApp(self, deviceIP, package):
+	def uninstallApp(self, deviceIP, package, password = None):
 		command = [self.deployProgram, '-uninstallApp', '-device', deviceIP, '-package', package]
+		if password != None:
+			command.append('-password')
+			command.append(password)
 		return self._run(command)
 
-	def terminateApp(self, deviceIP, package):
+	def terminateApp(self, deviceIP, package, password = None):
 		command = [self.deployProgram, '-terminateApp', '-device', deviceIP, '-package', package]
+		if password != None:
+			command.append('-password')
+			command.append(password)
 		return self._run(command)
 
-	def isAppRunning(self, deviceIP, package):
+	def isAppRunning(self, deviceIP, package, password = None):
 		command = [self.deployProgram, '-isAppRunning', '-device', deviceIP, '-package', package]
+		if password != None:
+			command.append('-password')
+			command.append(password)
 		return self._run(command, echoCommand = False)
 
-	def printExitCode(self, deviceIP, package):
+	def printExitCode(self, deviceIP, package, password = None):
 		command = [self.deployProgram, '-printExitCode', '-device', deviceIP, '-package', package]
+		if password != None:
+			command.append('-password')
+			command.append(password)
 		return self._run(command, echoCommand = False)
 
-	def getFile(self, deviceIP, package, hostFile, deviceFile):
+	def getFile(self, deviceIP, package, hostFile, deviceFile, password = None):
 		command = [self.deployProgram, '-getFile', deviceFile, hostFile, '-device', deviceIP, '-package', package]
+		if password != None:
+			command.append('-password')
+			command.append(password)
 		return self._run(command)
 
-	def putFile(self, deviceIP, package, hostFile, deviceFile):
+	def putFile(self, deviceIP, package, hostFile, deviceFile, password = None):
 		command = [self.deployProgram, '-putFile', hostFile, deviceFile, '-device', deviceIP, '-package', package]
+		if password != None:
+			command.append('-password')
+			command.append(password)
 		return self._run(command)
 
-	def _isAppRunning(self, deviceIP, package):
+	def _isAppRunning(self, deviceIP, package, password = None):
 		command = [self.deployProgram, '-isAppRunning', '-device', deviceIP, '-package', package]
+		if password != None:
+			command.append('-password')
+			command.append(password)
 		output = subprocess.check_output(command)
 		return output.find("result::true") != -1
 
-	def _printAppLog(self, deviceIP, package):
+	def _printAppLog(self, deviceIP, package, password = None):
 		hostFile = "-"
 		deviceFile = "logs/log"
 		command = [self.deployProgram, '-getFile', deviceFile, hostFile, '-device', deviceIP, '-package', package]
+		if password != None:
+			command.append('-password')
+			command.append(password)
 		return self._run(command)
 
-	def appLog(self, deviceIP, package):
+	def appLog(self, deviceIP, package, password = None):
 		import time
-		while self._isAppRunning(deviceIP, package):
+		while self._isAppRunning(deviceIP, package, password):
 			time.sleep(2)
-		self._printAppLog(deviceIP, package)
+		self._printAppLog(deviceIP, package, password)
 
 	def buildTibb(self, tibbPath, buildType):
 		assert os.path.exists(tibbPath)
