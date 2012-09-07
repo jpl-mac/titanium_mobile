@@ -230,6 +230,7 @@ function loadConfigModule() {
 	driverUtils.checkConfigItem("defaultTestTimeout", config.defaultTestTimeout, "number");
 	driverUtils.checkConfigItem("tabString", config.tabString, "string");
 	driverUtils.checkConfigItem("defaultIosSimVersion", config.defaultIosSimVersion, "string");
+	driverUtils.checkConfigItem("blackberryDeviceType", config.blackberryDeviceType, "string");
 	driverUtils.checkConfigItem("blackberryDeviceIp", config.blackberryDeviceIp, "string");
 
 	// load the defaultPlatform config property and set the global platform property if needed

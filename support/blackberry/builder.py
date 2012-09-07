@@ -103,26 +103,26 @@ class Builder(object):
 		info('Building')
 		return self.ndk.build(self.buildDir, self.cpu, self.variant, self.name)
 
-	def uninstallApp(self, ipAddress):
-		return self.ndk.uninstallApp(ipAddress, self.getPackage())
+	def uninstallApp(self, ipAddress, password = None):
+		return self.ndk.uninstallApp(ipAddress, self.getPackage(), password)
 
-	def terminateApp(self, ipAddress):
-		return self.ndk.terminateApp(ipAddress, self.getPackage())
+	def terminateApp(self, ipAddress, password = None):
+		return self.ndk.terminateApp(ipAddress, self.getPackage(), password)
 
-	def isAppRunning(self, ipAddress):
-		return self.ndk.isAppRunning(ipAddress, self.getPackage())
+	def isAppRunning(self, ipAddress, password = None):
+		return self.ndk.isAppRunning(ipAddress, self.getPackage(), password)
 
-	def printExitCode(self, ipAddress):
-		return self.ndk.printExitCode(ipAddress, self.getPackage())
+	def printExitCode(self, ipAddress, password = None):
+		return self.ndk.printExitCode(ipAddress, self.getPackage(), password)
 
-	def getFile(self, ipAddress, hostFile, deviceFile):
-		return self.ndk.getFile(ipAddress, self.getPackage(), hostFile, deviceFile)
+	def getFile(self, ipAddress, hostFile, deviceFile, password = None):
+		return self.ndk.getFile(ipAddress, self.getPackage(), hostFile, deviceFile, password)
 
-	def putFile(self, ipAddress, hostFile, deviceFile):
-		return self.ndk.putFile(ipAddress, self.getPackage(), hostFile, deviceFile)
+	def putFile(self, ipAddress, hostFile, deviceFile, password = None):
+		return self.ndk.putFile(ipAddress, self.getPackage(), hostFile, deviceFile, password)
 
-	def appLog(self, ipAddress):
-		return self.ndk.appLog(ipAddress, self.getPackage())
+	def appLog(self, ipAddress, password = None):
+		return self.ndk.appLog(ipAddress, self.getPackage(), password)
 
 def info(msg):
 	log.info(msg)
@@ -240,17 +240,17 @@ if __name__ == "__main__":
 	elif (args[0] == 'run'):
 		retCode = builder.run(ipAddress, devicePassword, debugToken)
 	elif (args[0] == 'uninstallApp'):
-		retCode = builder.uninstallApp(ipAddress)
+		retCode = builder.uninstallApp(ipAddress, devicePassword)
 	elif (args[0] == 'terminateApp'):
-		retCode = builder.terminateApp(ipAddress)
+		retCode = builder.terminateApp(ipAddress, devicePassword)
 	elif (args[0] == 'isAppRunning'):
-		retCode = builder.isAppRunning(ipAddress)
+		retCode = builder.isAppRunning(ipAddress, devicePassword)
 	elif (args[0] == 'printExitCode'):
-		retCode = builder.printExitCode(ipAddress)
+		retCode = builder.printExitCode(ipAddress, devicePassword)
 	elif (args[0] == 'getFile'):
-		retCode = builder.getFile(ipAddress, hostFile, deviceFile)
+		retCode = builder.getFile(ipAddress, hostFile, deviceFile, devicePassword)
 	elif (args[0] == 'putFile'):
-		retCode = builder.putFile(ipAddress, hostFile, deviceFile)
+		retCode = builder.putFile(ipAddress, hostFile, deviceFile, devicePassword)
 	elif (args[0] == 'appLog'):
-		retCode = builder.appLog(ipAddress)
+		retCode = builder.appLog(ipAddress, devicePassword)
 	sys.exit(retCode)
