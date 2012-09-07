@@ -327,6 +327,7 @@ module.exports = new function() {
 		var config = configs[configSetIndex].setConfigs[configIndex];
 		var configDir = path.join(config.configDir, config.configName);
 		var harnessPlatformDir = path.join(driverGlobal.harnessDir, platform);
+		driverUtils.log("updating harness for config: " + config.configName);
 
 		var updateSuitesCallback = function() {
 			driverUtils.runCommand("cp -r " + path.join(configs[configSetIndex].setDir, "Resources") + " " + path.join(harnessPlatformDir, "harness"), driverUtils.logStdout, function(error) {
@@ -664,9 +665,11 @@ module.exports = new function() {
 				make sure we skip to the next test in the event of failure otherwise this will 
 				loop forever (assuming that the timeout is consistent with each run of the test)
 				*/
-				incrementTest();
+				var next = incrementTest();
 
-				driverGlobal.platform.resumeConfig();
+				if (next !== "") {
+					driverGlobal.platform.resumeConfig();
+				}
 			}
 		}, timeout);
 
