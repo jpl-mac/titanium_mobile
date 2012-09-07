@@ -17,3 +17,6 @@ xcuserdata
 x86
 arm
 anvil/driver/config.js
+anvil/driver/titanium_mobile
+anvil/hub/config.js
+
