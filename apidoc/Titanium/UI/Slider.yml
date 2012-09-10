@@ -81,6 +81,7 @@ methods:
             on iOS.
         type: Dictionary
         optional: true
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
 
 
 events:
@@ -105,6 +106,7 @@ events:
             the control. Available with custom thumb image.
         type: Dictionary
         platforms: [android]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
 
   - name: click
     summary: Fired when the device detects a click against the view.
@@ -151,6 +153,7 @@ properties:
     summary: Boolean to indicate the enabled state of the slider.
     type: Boolean
     default: Slider is enabled by default (property value may be `undefined`).
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
 
   - name: highlightedLeftTrackImage
     summary: Image URL of the slider left track when in the highlighted state.
@@ -185,6 +188,7 @@ properties:
         On Android this must be an integer value.
     type: Number
     default: 1. (property value might be undefined)
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     
   - name: maxRange
     summary: Upper limit on the slider value that can be selected.
@@ -213,6 +217,7 @@ properties:
         On Android this must be an integer value.
     type: Number
     default: 0. (property value might be undefined)
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
 
   - name: minRange
     summary: Lower limit on the slider value that can be selected. 
