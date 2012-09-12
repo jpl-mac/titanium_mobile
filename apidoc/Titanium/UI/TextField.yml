@@ -34,6 +34,7 @@ methods:
         type: Boolean
         summary: True if this text field contains text.
     since: "2.1.0"
+    platforms: [android, iphone, ipad, mobileweb]
 
   - name: remove
     description: |
@@ -137,6 +138,7 @@ properties:
     description: |
         For information about color values, see the "Colors" section of <Titanium.UI>. 
     type: String
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     
   - name: editable
     summary: Determines whether this field can be edited. 
@@ -154,7 +156,7 @@ properties:
     summary: Determines whether the field is enabled.
     type: Boolean
     default: true
-    platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     
   - name: enableReturnKey
     summary: |
@@ -183,8 +185,10 @@ properties:
         Use unicode characters, such as those included in (but not limited to) the 
         [Unicode List of Useful Symbols](http://en.wikibooks.org/w/index.php?title=Unicode/List_of_useful_symbols) 
         section of wikipedia, to insert special characters and symbols.
+
+        On BlackBerry, the unicode characters are not supported.
     type: String
-    platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     default: No hint text.
     
   - name: keyboardToolbar
@@ -349,7 +353,7 @@ properties:
         or [TEXT_ALIGNMENT_RIGHT](Titanium.UI.TEXT_ALIGNMENT_RIGHT).
     type: [String, Number]
     default: <Titanium.UI.TEXT_ALIGNMENT_LEFT>
-    platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     
   - name: value
     summary: Value of this text field, which may be set programmatically and modified by the user.
@@ -360,6 +364,8 @@ properties:
         Use unicode characters, such as those included in (but not limited to) the 
         [Unicode List of Useful Symbols](http://en.wikibooks.org/w/index.php?title=Unicode/List_of_useful_symbols) 
         section of wikipedia, to insert special characters and symbols.
+
+        On BlackBerry, the '\n' and unicode characters are not supported.
     type: String
     platforms: [android, iphone, ipad, mobileweb, blackberry]
     

@@ -58,6 +58,7 @@ properties:
     description: |
         For information about color values, see the "Colors" section of <Titanium.UI>. 
     type: String
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     
   - name: ellipsize
     summary: |
@@ -69,6 +70,7 @@ properties:
   - name: font
     summary: Font to use for the label text.
     type: Font
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     
   - name: highlightedColor
     summary: Color of the label when in the highlighted state, as a color name or hex triplet.
@@ -113,9 +115,12 @@ properties:
         Use unicode characters, such as those included in (but not limited to) the 
         [Unicode List of Useful Symbols](http://en.wikibooks.org/w/index.php?title=Unicode/List_of_useful_symbols) 
         section of wikipedia, to insert special characters and symbols.
+
+        On BlackBerry, the '\n' and unicode characters are not supported.
         
         See the example in [label](Titanium.UI.Label) for a demonstration.
     type: String
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     
   - name: textAlign
     summary: |
@@ -124,6 +129,7 @@ properties:
         [TEXT_ALIGNMENT_CENTER](Titanium.UI.TEXT_ALIGNMENT_CENTER), 
         or [TEXT_ALIGNMENT_RIGHT](Titanium.UI.TEXT_ALIGNMENT_RIGHT).
     type: [String, Number]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     
   - name: textid
     summary: Key identifying a string from the locale file to use for the label text. 

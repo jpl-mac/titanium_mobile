@@ -15,7 +15,7 @@ description: |
     When using a tab group, note the following differences between platforms.
     
     The tab group controls are positioned at the top of the display on Android and at the bottom 
-    on iOS.
+    on iOS and BlackBerry.
     
     On Android, only one tab group may exist at one time. A tab group may be closed to allow a new 
     one to be opened later, but the root of the application must be a heavyweight window to prevent 
@@ -98,6 +98,7 @@ events:
         
   - name: open
     summary: Fired when the tab group is opened.
+    platforms: [iphone, android, ipad, mobileweb]
 
 methods:
   - name: addTab
@@ -106,6 +107,7 @@ methods:
       - name: tab
         summary: Tab to add.
         type: Titanium.UI.Tab
+    platforms: [iphone, android, ipad, mobileweb, blackberry]
         
   - name: close
     summary: Closes the tab group and removes it from the UI.
@@ -119,6 +121,7 @@ methods:
         
   - name: open
     summary: Opens the tab group and makes it visible.
+    platforms: [iphone, android, ipad, mobileweb, blackberry]
     
   - name: removeTab
     summary: Removes a tab from the tab group.
@@ -135,6 +138,7 @@ methods:
       - name: indexOrObject
         summary: Index or object of the tab to switch to.
         type: [Number, Titanium.UI.Tab]
+    platforms: [iphone, android, ipad, mobileweb, blackberry]
         
   - name: getTabs
     summary: Gets all tabs that are managed by the tab group.

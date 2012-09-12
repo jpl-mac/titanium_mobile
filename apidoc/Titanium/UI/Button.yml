@@ -3,7 +3,7 @@ name: Titanium.UI.Button
 summary: |
     A button widget that has four states: normal, disabled, focused and selected.
 description: |
-    A button displays its  selected state while it is being pressed. The focused state is
+    A button displays its selected state while it is being pressed. The focused state is
     only used on Android devices that have navigation keys or a keyboard, to indicate
     which button has input focus.
     
@@ -159,7 +159,7 @@ properties:
     summary: Set to `true` to enable the button, `false` to disable the button.
     type: Boolean
     default: true
-    platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
   - name: font
     summary: Font to use for the button text.
     type: Font
@@ -174,6 +174,7 @@ properties:
 
         On BlackBerry, the image is displayed to the left of the title.
     type: [String, Titanium.Blob]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
   - name: selectedColor
     summary: Button text color used to indicate the selected state, as a color name or hex triplet.
     description: |
@@ -198,6 +199,7 @@ properties:
   - name: title
     summary: Button title.
     type: String
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
   - name: titleid
     summary: Key identifying a string from the locale file to use for the button title. 
     description: Only one of `title` or `titleid` should be specified.

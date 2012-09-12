@@ -51,7 +51,7 @@ properties:
          
          Set to `true` to enable or `false` to disable the switch.
     type: Boolean
-    platforms: [android, iphone, ipad, mobileweb]
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     default: undefined (equivalent to enabled)
     
   - name: font
@@ -135,6 +135,7 @@ properties:
         will not be visible. This is a known issue. 
     type: Boolean
     default: undefined (visual state off, Android), false (Mobile Web)
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
     
   - name: verticalAlign
     summary: Vertical alignment for the text field.
@@ -154,6 +155,7 @@ events:
       - name: value
         summary: New value of the switch.
         type: Boolean
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
 
 examples:
   - title: Simple Switch Example

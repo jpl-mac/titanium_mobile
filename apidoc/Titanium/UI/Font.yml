@@ -73,6 +73,7 @@ properties:
         mapped to system fonts. On iOS, only "monospace" is supported.
     type: String
     default: Uses the default system font.
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
   - name: fontSize
     summary: Font size, in platform-dependent units.
     description: |
@@ -96,11 +97,13 @@ properties:
         fontSize value is a Number.
     type: [ Number, String ]
     default: 15px
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
   - name: fontWeight
     summary: Font weight. Valid values are "bold" or "normal". 
     description: The "semibold" weight is recognized on iOS only.
     type: String
     default: normal
+    platforms: [android, iphone, ipad, mobileweb, blackberry]
   - name: fontStyle
     summary: Font style. Valid values are "italic" or "normal". 
     type: String
