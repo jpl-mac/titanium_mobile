@@ -318,6 +318,8 @@ properties:
         if you do set the `opacity` property, be sure to also set a `backgroundImage` or
         `backgroundColor` property as well, unless you want the window to be completely
         transparent.
+
+        BlackBerry notes: The opacity property does not affect the window's title.
     type: Number
     platforms: [android, iphone, ipad, mobileweb, blackberry]
 
@@ -606,6 +608,8 @@ description: |
 
     The special property <Titanium.UI.currentWindow> is available inside a sub-context that
     points to the JavaScript instance by reference in the global context.
+
+    On BlackBerry, sub-contexts are NYI.
 
 
     #### Passing Data Between Contexts

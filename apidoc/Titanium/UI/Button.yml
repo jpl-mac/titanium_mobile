@@ -3,7 +3,7 @@ name: Titanium.UI.Button
 summary: |
     A button widget that has four states: normal, disabled, focused and selected.
 description: |
-    A button displays its  selected state while it is being pressed. The focused state is
+    A button displays its selected state while it is being pressed. The focused state is
     only used on Android devices that have navigation keys or a keyboard, to indicate
     which button has input focus.
     

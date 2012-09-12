@@ -34,6 +34,7 @@ methods:
         type: Boolean
         summary: True if this text field contains text.
     since: "2.1.0"
+    platforms: [android, iphone, ipad, mobileweb]
 
   - name: remove
     description: |
@@ -184,6 +185,8 @@ properties:
         Use unicode characters, such as those included in (but not limited to) the 
         [Unicode List of Useful Symbols](http://en.wikibooks.org/w/index.php?title=Unicode/List_of_useful_symbols) 
         section of wikipedia, to insert special characters and symbols.
+
+        On BlackBerry, the unicode characters are not supported.
     type: String
     platforms: [android, iphone, ipad, mobileweb, blackberry]
     default: No hint text.
@@ -361,6 +364,8 @@ properties:
         Use unicode characters, such as those included in (but not limited to) the 
         [Unicode List of Useful Symbols](http://en.wikibooks.org/w/index.php?title=Unicode/List_of_useful_symbols) 
         section of wikipedia, to insert special characters and symbols.
+
+        On BlackBerry, the '\n' and unicode characters are not supported.
     type: String
     platforms: [android, iphone, ipad, mobileweb, blackberry]
     
